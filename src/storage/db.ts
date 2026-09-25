@@ -84,6 +84,7 @@ export const deleteItem = (id: string) =>
     await del(`file:${id}`)
     await del(`highlights:${id}`)
     await del(`chat:${id}`)
+    await del(`notesdoc:${id}`)
     notify()
   })
 
@@ -203,3 +204,25 @@ export const clearChat = (itemId: string) =>
 export function useChat(itemId: string | undefined) {
   return useStored(async () => (itemId ? getChat(itemId) : []), [itemId])
 }
+
+// --- Notes page (one free-form document per item) -------------------------------
+// The page is the user's own document. It embeds highlight cards by id, but
+// editing or clearing it never changes the highlights themselves.
+
+export interface NotesDoc {
+  /** TipTap/ProseMirror document JSON. */
+  doc: unknown
+  /** Every highlight id ever placed on the page, so cleared ones don't come back on their own. */
+  known: string[]
+  updatedAt: number
+}
+
+export async function getNotesDoc(itemId: string): Promise<NotesDoc | undefined> {
+  return get<NotesDoc>(`notesdoc:${itemId}`)
+}
+
+/** Saved quietly (no re-render broadcast): the editor already shows what it saves. */
+export const saveNotesDoc = (itemId: string, value: NotesDoc) =>
+  serial(async () => {
+    await set(`notesdoc:${itemId}`, value)
+  })
