@@ -5,13 +5,14 @@ import { LandingPage } from './landing/LandingPage'
 import { LoginPage } from './landing/LoginPage'
 import { ReaderPage } from './reader/ReaderPage'
 import { NotesPage } from './notes/NotesPage'
-import { seedSamples } from './samples/seed'
+import { seedSamples, upgradeSavedItems } from './samples/seed'
 import { useSession } from './storage/db'
 
 export default function App() {
   const [ready, setReady] = useState(false)
   useEffect(() => {
     seedSamples()
+      .then(upgradeSavedItems)
       .catch((err) => console.error('Could not load sample items', err))
       .finally(() => setReady(true))
   }, [])

@@ -1,9 +1,9 @@
 // Creates the two sample items the first time the app opens, so the demo works
 // with no setup. Runs through the same code paths as a real upload.
 
-import { articleFromText } from '../ingest/article'
+import { articleFromText, withUntitledOpening } from '../ingest/article'
 import { readPdf } from '../ingest/pdf'
-import { addItem, isSeeded, markSeeded } from '../storage/db'
+import { addItem, getItems, isSeeded, markSeeded, updateItem } from '../storage/db'
 import { compoundingText, compoundingUrl } from './compoundingArticle'
 
 export const SAMPLE_ARTICLE_ID = 'sample-compounding'
@@ -50,4 +50,12 @@ export function seedSamples() {
     await markSeeded()
   })()
   return running
+}
+
+/** Small data fixes for items saved by earlier versions of the app. Safe to run on every start. */
+export async function upgradeSavedItems() {
+  for (const item of await getItems()) {
+    const chapters = withUntitledOpening(item)
+    if (chapters) await updateItem(item.id, { chapters })
+  }
 }

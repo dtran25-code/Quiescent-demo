@@ -5,7 +5,7 @@
 //  - HTML from the link fetcher (Mozilla Readability output)
 //  - Plain text the user pasted, with optional markdown-style headings ("# ", "## ", "### ")
 
-import type { ArticleBlock, Chapter } from '../types'
+import type { ArticleBlock, Chapter, Item } from '../types'
 
 type RawBlock = Omit<ArticleBlock, 'chapterId'>
 
@@ -76,19 +76,35 @@ function finish(raw: RawBlock[], fallbackTitle: string) {
     if (isHeading) {
       current = {
         id: `ch-${chapters.length + 1}`,
-        // The article's own title heading introduces the opening section.
-        title: b === firstH1 ? 'Introduction' : b.text,
+        // The article's own title heading starts the opening section, which has no
+        // title of its own (articles aren't books; no invented "Introduction").
+        title: b === firstH1 ? '' : b.text,
         level: Number(b.kind[1]),
         // Page ranges don't apply to articles.
       }
       chapters.push(current)
     } else if (!current) {
-      current = { id: 'ch-intro', title: 'Introduction', level: 1 }
+      current = { id: 'ch-intro', title: '', level: 1 }
       chapters.push(current)
     }
     blocks.push({ ...b, chapterId: current.id })
   }
 
-  if (chapters.length === 0) chapters.push({ id: 'ch-intro', title: 'Full text', level: 1 })
+  if (chapters.length === 0) chapters.push({ id: 'ch-intro', title: '', level: 1 })
   return { title, blocks, chapters }
+}
+
+/**
+ * Articles saved before untitled openings existed carry an invented
+ * "Introduction" / "Full text" section name. Returns the fixed chapter list, or
+ * null if nothing needs changing.
+ */
+export function withUntitledOpening(item: Item): Chapter[] | null {
+  if (item.type !== 'article' || item.chapters.length === 0) return null
+  const [first, ...rest] = item.chapters
+  const firstBlock = item.blocks?.[0]
+  const invented =
+    first.title !== '' &&
+    (first.id === 'ch-intro' || (first.title === 'Introduction' && firstBlock?.kind === 'h1' && firstBlock.chapterId === first.id))
+  return invented ? [{ ...first, title: '' }, ...rest] : null
 }

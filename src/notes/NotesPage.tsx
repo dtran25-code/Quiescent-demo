@@ -50,6 +50,10 @@ function Notes({ item }: { item: Item }) {
     .map((chapter) => ({ chapter, items: list.filter((h) => h.chapterId === chapter.id) }))
     .filter((g) => g.items.length > 0)
   const noteCount = list.filter((h) => h.note.trim()).length
+  const titled = groups.filter((g) => g.chapter.title).length
+  const unit = item.type === 'pdf' ? 'chapter' : 'section'
+  // Cards line up under section headers; with no headers at all they sit flush left.
+  const indent = titled > 0 ? 'pl-9' : ''
   const chapterId = focusChapter ?? groups[0]?.chapter.id ?? item.chapters[0].id
 
   function toggle(chapterId: string) {
@@ -107,7 +111,7 @@ function Notes({ item }: { item: Item }) {
         <div className="mt-3 flex items-center justify-between gap-4">
           <p className="text-sm text-ink-soft">
             {list.length} {list.length === 1 ? 'highlight' : 'highlights'} · {noteCount} {noteCount === 1 ? 'note' : 'notes'}
-            {groups.length > 0 && ` · ${groups.length} ${groups.length === 1 ? 'chapter' : 'chapters'}`}
+            {titled > 0 && ` · ${titled} ${titled === 1 ? unit : `${unit}s`}`}
           </p>
           <button
             onClick={() => setConfirmClear(true)}
@@ -122,7 +126,9 @@ function Notes({ item }: { item: Item }) {
       {highlights !== undefined && groups.length === 0 && (
         <div className="py-20 text-center">
           <p className="font-serif text-xl">A blank page.</p>
-          <p className="mt-2 text-sm text-ink-soft">Highlight passages while reading and your notes will collect here, by chapter.</p>
+          <p className="mt-2 text-sm text-ink-soft">
+            Highlight passages while reading and your notes will collect here{item.type === 'pdf' ? ', by chapter' : ''}.
+          </p>
           <Link to={`/read/${item.id}`} className="btn-primary mt-6">
             <BookOpen size={16} /> Start reading
           </Link>
@@ -131,25 +137,28 @@ function Notes({ item }: { item: Item }) {
 
       <div className="mt-6 space-y-4">
         {groups.map(({ chapter, items }) => {
-          const isOpen = !collapsed.has(chapter.id)
+          // An article's opening section has no title, so its notes show without a header.
+          const isOpen = !chapter.title || !collapsed.has(chapter.id)
           return (
             <section key={chapter.id}>
-              <button
-                onClick={() => toggle(chapter.id)}
-                aria-expanded={isOpen}
-                className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left hover:bg-paper-deep"
-              >
-                <ChevronDown size={16} className={`shrink-0 text-ink-faint transition-transform ${isOpen ? '' : '-rotate-90'}`} />
-                <h2 className="flex-1 font-serif text-lg">{chapter.title}</h2>
-                {chapter.startPage && (
-                  <span className="text-xs text-ink-faint">
-                    {chapter.startPage === chapter.endPage ? `p. ${chapter.startPage}` : `pp. ${chapter.startPage}–${chapter.endPage}`}
-                  </span>
-                )}
-                <span className="rounded-full bg-paper-deep px-2 py-0.5 text-xs tabular-nums text-ink-soft">{items.length}</span>
-              </button>
+              {chapter.title && (
+                <button
+                  onClick={() => toggle(chapter.id)}
+                  aria-expanded={isOpen}
+                  className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left hover:bg-paper-deep"
+                >
+                  <ChevronDown size={16} className={`shrink-0 text-ink-faint transition-transform ${isOpen ? '' : '-rotate-90'}`} />
+                  <h2 className="flex-1 font-serif text-lg">{chapter.title}</h2>
+                  {chapter.startPage && (
+                    <span className="text-xs text-ink-faint">
+                      {chapter.startPage === chapter.endPage ? `p. ${chapter.startPage}` : `pp. ${chapter.startPage}–${chapter.endPage}`}
+                    </span>
+                  )}
+                  <span className="rounded-full bg-paper-deep px-2 py-0.5 text-xs tabular-nums text-ink-soft">{items.length}</span>
+                </button>
+              )}
               {isOpen && (
-                <ul className="mt-2 space-y-3 pl-9">
+                <ul className={`space-y-3 ${chapter.title ? 'mt-2' : ''} ${indent}`}>
                   {items.map((h) => (
                     <NoteCard
                       key={h.id}

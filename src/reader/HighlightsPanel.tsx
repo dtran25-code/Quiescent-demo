@@ -75,9 +75,11 @@ export function HighlightsPanel({
           ) : (
             groups.map(({ chapter, items }) => (
               <section key={chapter.id} className="mb-4">
-                <h3 className="px-2 pb-1.5 pt-2 text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
-                  {chapter.title}
-                </h3>
+                {chapter.title && (
+                  <h3 className="px-2 pb-1.5 pt-2 text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
+                    {chapter.title}
+                  </h3>
+                )}
                 <ul className="space-y-1">
                   {items.map((h) => (
                     <li key={h.id}>

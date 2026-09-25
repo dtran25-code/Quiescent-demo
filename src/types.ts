@@ -5,6 +5,7 @@ export type ItemType = 'article' | 'pdf'
 /** A chapter or section. PDFs: a page range. Articles: a heading. */
 export interface Chapter {
   id: string
+  /** Empty for an article's opening section (the text before its first heading). */
   title: string
   /** Nesting depth: 1 = top level. For articles this mirrors H1/H2/H3. */
   level: number

@@ -19,7 +19,8 @@ export async function buildContext(input: {
   const [text, history] = await Promise.all([chapterText(item, chapter), getChat(item.id)])
   return {
     item: { id: item.id, title: item.title, type: item.type },
-    chapter: { id: chapter.id, title: chapter.title, text },
+    // An article's untitled opening section is called by the article's own title.
+    chapter: { id: chapter.id, title: chapter.title || item.title, text },
     attachment,
     highlights,
     history: history.slice(-MAX_HISTORY),

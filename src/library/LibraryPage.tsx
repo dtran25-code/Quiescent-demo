@@ -83,6 +83,7 @@ function LibraryRow({ item, onDelete }: { item: Item; onDelete: () => void }) {
   const source =
     item.type === 'pdf' ? `PDF · ${item.pageCount} pages` : `Article · ${hostOf(item.sourceUrl) ?? 'pasted text'}`
   const progress = Math.round(item.progress)
+  const sections = item.chapters.filter((c) => c.title).length
 
   return (
     <li className="group flex items-center gap-5 py-5">
@@ -95,7 +96,8 @@ function LibraryRow({ item, onDelete }: { item: Item; onDelete: () => void }) {
           {item.title}
         </Link>
         <p className="mt-0.5 truncate text-xs text-ink-faint">
-          {source} · {item.chapters.length} {item.chapters.length === 1 ? 'section' : 'sections'} · added{' '}
+          {source}
+          {sections > 0 && ` · ${sections} ${sections === 1 ? 'section' : 'sections'}`} · added{' '}
           {new Date(item.addedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
         </p>
         <div className="mt-2.5 flex items-center gap-3">
