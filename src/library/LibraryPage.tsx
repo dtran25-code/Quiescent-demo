@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { BookOpen, FileText, Newspaper, PenLine, Plus, Trash2 } from 'lucide-react'
-import { deleteItem, useItems } from '../storage/db'
+import { addItem, deleteItem, signOut, useItems } from '../storage/db'
+import { Logo } from '../components/Logo'
 import type { Item } from '../types'
 import { ConfirmDialog } from '../components/Modal'
 import { AddDialog } from './AddDialog'
@@ -15,12 +16,19 @@ export function LibraryPage() {
     <div className="mx-auto max-w-3xl px-8 py-14">
       <header className="flex items-end justify-between border-b border-rule pb-6">
         <div>
-          <h1 className="font-serif text-4xl tracking-tight">ReadHub</h1>
-          <p className="mt-1 text-sm text-ink-soft">Your reading notebook</p>
+          <h1>
+            <Logo />
+          </h1>
+          <p className="mt-2 text-sm text-ink-soft">Your reading notebook</p>
         </div>
-        <button className="btn-primary" onClick={() => setAdding(true)}>
-          <Plus size={16} /> Add to library
-        </button>
+        <div className="flex items-center gap-2">
+          <button className="btn-ghost" onClick={() => signOut()}>
+            Sign out
+          </button>
+          <button className="btn-primary" onClick={() => setAdding(true)}>
+            <Plus size={16} /> Add to library
+          </button>
+        </div>
       </header>
 
       {items === undefined ? (
@@ -38,7 +46,15 @@ export function LibraryPage() {
         </ul>
       )}
 
-      {adding && <AddDialog onClose={() => setAdding(false)} />}
+      {adding && (
+        <AddDialog
+          onClose={() => setAdding(false)}
+          onReady={async (item, file) => {
+            await addItem(item, file)
+            setAdding(false)
+          }}
+        />
+      )}
       {toDelete && (
         <ConfirmDialog
           title="Remove from library?"

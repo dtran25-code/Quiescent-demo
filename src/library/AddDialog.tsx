@@ -1,21 +1,33 @@
 import { useRef, useState, type DragEvent } from 'react'
 import { FileUp, Link2, Loader2 } from 'lucide-react'
 import { Modal } from '../components/Modal'
-import { addItem, newId } from '../storage/db'
+import { newId } from '../storage/db'
 import { readPdf } from '../ingest/pdf'
 import { articleFromHtml, articleFromText } from '../ingest/article'
+import type { Item } from '../types'
 
 type Tab = 'pdf' | 'link'
 
-export function AddDialog({ onClose }: { onClose: () => void }) {
+/** Called once the upload has been read and turned into a library item. */
+export type OnReady = (item: Item, file?: Blob) => Promise<void> | void
+
+export function AddDialog({
+  onClose,
+  onReady,
+  title = 'Add to library',
+}: {
+  onClose: () => void
+  onReady: OnReady
+  title?: string
+}) {
   const [tab, setTab] = useState<Tab>('pdf')
   return (
-    <Modal title="Add to library" onClose={onClose} width="max-w-lg">
+    <Modal title={title} onClose={onClose} width="max-w-lg">
       <div className="mb-5 flex gap-1 rounded-lg bg-paper-deep p-1 text-sm">
         <TabButton active={tab === 'pdf'} onClick={() => setTab('pdf')} icon={<FileUp size={15} />} label="Upload PDF" />
         <TabButton active={tab === 'link'} onClick={() => setTab('link')} icon={<Link2 size={15} />} label="Article link" />
       </div>
-      {tab === 'pdf' ? <PdfUpload onDone={onClose} /> : <LinkForm onDone={onClose} />}
+      {tab === 'pdf' ? <PdfUpload onReady={onReady} /> : <LinkForm onReady={onReady} />}
     </Modal>
   )
 }
@@ -35,7 +47,7 @@ function TabButton(props: { active: boolean; onClick: () => void; icon: React.Re
 
 // --- PDF upload ------------------------------------------------------------
 
-function PdfUpload({ onDone }: { onDone: () => void }) {
+function PdfUpload({ onReady }: { onReady: OnReady }) {
   const input = useRef<HTMLInputElement>(null)
   const [dragging, setDragging] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -51,7 +63,7 @@ function PdfUpload({ onDone }: { onDone: () => void }) {
     setError(null)
     try {
       const pdf = await readPdf(file, file.name)
-      await addItem(
+      await onReady(
         {
           id: newId(),
           title: pdf.title,
@@ -64,7 +76,6 @@ function PdfUpload({ onDone }: { onDone: () => void }) {
         },
         file,
       )
-      onDone()
     } catch {
       setError("Couldn't read that PDF. It may be damaged or password-protected.")
       setBusy(false)
@@ -120,7 +131,7 @@ function PdfUpload({ onDone }: { onDone: () => void }) {
 
 // --- Article link ------------------------------------------------------------
 
-function LinkForm({ onDone }: { onDone: () => void }) {
+function LinkForm({ onReady }: { onReady: OnReady }) {
   const [url, setUrl] = useState('')
   const [busy, setBusy] = useState(false)
   const [fetchError, setFetchError] = useState<string | null>(null)
@@ -129,7 +140,7 @@ function LinkForm({ onDone }: { onDone: () => void }) {
   const [text, setText] = useState('')
 
   async function save(article: ReturnType<typeof articleFromText>) {
-    await addItem({
+    await onReady({
       id: newId(),
       title: article.title,
       type: 'article',
@@ -139,7 +150,6 @@ function LinkForm({ onDone }: { onDone: () => void }) {
       chapters: article.chapters,
       blocks: article.blocks,
     })
-    onDone()
   }
 
   async function fetchArticle(e: React.FormEvent) {

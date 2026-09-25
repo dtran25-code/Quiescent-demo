@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
-import { BrowserRouter, Link, Route, Routes, useParams } from 'react-router'
+import { BrowserRouter, Link, Navigate, Outlet, Route, Routes, useParams } from 'react-router'
 import { ArrowLeft } from 'lucide-react'
 import { LibraryPage } from './library/LibraryPage'
+import { LandingPage } from './landing/LandingPage'
+import { LoginPage } from './landing/LoginPage'
 import { seedSamples } from './samples/seed'
-import { useItem } from './storage/db'
+import { useItem, useSession } from './storage/db'
 
 export default function App() {
   const [ready, setReady] = useState(false)
@@ -17,12 +19,32 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<LibraryPage />} />
-        <Route path="/read/:id" element={<ComingSoon view="Reading View" phase={2} />} />
-        <Route path="/notes/:id" element={<ComingSoon view="Notes View" phase={3} />} />
+        <Route element={<SignedOutOnly />}>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+        </Route>
+        <Route element={<SignedInOnly />}>
+          <Route path="/library" element={<LibraryPage />} />
+          <Route path="/read/:id" element={<ComingSoon view="Reading View" phase={2} />} />
+          <Route path="/notes/:id" element={<ComingSoon view="Notes View" phase={3} />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   )
+}
+
+// Mock sign-in gate: the app screens need a (fake) session; the landing and
+// sign-in pages are only for signed-out visitors.
+function SignedInOnly() {
+  const session = useSession()
+  if (session === undefined) return null
+  return session ? <Outlet /> : <Navigate to="/" replace />
+}
+function SignedOutOnly() {
+  const session = useSession()
+  if (session === undefined) return null
+  return session ? <Navigate to="/library" replace /> : <Outlet />
 }
 
 // Placeholder screens until later phases.
@@ -31,7 +53,7 @@ function ComingSoon({ view, phase }: { view: string; phase: number }) {
   const item = useItem(id)
   return (
     <div className="mx-auto max-w-2xl px-8 py-14">
-      <Link to="/" className="btn-ghost -ml-4">
+      <Link to="/library" className="btn-ghost -ml-4">
         <ArrowLeft size={16} /> Library
       </Link>
       <h1 className="mt-6 font-serif text-3xl">{item?.title ?? '…'}</h1>

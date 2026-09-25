@@ -123,3 +123,53 @@ export async function isSeeded() {
 export async function markSeeded() {
   await set('seeded', true)
 }
+
+// --- pending upload (chosen on the landing page, saved after sign-in) --------
+
+export interface PendingUpload {
+  item: Item
+  file?: Blob
+}
+
+export async function setPending(item: Item, file?: Blob) {
+  await set('pending', { item, file } satisfies PendingUpload)
+}
+
+export async function getPending() {
+  return get<PendingUpload>('pending')
+}
+
+/** Move the pending upload into the library (dated now), then forget it. */
+export async function commitPending() {
+  const pending = await getPending()
+  if (!pending) return
+  await addItem({ ...pending.item, addedAt: Date.now() }, pending.file)
+  await del('pending')
+}
+
+// --- mock session ------------------------------------------------------------
+// MOCKUP ONLY: "signing in" just records which button was clicked. There is no
+// real account, password check, or identity provider behind it.
+
+export type SignInMethod = 'google' | 'apple' | 'microsoft' | 'email'
+
+export interface Session {
+  method: SignInMethod
+  email?: string
+  signedInAt: number
+}
+
+export async function signIn(method: SignInMethod, email?: string) {
+  await set('session', { method, email, signedInAt: Date.now() } satisfies Session)
+  notify()
+}
+
+export async function signOut() {
+  await del('session')
+  notify()
+}
+
+/** undefined while loading, null when signed out. */
+export function useSession() {
+  return useStored(async () => (await get<Session>('session')) ?? null, [])
+}
