@@ -36,6 +36,8 @@ export interface Item {
   /** PDFs only. The file itself is stored separately (see storage/db.ts). */
   pageCount?: number
   isSample?: boolean
+  /** Where the reader left off, as a fraction (0–1) of the scrollable length. */
+  lastScroll?: number
 }
 
 /**

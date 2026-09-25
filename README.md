@@ -32,6 +32,7 @@ Saved items stay in the library across sign-outs.
 | Area | Status |
 |---|---|
 | Library, reading view, highlights, notes | Real. Stored in your browser (IndexedDB). |
+| Reading progress | Real. Saved as you scroll; reopening an item resumes where you left off. |
 | PDF upload + chapter detection | Real. Uses the PDF's table of contents, or page ranges if there isn't one. |
 | Article from a link | Fetched by a helper in the local dev server (Mozilla Readability). Only works while `npm run dev` is running. If a site blocks it, paste the article text instead. |
 | AI assistant | **Mocked.** Canned responses after a short delay. No API calls, no cost. |
@@ -39,6 +40,13 @@ Saved items stay in the library across sign-outs.
 | Accounts, sync, mobile layout | Not built. Data lives in one browser on one computer. |
 
 Two sample items (an article and a multi-chapter PDF) load automatically on first run.
+
+## Reading View tips
+
+- Select text to get **Highlight**, **Highlight + note**, and **Ask AI** (Ask AI arrives with the assistant).
+- Click any highlight to reopen its note. Notes save as you type.
+- **Esc** closes the note or toolbar, then leaves the reader. The top bar hides while you read; hover near the top to bring it back.
+- PDF highlights stay within one page.
 
 ## Resetting the demo
 

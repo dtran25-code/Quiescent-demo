@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react'
 import { LibraryPage } from './library/LibraryPage'
 import { LandingPage } from './landing/LandingPage'
 import { LoginPage } from './landing/LoginPage'
+import { ReaderPage } from './reader/ReaderPage'
 import { seedSamples } from './samples/seed'
 import { useItem, useSession } from './storage/db'
 
@@ -25,7 +26,7 @@ export default function App() {
         </Route>
         <Route element={<SignedInOnly />}>
           <Route path="/library" element={<LibraryPage />} />
-          <Route path="/read/:id" element={<ComingSoon view="Reading View" phase={2} />} />
+          <Route path="/read/:id" element={<ReaderPage />} />
           <Route path="/notes/:id" element={<ComingSoon view="Notes View" phase={3} />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

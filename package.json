@@ -8,7 +8,9 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "make-sample-pdf": "tsx scripts/make-sample-pdf.ts"
+    "make-sample-pdf": "tsx scripts/make-sample-pdf.ts",
+    "predev": "node scripts/copy-pdfjs-assets.mjs",
+    "prebuild": "node scripts/copy-pdfjs-assets.mjs"
   },
   "dependencies": {
     "@mozilla/readability": "^0.6.0",

@@ -29,3 +29,6 @@ dist-ssr
 
 # Local Claude Code config
 .claude/
+
+# Copied from pdfjs-dist at dev/build time
+public/pdfjs/
