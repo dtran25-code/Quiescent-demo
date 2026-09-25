@@ -63,53 +63,60 @@ export function HighlightsPanel({
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-3 py-3">
-        {groups.length === 0 ? (
-          <p className="px-2 py-10 text-center text-sm leading-relaxed text-ink-faint">
-            No highlights yet.
-            <br />
-            Select any text to highlight it.
-          </p>
-        ) : (
-          groups.map(({ chapter, items }) => (
-            <section key={chapter.id} className="mb-4">
-              <h3 className="px-2 pb-1.5 pt-2 text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
-                {chapter.title}
-              </h3>
-              <ul className="space-y-1">
-                {items.map((h) => (
-                  <li key={h.id}>
-                    <button
-                      onClick={() => onJump(h)}
-                      className={`w-full rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-paper-deep ${
-                        h.id === activeId ? 'bg-accent-soft' : ''
-                      }`}
-                    >
-                      <p className="line-clamp-2 border-l-2 border-accent/50 pl-2.5 font-serif text-[14px] leading-snug text-ink">
-                        {h.quote}
-                      </p>
-                      {h.note.trim() && (
-                        <p className="mt-1.5 flex gap-1.5 text-[13px] leading-snug text-ink-soft">
-                          <StickyNote size={13} className="mt-0.5 shrink-0 text-accent" />
-                          <span className="line-clamp-2">{h.note}</span>
+      {/* Column layout so the link below can sit inside the leftover space. */}
+      <div className="flex flex-1 flex-col overflow-y-auto px-3 py-3">
+        <div className="shrink-0">
+          {groups.length === 0 ? (
+            <p className="px-2 py-10 text-center text-sm leading-relaxed text-ink-faint">
+              No highlights yet.
+              <br />
+              Select any text to highlight it.
+            </p>
+          ) : (
+            groups.map(({ chapter, items }) => (
+              <section key={chapter.id} className="mb-4">
+                <h3 className="px-2 pb-1.5 pt-2 text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
+                  {chapter.title}
+                </h3>
+                <ul className="space-y-1">
+                  {items.map((h) => (
+                    <li key={h.id}>
+                      <button
+                        onClick={() => onJump(h)}
+                        className={`w-full rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-paper-deep ${
+                          h.id === activeId ? 'bg-accent-soft' : ''
+                        }`}
+                      >
+                        <p className="line-clamp-2 border-l-2 border-accent/50 pl-2.5 font-serif text-[14px] leading-snug text-ink">
+                          {h.quote}
                         </p>
-                      )}
-                      {h.page && <p className="mt-1 text-[11px] text-ink-faint">Page {h.page}</p>}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))
-        )}
-      </div>
+                        {h.note.trim() && (
+                          <p className="mt-1.5 flex gap-1.5 text-[13px] leading-snug text-ink-soft">
+                            <StickyNote size={13} className="mt-0.5 shrink-0 text-accent" />
+                            <span className="line-clamp-2">{h.note}</span>
+                          </p>
+                        )}
+                        {h.page && <p className="mt-1 text-[11px] text-ink-faint">Page {h.page}</p>}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))
+          )}
+        </div>
 
-      <Link
-        to={`/notes/${item.id}`}
-        className="flex items-center justify-center gap-1.5 border-t border-rule px-4 py-3 text-xs font-medium text-ink-soft transition-colors hover:bg-accent-soft hover:text-accent"
-      >
-        <PenLine size={13} /> Open all notes in Notes view <ArrowRight size={13} />
-      </Link>
+        {/* Leftover space is split 3:1 around the link, placing it in the middle of the
+            bottom half. With a long list there's no leftover space and it follows the list. */}
+        <div className="min-h-4 grow-[3]" />
+        <Link
+          to={`/notes/${item.id}`}
+          className="mx-auto flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-rule bg-white/60 px-4 py-2.5 text-xs font-medium text-ink-soft transition-colors hover:border-accent/40 hover:bg-accent-soft hover:text-accent"
+        >
+          <PenLine size={13} /> Open all notes in Notes view <ArrowRight size={13} />
+        </Link>
+        <div className="min-h-2 grow" />
+      </div>
     </aside>
   )
 }
