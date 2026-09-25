@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { BookOpen, FileText, Newspaper, PenLine, Plus, Trash2 } from 'lucide-react'
 import { addItem, deleteItem, signOut, useItems } from '../storage/db'
 import { Logo } from '../components/Logo'
+import { AssistantToggle } from '../ai/Assistant'
 import type { Item } from '../types'
 import { ConfirmDialog } from '../components/Modal'
 import { AddDialog } from './AddDialog'
@@ -22,6 +23,7 @@ export function LibraryPage() {
           <p className="mt-2 text-sm text-ink-soft">Your reading notebook</p>
         </div>
         <div className="flex items-center gap-2">
+          <AssistantToggle />
           <button className="btn-ghost" onClick={() => signOut()}>
             Sign out
           </button>

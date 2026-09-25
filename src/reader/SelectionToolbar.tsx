@@ -6,11 +6,13 @@ export function SelectionToolbar({
   y,
   onHighlight,
   onHighlightNote,
+  onAskAI,
 }: {
   x: number
   y: number
   onHighlight: () => void
   onHighlightNote: () => void
+  onAskAI: () => void
 }) {
   return (
     <div
@@ -24,7 +26,7 @@ export function SelectionToolbar({
       <ToolButton onClick={onHighlight} icon={<Highlighter size={15} />} label="Highlight" />
       <ToolButton onClick={onHighlightNote} icon={<MessageSquarePlus size={15} />} label="Highlight + note" />
       <div className="mx-0.5 h-5 w-px bg-paper/20" />
-      <ToolButton disabled icon={<Sparkles size={15} />} label="Ask AI" title="The AI assistant arrives in Phase 3" />
+      <ToolButton onClick={onAskAI} icon={<Sparkles size={15} />} label="Ask AI" />
     </div>
   )
 }

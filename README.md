@@ -35,7 +35,8 @@ Saved items stay in the library across sign-outs.
 | Reading progress | Real. Saved as you scroll; reopening an item resumes where you left off. |
 | PDF upload + chapter detection | Real. Uses the PDF's table of contents, or page ranges if there isn't one. |
 | Article from a link | Fetched by a helper in the local dev server (Mozilla Readability). Only works while `npm run dev` is running. If a site blocks it, paste the article text instead. |
-| AI assistant | **Mocked.** Canned responses after a short delay. No API calls, no cost. |
+| Notes View | Real. Highlights and notes grouped by chapter, edit/delete, "Go to passage", clear all with a 10-second undo. |
+| AI assistant | **Mocked.** Hand-written answers for the two sample items; answers built from the chapter text and your notes for anything else (marked as demo responses). No API calls, no cost. |
 | Sign-in | **Mocked.** Every option signs in instantly. No real Google/Apple/Microsoft login, no password, no account. |
 | Accounts, sync, mobile layout | Not built. Data lives in one browser on one computer. |
 
@@ -51,6 +52,17 @@ Two sample items (an article and a multi-chapter PDF) load automatically on firs
 - **Margin markers** (small red ticks on the right edge) show where every highlight sits in the document.
   Solid ticks have notes; faint ticks are plain highlights. Click a tick to jump there.
 - PDF highlights stay within one page.
+
+## AI assistant
+
+- The red circle (bottom right) is the assistant. Drag it anywhere; it remembers the spot. Click it to chat.
+- Quick actions: **Explain this** (select text and click **Ask AI**, or use the ✨ button on a note), **Summarize this
+  section**, **Polish my notes**, **Expand this idea**. You can also type a question.
+- Each request includes: the selected passage, the current chapter's text, all your highlights and notes for the item,
+  and the item's conversation history. Nothing from other items (yet).
+- Turn it off with the eye icon in the panel, or the **Assistant on/off** switch in any page header.
+- Code: `src/ai/aiClient.ts` is the single entry point. Live mode (OpenAI via a serverless function) is a marked
+  placeholder there and is not built.
 
 ## Resetting the demo
 

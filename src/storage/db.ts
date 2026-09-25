@@ -83,6 +83,7 @@ export const deleteItem = (id: string) =>
     )
     await del(`file:${id}`)
     await del(`highlights:${id}`)
+    await del(`chat:${id}`)
     notify()
   })
 
@@ -172,4 +173,33 @@ export async function signOut() {
 /** undefined while loading, null when signed out. */
 export function useSession() {
   return useStored(async () => (await get<Session>('session')) ?? null, [])
+}
+
+// --- AI assistant chat history (one conversation per item) --------------------
+
+export interface ChatMessage {
+  id: string
+  role: 'user' | 'assistant'
+  text: string
+  createdAt: number
+}
+
+export async function getChat(itemId: string): Promise<ChatMessage[]> {
+  return (await get<ChatMessage[]>(`chat:${itemId}`)) ?? []
+}
+
+export const appendChat = (itemId: string, message: ChatMessage) =>
+  serial(async () => {
+    await set(`chat:${itemId}`, [...(await getChat(itemId)), message])
+    notify()
+  })
+
+export const clearChat = (itemId: string) =>
+  serial(async () => {
+    await del(`chat:${itemId}`)
+    notify()
+  })
+
+export function useChat(itemId: string | undefined) {
+  return useStored(async () => (itemId ? getChat(itemId) : []), [itemId])
 }

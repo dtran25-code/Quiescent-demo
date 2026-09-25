@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { Maximize2, Minimize2, X } from 'lucide-react'
 import { getFile, newId, updateHighlights, updateItem, useHighlights, useItem } from '../storage/db'
 import type { Chapter, Highlight, Item } from '../types'
@@ -9,6 +9,8 @@ import { PdfView } from './PdfView'
 import { SelectionToolbar } from './SelectionToolbar'
 import { NotePopover } from './NotePopover'
 import { HighlightsButton, HighlightsPanel, MarginMarkers, type Marker } from './HighlightsPanel'
+import { Assistant, AssistantToggle } from '../ai/Assistant'
+import type { Attachment } from '../ai/types'
 
 const NO_HIGHLIGHTS: Highlight[] = []
 
@@ -42,7 +44,11 @@ interface ToolbarState {
 
 function Reader({ item }: { item: Item }) {
   const navigate = useNavigate()
-  const highlights = useHighlights(item.id) ?? NO_HIGHLIGHTS
+  const loadedHighlights = useHighlights(item.id)
+  const highlights = loadedHighlights ?? NO_HIGHLIGHTS
+  // "Go to passage" from the Notes View arrives as /read/:id?hl=<highlight id>
+  const [params, setParams] = useSearchParams()
+  const targetId = params.get('hl')
   const [file, setFile] = useState<Blob | null>(null)
   // The scrolling element: kept as state (so effects re-run once it exists) and as a ref (for writes).
   const [scroller, setScrollerState] = useState<HTMLElement | null>(null)
@@ -52,7 +58,11 @@ function Reader({ item }: { item: Item }) {
     setScrollerState(el)
   }, [])
   const content = useRef<HTMLDivElement>(null)
-  const [position, setPosition] = useState({ label: '', chapter: '' })
+  const [position, setPosition] = useState<{ label: string; chapter: string; chapterId: string | null }>({
+    label: '',
+    chapter: '',
+    chapterId: null,
+  })
   const [atTop, setAtTop] = useState(true)
   const [toolbar, setToolbar] = useState<ToolbarState | null>(null)
   const [note, setNote] = useState<{ id: string; x: number; y: number } | null>(null)
@@ -60,6 +70,9 @@ function Reader({ item }: { item: Item }) {
   const [pulseId, setPulseId] = useState<string | null>(null)
   const [markers, setMarkers] = useState<Marker[]>([])
   const [scrollbar, setScrollbar] = useState(0)
+  const [layoutReady, setLayoutReady] = useState(false)
+  const [attachment, setAttachment] = useState<Attachment | null>(null)
+  const [assistantSignal, setAssistantSignal] = useState(0)
   const fullscreen = useFullscreen()
   const restored = useRef(false)
 
@@ -72,9 +85,11 @@ function Reader({ item }: { item: Item }) {
   const restore = useCallback(() => {
     const el = scrollerRef.current
     if (!el || restored.current) return
-    el.scrollTop = (item.lastScroll ?? 0) * (el.scrollHeight - el.clientHeight)
+    // When opened to a specific passage, the jump below handles scrolling instead.
+    if (!targetId) el.scrollTop = (item.lastScroll ?? 0) * (el.scrollHeight - el.clientHeight)
     restored.current = true
-  }, [item.lastScroll])
+    setLayoutReady(true)
+  }, [item.lastScroll, targetId])
 
   // Articles are laid out immediately; PDFs call restore() once their pages are sized.
   useLayoutEffect(() => {
@@ -115,7 +130,10 @@ function Reader({ item }: { item: Item }) {
   }, [scroller, item.id, item.type])
 
   const onPdfPosition = useCallback(
-    (label: string, page: number) => setPosition({ label, chapter: chapterForPage(item.chapters, page)?.title ?? '' }),
+    (label: string, page: number) => {
+      const chapter = chapterForPage(item.chapters, page)
+      setPosition({ label, chapter: chapter?.title ?? '', chapterId: chapter?.id ?? null })
+    },
     [item.chapters],
   )
 
@@ -146,13 +164,16 @@ function Reader({ item }: { item: Item }) {
     setNote({ id: mark.dataset.hl!, ...placeFrom(mark.getBoundingClientRect(), content.current.getBoundingClientRect()) })
   }
 
+  function chapterOf(anchor: SelectionAnchor) {
+    return item.type === 'pdf'
+      ? (chapterForPage(item.chapters, anchor.page ?? 1)?.id ?? item.chapters[0].id)
+      : (item.blocks?.[anchor.start.k]?.chapterId ?? item.chapters[0].id)
+  }
+
   function createHighlight(withNote: boolean) {
     if (!toolbar) return
     const { anchor } = toolbar
-    const chapterId =
-      item.type === 'pdf'
-        ? (chapterForPage(item.chapters, anchor.page ?? 1)?.id ?? item.chapters[0].id)
-        : (item.blocks?.[anchor.start.k]?.chapterId ?? item.chapters[0].id)
+    const chapterId = chapterOf(anchor)
     const now = Date.now()
     const hl: Highlight = {
       id: newId(),
@@ -192,6 +213,25 @@ function Reader({ item }: { item: Item }) {
     if (h.note.trim()) {
       setNote({ id: h.id, ...placeFrom(mark.getBoundingClientRect(), box.getBoundingClientRect()) })
     } else setNote(null)
+  }
+
+  // Arriving from "Go to passage": jump once the page and highlights are ready.
+  useEffect(() => {
+    if (!targetId || !layoutReady || loadedHighlights === undefined) return
+    const target = loadedHighlights.find((h) => h.id === targetId)
+    setParams({}, { replace: true })
+    if (target) jumpTo(target)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targetId, layoutReady, loadedHighlights])
+
+  // --- AI assistant ---------------------------------------------------------------
+
+  function askAI() {
+    if (!toolbar) return
+    setAttachment({ kind: 'selection', text: toolbar.anchor.quote, chapterId: chapterOf(toolbar.anchor) })
+    setAssistantSignal((n) => n + 1)
+    window.getSelection()?.removeAllRanges()
+    setToolbar(null)
   }
 
   // --- margin markers: where each highlight sits in the whole document --------
@@ -283,6 +323,7 @@ function Reader({ item }: { item: Item }) {
           <p className="truncate font-serif text-[15px] text-ink">{item.title}</p>
           {position.chapter && <p className="truncate text-xs text-ink-faint">{position.chapter}</p>}
         </div>
+        <AssistantToggle />
         <button
           onClick={fullscreen.toggle}
           className="icon-btn"
@@ -352,8 +393,18 @@ function Reader({ item }: { item: Item }) {
           y={toolbar.y}
           onHighlight={() => createHighlight(false)}
           onHighlightNote={() => createHighlight(true)}
+          onAskAI={askAI}
         />
       )}
+
+      <Assistant
+        item={item}
+        highlights={highlights}
+        chapterId={position.chapterId}
+        attachment={attachment}
+        onClearAttachment={() => setAttachment(null)}
+        openSignal={assistantSignal}
+      />
     </div>
   )
 }
@@ -400,7 +451,11 @@ function articlePosition(scroller: HTMLElement, chapters: Chapter[]) {
       if (idx >= 0) current = idx
     }
   })
-  return { label: `${current + 1} / ${chapters.length}`, chapter: chapters[current]?.title ?? '' }
+  return {
+    label: `${current + 1} / ${chapters.length}`,
+    chapter: chapters[current]?.title ?? '',
+    chapterId: chapters[current]?.id ?? null,
+  }
 }
 
 function useFullscreen() {
