@@ -26,3 +26,6 @@ dist-ssr
 # Secrets: never commit API keys
 .env
 .env.*
+
+# Local Claude Code config
+.claude/
