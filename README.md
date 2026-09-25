@@ -56,7 +56,8 @@ Two sample items (an article and a multi-chapter PDF) load automatically on firs
 ## AI assistant
 
 - The red circle (bottom right) is the assistant. Drag it anywhere; it remembers the spot. Click it to chat.
-- Quick actions: **Explain this** (select text and click **Ask AI**, or use the ✨ button on a note), **Summarize this
+- Quick actions: **Explain this** (select text and click **Ask AI**, click **Ask AI** in a highlight's note window,
+  or use the ✨ button on a Notes View card), **Summarize this
   section**, **Polish my notes**, **Expand this idea**. You can also type a question.
 - Each request includes: the selected passage, the current chapter's text, all your highlights and notes for the item,
   and the item's conversation history. Nothing from other items (yet).

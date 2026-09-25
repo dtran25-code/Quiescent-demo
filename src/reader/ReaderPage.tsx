@@ -357,7 +357,27 @@ function Reader({ item }: { item: Item }) {
             />
           ) : null}
 
-          {openNote && note && <NotePopover key={openNote.id} highlight={openNote} x={note.x} y={note.y} onClose={closeNote} />}
+          {openNote && note && (
+            <NotePopover
+              key={openNote.id}
+              highlight={openNote}
+              x={note.x}
+              y={note.y}
+              onClose={closeNote}
+              onAskAI={(noteText) => {
+                // Same as the ✨ button on a Notes View card.
+                setAttachment({
+                  kind: 'note',
+                  text: openNote.quote,
+                  note: noteText,
+                  highlightId: openNote.id,
+                  chapterId: openNote.chapterId,
+                })
+                setAssistantSignal((n) => n + 1)
+                setNote(null)
+              }}
+            />
+          )}
         </div>
       </main>
 

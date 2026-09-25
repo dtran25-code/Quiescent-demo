@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Check, Trash2, X } from 'lucide-react'
+import { Check, Sparkles, Trash2, X } from 'lucide-react'
 import { updateHighlights } from '../storage/db'
 import type { Highlight } from '../types'
 
@@ -14,11 +14,14 @@ export function NotePopover({
   x,
   y,
   onClose,
+  onAskAI,
 }: {
   highlight: Highlight
   x: number
   y: number
   onClose: () => void
+  /** Point the AI assistant at this highlight, with the note as currently typed. */
+  onAskAI: (note: string) => void
 }) {
   const [text, setText] = useState(highlight.note)
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
@@ -94,6 +97,13 @@ export function NotePopover({
           <Trash2 size={13} /> Remove highlight
         </button>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => onAskAI(text)}
+            className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-accent hover:bg-accent-soft"
+            title="Ask the AI assistant about this highlight"
+          >
+            <Sparkles size={13} /> Ask AI
+          </button>
           <span className="text-xs text-ink-faint" aria-live="polite">
             {status === 'saving' ? 'Saving…' : status === 'saved' ? (
               <span className="inline-flex items-center gap-1"><Check size={12} /> Saved</span>

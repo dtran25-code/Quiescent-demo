@@ -251,7 +251,8 @@ function ChatPanel({
 
       {/* What the assistant can see */}
       <div className="border-b border-rule bg-paper px-4 py-2 text-[11px] text-ink-soft">
-        Context: <span className="font-medium text-ink">{chapter.title}</span> · {highlights.length} highlights ·{' '}
+        Context: <span className="font-medium text-ink">{chapter.title}</span> · {highlights.length}{' '}
+        {highlights.length === 1 ? 'highlight' : 'highlights'} ·{' '}
         {chapterNotes} {chapterNotes === 1 ? 'note' : 'notes'} in this section
       </div>
 
