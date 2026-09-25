@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "make-sample-pdf": "tsx scripts/make-sample-pdf.ts"
   },
   "dependencies": {
     "@mozilla/readability": "^0.6.0",
