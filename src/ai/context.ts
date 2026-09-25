@@ -1,9 +1,11 @@
 // Assembles the context sent with every assistant request.
 
-import { getChat, getFile } from '../storage/db'
+import { getChat, getFile, getNotesDoc } from '../storage/db'
 import { pdfjs } from '../ingest/pdfSetup'
 import type { Chapter, Highlight, Item } from '../types'
 import type { AIContext, Attachment } from './types'
+import { typedTextByChapter } from '../notes/notesDoc'
+import type { JSONContent } from '@tiptap/core'
 
 const MAX_PDF_PAGES = 30
 const MAX_HISTORY = 20
@@ -16,13 +18,15 @@ export async function buildContext(input: {
 }): Promise<AIContext> {
   const { item, attachment, highlights } = input
   const chapter = item.chapters.find((c) => c.id === input.chapterId) ?? item.chapters[0]
-  const [text, history] = await Promise.all([chapterText(item, chapter), getChat(item.id)])
+  const [text, history, page] = await Promise.all([chapterText(item, chapter), getChat(item.id), getNotesDoc(item.id)])
+  const pageNotes = page ? (typedTextByChapter(page.doc as JSONContent, item).get(chapter.id) ?? []) : []
   return {
     item: { id: item.id, title: item.title, type: item.type },
     // An article's untitled opening section is called by the article's own title.
     chapter: { id: chapter.id, title: chapter.title || item.title, text },
     attachment,
     highlights,
+    pageNotes,
     history: history.slice(-MAX_HISTORY),
   }
 }

@@ -50,6 +50,7 @@ export function Outline({ editor }: { editor: Editor }) {
     if (!dom) return
     window.scrollTo({ top: dom.getBoundingClientRect().top + window.scrollY - 90, behavior: 'smooth' })
     editor.commands.setTextSelection(e.pos + 1)
+    setActive(e.pos)
   }
 
   return (

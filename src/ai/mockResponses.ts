@@ -76,22 +76,26 @@ function summarize(ctx: AIContext, script?: SampleScript) {
 
 function polish(ctx: AIContext, script?: SampleScript) {
   const notes = inChapter(ctx).filter((h) => h.note.trim())
-  if (notes.length === 0) {
-    return `You haven't written any notes in **${ctx.chapter.title}** yet. Highlight a passage and choose **Highlight + note**, then ask me again.`
+  const typed = ctx.pageNotes
+  if (notes.length === 0 && typed.length === 0) {
+    return `You haven't written any notes in **${ctx.chapter.title}** yet. Type on the Notes page, or highlight a passage and choose **Highlight + note**, then ask me again.`
   }
   const seen = new Set<string>()
-  const cleaned = notes
-    .map((h) => ({ note: tidy(h.note), quote: h.quote }))
+  const cleaned = [
+    ...typed.map((t) => ({ note: tidy(t), quote: '' })),
+    ...notes.map((h) => ({ note: tidy(h.note), quote: h.quote })),
+  ]
     .filter(({ note }) => {
       const k = note.toLowerCase()
       if (seen.has(k)) return false
       seen.add(k)
       return true
     })
-  const lines = cleaned.map(({ note, quote }) => `- ${note}  \n  _on “${shorten(quote, 70)}”_`)
+  const lines = cleaned.map(({ note, quote }) => (quote ? `- ${note}  \n  _on “${shorten(quote, 70)}”_` : `- ${note}`))
+  const total = cleaned.length
   const takeaway = script?.takeaways[ctx.chapter.id]
   return [
-    `**Your notes on ${ctx.chapter.title}, cleaned up** (${notes.length} ${notes.length === 1 ? 'note' : 'notes'}):`,
+    `**Your notes on ${ctx.chapter.title}, cleaned up** (${total} ${total === 1 ? 'note' : 'notes'}):`,
     lines.join('\n'),
     takeaway ? `**One-line takeaway:** ${takeaway}` : '',
   ]
@@ -144,11 +148,11 @@ function chat(message: string, ctx: AIContext, script?: SampleScript) {
   const topical = script && bestMatch(message, script.explain)
   if (topical) return `Here's how the text handles that:\n\n${topical}`
 
-  const notes = inChapter(ctx).filter((h) => h.note.trim())
+  const notes = [...ctx.pageNotes, ...inChapter(ctx).filter((h) => h.note.trim()).map((h) => h.note)]
   const lead = script?.takeaways[ctx.chapter.id] ?? keySentences(ctx.chapter.text, 1)[0]
   return [
     `Good question. You're in **${ctx.chapter.title}**${lead ? `, whose main point is: ${stripMarkdown(lead)}` : '.'}`,
-    notes.length ? `Your notes here focus on: “${shorten(tidy(notes[notes.length - 1].note), 100)}”` : '',
+    notes.length ? `Your notes here focus on: “${shorten(tidy(notes[notes.length - 1]), 100)}”` : '',
     'I can **explain** a passage you select, **summarize** this section, **polish** your notes, or **expand** an idea into connections and follow-up questions.',
   ]
     .filter(Boolean)

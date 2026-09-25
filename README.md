@@ -35,7 +35,7 @@ Saved items stay in the library across sign-outs.
 | Reading progress | Real. Saved as you scroll; reopening an item resumes where you left off. |
 | PDF upload + chapter detection | Real. Uses the PDF's table of contents, or page ranges if there isn't one. |
 | Article from a link | Fetched by a helper in the local dev server (Mozilla Readability). Only works while `npm run dev` is running. If a site blocks it, paste the article text instead. |
-| Notes View | Real. Highlights and notes grouped by chapter, edit/delete, "Go to passage", clear all with a 10-second undo. |
+| Notes View | Real. A Word-like page per item: type anything, format it, and jump around with the outline. Highlights appear as linked cards. |
 | AI assistant | **Mocked.** Hand-written answers for the two sample items; answers built from the chapter text and your notes for anything else (marked as demo responses). No API calls, no cost. |
 | Sign-in | **Mocked.** Every option signs in instantly. No real Google/Apple/Microsoft login, no password, no account. |
 | Accounts, sync, mobile layout | Not built. Data lives in one browser on one computer. |
@@ -53,6 +53,19 @@ Two sample items (an article and a multi-chapter PDF) load automatically on firs
   Solid ticks have notes; faint ticks are plain highlights. Click a tick to jump there.
 - PDF highlights stay within one page.
 
+## Notes View (your notes page)
+
+- Each item has its own page. The first time you open it, it fills itself with your highlights and notes,
+  grouped under chapter headings. After that it's yours: type anywhere, use the toolbar (headings, bold,
+  italic, underline, lists, quotes, undo/redo), and it autosaves.
+- **Highlight cards** stay linked to the Reading View. Click a card to open that passage; edit its note with
+  the pencil (it updates in both places). **✕** removes the card from the page only.
+- New highlights you make later are filed at the end of their chapter's section automatically.
+- **Insert highlight** puts any highlight (back) on the page at the cursor.
+- **Outline** (left side, on wider screens) lists your headings; click one to jump to it.
+- **Clear all notes** empties the page (with 10 seconds to undo). Highlights in the Reading View are not affected,
+  and cleared ones don't come back on their own.
+
 ## AI assistant
 
 - The red circle (bottom right) is the assistant. Drag it anywhere; it remembers the spot. Click it to chat.
@@ -60,7 +73,7 @@ Two sample items (an article and a multi-chapter PDF) load automatically on firs
   or use the ✨ button on a Notes View card), **Summarize this
   section**, **Polish my notes**, **Expand this idea**. You can also type a question.
 - Each request includes: the selected passage, the current chapter's text, all your highlights and notes for the item,
-  and the item's conversation history. Nothing from other items (yet).
+  what you typed on the Notes page for that section, and the item's conversation history. Nothing from other items (yet).
 - Turn it off with the eye icon in the panel, or the **Assistant on/off** switch in any page header.
 - Code: `src/ai/aiClient.ts` is the single entry point. Live mode (OpenAI via a serverless function) is a marked
   placeholder there and is not built.

@@ -27,6 +27,8 @@ export interface AIContext {
   attachment: Attachment | null
   /** All of the user's highlights and notes for this item. */
   highlights: Highlight[]
+  /** What the user typed on the Notes page in this chapter's section (paragraphs and list items). */
+  pageNotes: string[]
   /** Earlier messages in this item's conversation (most recent last). */
   history: ChatMessage[]
 }

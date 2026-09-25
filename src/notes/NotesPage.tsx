@@ -143,7 +143,8 @@ function Notes({ item, highlights, stored }: { item: Item; highlights: Highlight
 
   return (
     <NotesContext.Provider value={context}>
-      <div className="mx-auto max-w-6xl px-8 pb-32 pt-10">
+      {/* Extra room below the page so the outline can bring any heading to the top. */}
+      <div className="mx-auto max-w-6xl px-8 pb-[60vh] pt-10">
         <header className="mb-8">
           <div className="flex items-center justify-between">
             <Link to="/library" className="btn-ghost -ml-4">
