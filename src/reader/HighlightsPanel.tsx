@@ -1,4 +1,5 @@
-import { Highlighter, StickyNote, X } from 'lucide-react'
+import { Link } from 'react-router'
+import { ArrowRight, Highlighter, PenLine, StickyNote, X } from 'lucide-react'
 import type { Highlight, Item } from '../types'
 import { byReadingOrder } from './anchors'
 
@@ -102,6 +103,13 @@ export function HighlightsPanel({
           ))
         )}
       </div>
+
+      <Link
+        to={`/notes/${item.id}`}
+        className="flex items-center justify-center gap-1.5 border-t border-rule px-4 py-3 text-xs font-medium text-ink-soft transition-colors hover:bg-accent-soft hover:text-accent"
+      >
+        <PenLine size={13} /> Open all notes in Notes view <ArrowRight size={13} />
+      </Link>
     </aside>
   )
 }
