@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { Check, Sparkles, Trash2, X } from 'lucide-react'
+import { Link } from 'react-router'
+import { ArrowRight, Check, PenLine, Sparkles, Trash2, X } from 'lucide-react'
 import { updateHighlights } from '../storage/db'
 import type { Highlight } from '../types'
 
@@ -114,6 +115,13 @@ export function NotePopover({
           </button>
         </div>
       </div>
+      {/* Leaving unmounts this window, which saves any note still being typed. */}
+      <Link
+        to={`/notes/${highlight.itemId}`}
+        className="flex items-center justify-center gap-1.5 rounded-b-xl border-t border-rule bg-paper px-4 py-2 text-xs font-medium text-ink-soft transition-colors hover:bg-accent-soft hover:text-accent"
+      >
+        <PenLine size={13} /> Open all notes in Notes view <ArrowRight size={13} />
+      </Link>
     </div>
   )
 }
