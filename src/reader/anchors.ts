@@ -127,6 +127,6 @@ export function segmentsFor(k: number, text: string, highlights: Highlight[]): S
   return out
 }
 
-export function markClass(h: Highlight, activeId: string | null) {
-  return `rh-mark${h.note.trim() ? ' has-note' : ''}${h.id === activeId ? ' active' : ''}`
+export function markClass(h: Highlight, activeId: string | null, pulseId: string | null = null) {
+  return `rh-mark${h.note.trim() ? ' has-note' : ''}${h.id === activeId ? ' active' : ''}${h.id === pulseId ? ' pulse' : ''}`
 }

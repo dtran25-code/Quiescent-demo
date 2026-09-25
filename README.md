@@ -46,6 +46,10 @@ Two sample items (an article and a multi-chapter PDF) load automatically on firs
 - Select text to get **Highlight**, **Highlight + note**, and **Ask AI** (Ask AI arrives with the assistant).
 - Click any highlight to reopen its note. Notes save as you type.
 - **Esc** closes the note or toolbar, then leaves the reader. The top bar hides while you read; hover near the top to bring it back.
+- The **highlighter button** on the right edge shows how many highlights the item has. It opens a panel listing
+  them by chapter; click one to jump to it (it pulses, and its note opens).
+- **Margin markers** (small red ticks on the right edge) show where every highlight sits in the document.
+  Solid ticks have notes; faint ticks are plain highlights. Click a tick to jump there.
 - PDF highlights stay within one page.
 
 ## Resetting the demo

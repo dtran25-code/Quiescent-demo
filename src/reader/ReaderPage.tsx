@@ -8,6 +8,7 @@ import { ArticleView } from './ArticleView'
 import { PdfView } from './PdfView'
 import { SelectionToolbar } from './SelectionToolbar'
 import { NotePopover } from './NotePopover'
+import { HighlightsButton, HighlightsPanel, MarginMarkers, type Marker } from './HighlightsPanel'
 
 const NO_HIGHLIGHTS: Highlight[] = []
 
@@ -55,6 +56,10 @@ function Reader({ item }: { item: Item }) {
   const [atTop, setAtTop] = useState(true)
   const [toolbar, setToolbar] = useState<ToolbarState | null>(null)
   const [note, setNote] = useState<{ id: string; x: number; y: number } | null>(null)
+  const [panelOpen, setPanelOpen] = useState(false)
+  const [pulseId, setPulseId] = useState<string | null>(null)
+  const [markers, setMarkers] = useState<Marker[]>([])
+  const [scrollbar, setScrollbar] = useState(0)
   const fullscreen = useFullscreen()
   const restored = useRef(false)
 
@@ -167,6 +172,83 @@ function Reader({ item }: { item: Item }) {
     if (withNote) setNote({ id: hl.id, x: toolbar.noteX, y: toolbar.noteY })
   }
 
+  // --- jumping to a highlight (from the side panel or a margin marker) --------
+
+  async function jumpTo(h: Highlight) {
+    const el = scrollerRef.current
+    const box = content.current
+    if (!el || !box) return
+    const find = () => box.querySelector<HTMLElement>(`mark[data-hl="${h.id}"]`)
+    // PDF pages far away aren't drawn yet: go to the page first, then wait for it.
+    if (!find() && h.page) {
+      const page = box.querySelector(`[data-page="${h.page}"]`)
+      if (page) el.scrollTop += page.getBoundingClientRect().top - el.getBoundingClientRect().top - 60
+    }
+    const mark = await waitFor(find, 4000)
+    if (!mark) return
+    el.scrollTop += mark.getBoundingClientRect().top - el.getBoundingClientRect().top - el.clientHeight * 0.3
+    setPulseId(h.id)
+    window.setTimeout(() => setPulseId((p) => (p === h.id ? null : p)), 1800)
+    if (h.note.trim()) {
+      setNote({ id: h.id, ...placeFrom(mark.getBoundingClientRect(), box.getBoundingClientRect()) })
+    } else setNote(null)
+  }
+
+  // --- margin markers: where each highlight sits in the whole document --------
+
+  const highlightsRef = useRef(highlights)
+  useEffect(() => {
+    highlightsRef.current = highlights
+  }, [highlights])
+
+  const measure = useCallback(() => {
+    const el = scrollerRef.current
+    const box = content.current
+    if (!el || !box) return
+    setScrollbar(el.offsetWidth - el.clientWidth)
+    const total = box.scrollHeight
+    if (!total) return
+    const top = box.getBoundingClientRect().top
+    const next: Marker[] = []
+    for (const h of highlightsRef.current) {
+      const mark = box.querySelector(`mark[data-hl="${h.id}"]`)
+      let y: number | null = null
+      if (mark) y = mark.getBoundingClientRect().top - top
+      else if (h.page) {
+        // Page not drawn right now: place the marker on its page.
+        const page = box.querySelector(`[data-page="${h.page}"]`)?.getBoundingClientRect()
+        if (page) y = page.top - top + page.height * 0.4
+      }
+      if (y !== null) next.push({ highlight: h, at: Math.min(1, Math.max(0, y / total)) })
+    }
+    setMarkers(next)
+  }, [])
+
+  // Re-measure when highlights change, the layout changes size, or (lightly) after scrolling.
+  useEffect(() => {
+    const id = requestAnimationFrame(measure)
+    return () => cancelAnimationFrame(id)
+  }, [highlights, measure])
+
+  useEffect(() => {
+    const box = content.current
+    if (!scroller || !box) return
+    const ro = new ResizeObserver(() => measure())
+    ro.observe(box)
+    ro.observe(scroller)
+    let timer: number | undefined
+    const onScroll = () => {
+      window.clearTimeout(timer)
+      timer = window.setTimeout(measure, 250)
+    }
+    scroller.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      ro.disconnect()
+      scroller.removeEventListener('scroll', onScroll)
+      window.clearTimeout(timer)
+    }
+  }, [scroller, measure])
+
   // --- keyboard: Esc closes the innermost thing, then leaves the reader -------
 
   useEffect(() => {
@@ -176,11 +258,12 @@ function Reader({ item }: { item: Item }) {
       else if (toolbar) {
         window.getSelection()?.removeAllRanges()
         setToolbar(null)
-      } else if (!document.fullscreenElement) navigate('/library')
+      } else if (panelOpen) setPanelOpen(false)
+      else if (!document.fullscreenElement) navigate('/library')
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [note, toolbar, navigate])
+  }, [note, toolbar, panelOpen, navigate])
 
   const openNote = note ? highlights.find((h) => h.id === note.id) : undefined
   const closeNote = useCallback(() => setNote(null), [])
@@ -210,15 +293,23 @@ function Reader({ item }: { item: Item }) {
         </button>
       </header>
 
-      <main ref={setScroller} className="h-full overflow-y-auto" onMouseUp={onMouseUp} onClick={onClick}>
+      {/* When the highlights panel is open, the page narrows so nothing is hidden behind it. */}
+      <main
+        ref={setScroller}
+        className="absolute inset-y-0 left-0 overflow-y-auto"
+        style={{ right: panelOpen ? PANEL_WIDTH : 0 }}
+        onMouseUp={onMouseUp}
+        onClick={onClick}
+      >
         <div ref={content} className="relative">
           {item.type === 'article' ? (
-            <ArticleView item={item} highlights={highlights} activeId={note?.id ?? null} />
+            <ArticleView item={item} highlights={highlights} activeId={note?.id ?? null} pulseId={pulseId} />
           ) : file ? (
             <PdfView
               file={file}
               highlights={highlights}
               activeId={note?.id ?? null}
+              pulseId={pulseId}
               scroller={scroller}
               onPosition={onPdfPosition}
               onReady={restore}
@@ -232,12 +323,27 @@ function Reader({ item }: { item: Item }) {
       {/* Position stays visible while reading. */}
       {position.label && (
         <div
-          className="pointer-events-none absolute bottom-4 right-6 z-20 rounded-full bg-paper/90 px-3 py-1 text-xs tabular-nums text-ink-faint"
+          className="pointer-events-none absolute bottom-4 z-20 -translate-x-1/2 rounded-full bg-paper/90 px-3 py-1 text-xs tabular-nums text-ink-faint"
+          style={{ left: panelOpen ? `calc((100% - ${PANEL_WIDTH}px) / 2)` : '50%' }}
           title={item.type === 'pdf' ? 'Page' : 'Section'}
         >
           {item.type === 'pdf' ? 'Page ' : 'Section '}
           {position.label}
         </div>
+      )}
+
+      {/* Where your highlights are: margin ticks, a button, and a side panel. */}
+      <MarginMarkers markers={markers} right={scrollbar + 3} onJump={jumpTo} />
+      {panelOpen ? (
+        <HighlightsPanel
+          item={item}
+          highlights={highlights}
+          activeId={note?.id ?? pulseId}
+          onJump={jumpTo}
+          onClose={() => setPanelOpen(false)}
+        />
+      ) : (
+        <HighlightsButton count={highlights.length} right={scrollbar + 22} onClick={() => setPanelOpen(true)} />
       )}
 
       {toolbar && (
@@ -254,7 +360,21 @@ function Reader({ item }: { item: Item }) {
 
 // --- helpers -------------------------------------------------------------------
 
+/** Poll until `get` returns something (e.g. a PDF page finishes drawing), or give up. */
+function waitFor<T>(get: () => T | null, timeout: number): Promise<T | null> {
+  return new Promise((resolve) => {
+    const started = Date.now()
+    const tick = () => {
+      const v = get()
+      if (v || Date.now() - started > timeout) resolve(v)
+      else window.setTimeout(tick, 60)
+    }
+    tick()
+  })
+}
+
 const NOTE_WIDTH = 352
+const PANEL_WIDTH = 352 // matches w-[22rem] in HighlightsPanel
 
 /** Place a note window just under a rectangle, in content coordinates, kept on screen. */
 function placeFrom(rect: DOMRect, box: DOMRect) {

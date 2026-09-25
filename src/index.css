@@ -80,3 +80,19 @@ body {
 .react-pdf__Page .textLayer ::selection {
   background: rgb(166 75 79 / 0.25);
 }
+
+/* Brief pulse when jumping to a highlight */
+@keyframes rh-pulse {
+  0%, 100% { background-color: var(--color-highlight); }
+  25%, 65% { background-color: #e8a290; }
+}
+@keyframes rh-pulse-pdf {
+  0%, 100% { background-color: rgb(214 120 100 / 0.32); }
+  25%, 65% { background-color: rgb(200 90 70 / 0.6); }
+}
+.rh-mark.pulse {
+  animation: rh-pulse 1.6s ease-in-out;
+}
+.textLayer .rh-mark.pulse {
+  animation-name: rh-pulse-pdf;
+}

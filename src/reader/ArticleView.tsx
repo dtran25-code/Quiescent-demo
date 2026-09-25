@@ -7,10 +7,12 @@ export const ArticleView = memo(function ArticleView({
   item,
   highlights,
   activeId,
+  pulseId,
 }: {
   item: Item
   highlights: Highlight[]
   activeId: string | null
+  pulseId: string | null
 }) {
   const blocks = item.blocks ?? []
   const firstIsTitle = blocks[0]?.kind === 'h1'
@@ -22,7 +24,7 @@ export const ArticleView = memo(function ArticleView({
         <Block key={k} k={k} block={b} isFirstOfChapter={k === 0 || blocks[k - 1].chapterId !== b.chapterId}>
           {segmentsFor(k, b.text, highlights).map((seg, i) =>
             seg.hl ? (
-              <mark key={i} data-hl={seg.hl.id} className={markClass(seg.hl, activeId)}>
+              <mark key={i} data-hl={seg.hl.id} className={markClass(seg.hl, activeId, pulseId)}>
                 {seg.text}
               </mark>
             ) : (

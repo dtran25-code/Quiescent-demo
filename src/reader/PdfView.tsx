@@ -30,6 +30,7 @@ export function PdfView({
   file,
   highlights,
   activeId,
+  pulseId,
   scroller,
   onPosition,
   onReady,
@@ -37,6 +38,7 @@ export function PdfView({
   file: Blob
   highlights: Highlight[]
   activeId: string | null
+  pulseId: string | null
   scroller: HTMLElement | null
   onPosition: (label: string, page: number) => void
   onReady: () => void
@@ -104,7 +106,7 @@ export function PdfView({
     }
   }, [layout, onReady])
 
-  const renderers = useTextRenderers(highlights, activeId)
+  const renderers = useTextRenderers(highlights, activeId, pulseId)
 
   const onLoad = useCallback(async (pdf: { numPages: number; getPage: (n: number) => Promise<{ getViewport: (o: { scale: number }) => { width: number; height: number } }> }) => {
     const pages = await Promise.all(Array.from({ length: pdf.numPages }, (_, i) => pdf.getPage(i + 1)))
@@ -163,20 +165,20 @@ export function PdfView({
  * Functions are reused while a page's highlights are unchanged, so pages don't
  * redraw needlessly.
  */
-function useTextRenderers(highlights: Highlight[], activeId: string | null) {
+function useTextRenderers(highlights: Highlight[], activeId: string | null, pulseId: string | null) {
   const cache = useRef(new Map<number, { key: string; fn: CustomTextRenderer }>())
   return useCallback(
     (page: number) => {
       const hs = highlights.filter((h) => h.page === page)
       const key = hs
-        .map((h) => `${h.id}:${h.start.k}.${h.start.o}-${h.end.k}.${h.end.o}:${h.note.trim() ? 1 : 0}:${h.id === activeId ? 1 : 0}`)
+        .map((h) => `${h.id}:${h.start.k}.${h.start.o}-${h.end.k}.${h.end.o}:${h.note.trim() ? 1 : 0}:${h.id === activeId ? 1 : 0}:${h.id === pulseId ? 1 : 0}`)
         .join('|')
       const hit = cache.current.get(page)
       if (hit && hit.key === key) return hit.fn
       const fn: CustomTextRenderer = ({ str, itemIndex }) => {
         const inner = segmentsFor(itemIndex, str, hs)
           .map((seg) =>
-            seg.hl ? `<mark data-hl="${seg.hl.id}" class="${markClass(seg.hl, activeId)}">${esc(seg.text)}</mark>` : esc(seg.text),
+            seg.hl ? `<mark data-hl="${seg.hl.id}" class="${markClass(seg.hl, activeId, pulseId)}">${esc(seg.text)}</mark>` : esc(seg.text),
           )
           .join('')
         return `<rh-u data-k="${itemIndex}">${inner}</rh-u>`
@@ -184,7 +186,7 @@ function useTextRenderers(highlights: Highlight[], activeId: string | null) {
       cache.current.set(page, { key, fn })
       return fn
     },
-    [highlights, activeId],
+    [highlights, activeId, pulseId],
   )
 }
 
