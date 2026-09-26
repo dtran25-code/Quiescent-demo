@@ -1,0 +1,18 @@
+# Netlify deployment settings (read automatically when the repo is imported).
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Single-page app: addresses like /read/abc or /notes/abc all load index.html,
+# and the app shows the right screen. (/api/extract is served by the function.)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

@@ -158,7 +158,7 @@ function LinkForm({ onReady }: { onReady: OnReady }) {
     setFetchError(null)
     try {
       const res = await fetch(`/api/extract?url=${encodeURIComponent(url.trim())}`)
-      const data = await res.json().catch(() => ({ error: 'The link helper is only available while running locally.' }))
+      const data = await res.json().catch(() => ({ error: "The link helper isn't available right now." }))
       if (!res.ok || data.error) throw new Error(data.error ?? 'Unknown error')
       const article = articleFromHtml(data.html, data.title)
       // Readability's title is usually better than the first heading on the page.

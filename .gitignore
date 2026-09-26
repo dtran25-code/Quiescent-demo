@@ -32,3 +32,6 @@ dist-ssr
 
 # Copied from pdfjs-dist at dev/build time
 public/pdfjs/
+
+# Netlify local folder
+.netlify/

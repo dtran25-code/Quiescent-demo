@@ -18,6 +18,17 @@ npm run dev
 
 Then open the address it prints (usually http://localhost:5173).
 
+## Deployed version (Netlify)
+
+The app is set up to deploy on [Netlify](https://www.netlify.com) from this GitHub repo. Every push to `main`
+redeploys automatically. Settings live in `netlify.toml`.
+
+- **Anyone with the link can open it.** There are no real accounts (sign-in is a mock).
+- **Each person's library is separate** and stays in their own browser. Nothing is stored on a server.
+- **Link import** runs as a Netlify Function (`netlify/functions/extract.mts`, same code as local dev in
+  `server/extractArticle.ts`). It only fetches public web pages; internal/private network addresses are refused.
+- The AI assistant is in mock mode, so hosting has no AI costs.
+
 ## The demo flow
 
 1. **Landing page:** the participant clicks **Upload your reading** and picks a PDF or an article link.
@@ -34,7 +45,7 @@ Saved items stay in the library across sign-outs.
 | Library, reading view, highlights, notes | Real. Stored in your browser (IndexedDB). |
 | Reading progress | Real. Saved as you scroll; reopening an item resumes where you left off. |
 | PDF upload + chapter detection | Real. Uses the PDF's table of contents, or page ranges if there isn't one. |
-| Article from a link | Fetched by a helper in the local dev server (Mozilla Readability). Only works while `npm run dev` is running. If a site blocks it, paste the article text instead. |
+| Article from a link | Fetched by a small server helper (Mozilla Readability): the Vite dev server locally, a Netlify Function when deployed. If a site blocks it, paste the article text instead. |
 | Notes View | Real. A Word-like page per item: type anything, format it, and jump around with the outline. Highlights appear as linked cards. |
 | AI assistant | **Mocked.** Hand-written answers for the two sample items; answers built from the chapter text and your notes for anything else (marked as demo responses). No API calls, no cost. |
 | Sign-in | **Mocked.** Every option signs in instantly. No real Google/Apple/Microsoft login, no password, no account. |
