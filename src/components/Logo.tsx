@@ -4,7 +4,8 @@ export function Logo({ size = 'md' }: { size?: 'md' | 'lg' }) {
   return (
     <div className="inline-flex items-center gap-3">
       <svg width={mark} height={mark} viewBox="0 0 32 32" aria-hidden="true">
-        <rect width="32" height="32" rx="7" fill="#A64B4F" />
+        {/* Follows the page accent (the Library uses its own palette); same red elsewhere. */}
+        <rect width="32" height="32" rx="7" style={{ fill: 'var(--color-accent, #A64B4F)' }} />
         <path
           d="M8 9.5c2.8-.9 5.5-.6 8 1 2.5-1.6 5.2-1.9 8-1v13c-2.8-.9-5.5-.6-8 1-2.5-1.6-5.2-1.9-8-1z"
           fill="none"

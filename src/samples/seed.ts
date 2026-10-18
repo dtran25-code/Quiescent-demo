@@ -3,7 +3,7 @@
 
 import { articleFromText, withUntitledOpening } from '../ingest/article'
 import { readPdf } from '../ingest/pdf'
-import { addItem, getItems, isSeeded, markSeeded, updateItem } from '../storage/db'
+import { addItem, getFile, getItems, isSeeded, markSeeded, updateItem } from '../storage/db'
 import { compoundingText, compoundingUrl } from './compoundingArticle'
 
 export const SAMPLE_ARTICLE_ID = 'sample-compounding'
@@ -23,6 +23,7 @@ export function seedSamples() {
       {
         id: SAMPLE_PDF_ID,
         title: pdf.title,
+        author: pdf.author,
         type: 'pdf',
         fileName: 'wealth-of-nations.pdf',
         addedAt: now - 1000,
@@ -57,5 +58,11 @@ export async function upgradeSavedItems() {
   for (const item of await getItems()) {
     const chapters = withUntitledOpening(item)
     if (chapters) await updateItem(item.id, { chapters })
+    // PDFs saved before the Library had an author filter: read the byline from the file once.
+    if (item.type === 'pdf' && !('author' in item)) {
+      const file = await getFile(item.id)
+      const author = file ? await readPdf(file, item.fileName ?? '').then((p) => p.author, () => undefined) : undefined
+      await updateItem(item.id, { author: author ?? '' })
+    }
   }
 }

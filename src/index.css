@@ -12,9 +12,36 @@
   --color-accent-dark: #8a3c40;
   --color-accent-soft: #f3e3e1;
   --color-highlight: #f6dcd3;
+  /* Only used by the Library (Reading Room palette, see .library-theme). */
+  --color-surface: #ffffff;
+  --color-sage: #c9ddb8;
+  --color-notice: #f2e6a7;
 
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+}
+
+/* Library page: the "Reading Room" palette and type. Scoped to the Library so
+   the reader, notes and sign-in pages keep their current look. */
+.library-theme {
+  --color-paper: #f3f6f4;
+  --color-paper-deep: #e3edda; /* sage tint */
+  --color-ink: #1a2c4a;
+  --color-ink-soft: #4a5a72;
+  --color-ink-faint: #66758a;
+  --color-rule: #d3dcd6;
+  --color-accent: #1a2c4a;
+  --color-accent-dark: #0f1b30;
+  --color-accent-soft: #e3edda;
+  --color-highlight: #f2e6a7;
+  --font-sans: "Open Sans", "Lato", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", Garamond, Georgia, serif;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+.library-theme :focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
 }
 
 html,
