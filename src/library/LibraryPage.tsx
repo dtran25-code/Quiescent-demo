@@ -94,7 +94,7 @@ export function LibraryPage() {
         <header className="flex items-end justify-between border-b border-rule pb-6">
           <div>
             <h1>
-              <Logo />
+              <Logo mark="turtle" />
             </h1>
             <p className="mt-2 text-sm text-ink-soft">Your reading notebook</p>
           </div>
