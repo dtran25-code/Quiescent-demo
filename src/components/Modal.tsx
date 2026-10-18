@@ -25,7 +25,7 @@ export function Modal({
     >
       <div role="dialog" aria-label={title} className={`w-full ${width} rounded-xl bg-paper shadow-xl ring-1 ring-rule`}>
         <div className="flex items-center justify-between border-b border-rule px-6 py-4">
-          <h2 className="font-serif text-xl">{title}</h2>
+          <h2 className="font-serif text-2xl font-semibold">{title}</h2>
           <button onClick={onClose} className="rounded p-1 text-ink-soft hover:bg-paper-deep" aria-label="Close">
             <X size={18} />
           </button>

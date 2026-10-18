@@ -1,20 +1,30 @@
 @import "tailwindcss";
 
-/* Design tokens: calm, editorial. One accent color. */
+/* Design tokens: the "Reading Room" palette. White surfaces, ink type, sage as a
+   quiet signal, soft light for highlights and notices. */
 @theme {
-  --color-paper: #fbf8f3;
-  --color-paper-deep: #f3eee5;
-  --color-ink: #2b2724;
-  --color-ink-soft: #6b635b;
-  --color-ink-faint: #a39a90;
-  --color-rule: #e6dfd4;
-  --color-accent: #a64b4f;
-  --color-accent-dark: #8a3c40;
-  --color-accent-soft: #f3e3e1;
-  --color-highlight: #f6dcd3;
+  --color-paper: #f3f6f4;
+  --color-paper-deep: #e3edda; /* sage tint: rules, soft fills */
+  --color-surface: #ffffff;
+  --color-ink: #1a2c4a;
+  --color-ink-soft: #4a5a72;
+  --color-ink-faint: #66758a;
+  --color-rule: #d3dcd6;
+  --color-accent: #1a2c4a;
+  --color-accent-dark: #0f1b30;
+  --color-accent-soft: #e3edda;
+  --color-sage: #c9ddb8;
+  --color-notice: #f2e6a7;
+  --color-highlight: #f2e6a7;
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  /* Cormorant Garamond for titles and headings, Open Sans for body text. */
+  --font-sans: "Open Sans", "Lato", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", Garamond, Georgia, serif;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
 }
 
 html,
@@ -31,7 +41,7 @@ body {
 }
 
 ::selection {
-  background: #ecc9c4;
+  background: var(--color-sage);
 }
 
 /* Shared button styles */
@@ -59,36 +69,36 @@ body {
   transition: background-color 0.15s;
 }
 .rh-mark.has-note {
-  box-shadow: inset 0 -2px 0 rgb(166 75 79 / 0.55);
+  box-shadow: inset 0 -2px 0 rgb(26 44 74 / 0.55);
 }
 .rh-mark:hover,
 .rh-mark.active {
-  background: #efc3b6;
+  background: #e9d77c;
 }
 /* On PDFs the text layer is invisible text over the page image, so the
    highlight must be translucent to let the printed text show through. */
 .textLayer .rh-mark {
-  background: rgb(214 120 100 / 0.32);
+  background: rgb(236 206 70 / 0.38);
   color: transparent;
   border-radius: 0;
 }
 .textLayer .rh-mark:hover,
 .textLayer .rh-mark.active {
-  background: rgb(214 110 90 / 0.48);
+  background: rgb(226 190 40 / 0.5);
 }
 /* More specific than pdf.js's own rule, which loads later. */
 .react-pdf__Page .textLayer ::selection {
-  background: rgb(166 75 79 / 0.25);
+  background: rgb(201 221 184 / 0.6);
 }
 
 /* Brief pulse when jumping to a highlight */
 @keyframes rh-pulse {
   0%, 100% { background-color: var(--color-highlight); }
-  25%, 65% { background-color: #e8a290; }
+  25%, 65% { background-color: #dcc350; }
 }
 @keyframes rh-pulse-pdf {
-  0%, 100% { background-color: rgb(214 120 100 / 0.32); }
-  25%, 65% { background-color: rgb(200 90 70 / 0.6); }
+  0%, 100% { background-color: rgb(236 206 70 / 0.38); }
+  25%, 65% { background-color: rgb(214 176 20 / 0.6); }
 }
 .rh-mark.pulse {
   animation: rh-pulse 1.6s ease-in-out;
@@ -101,23 +111,28 @@ body {
 .notes-doc {
   min-height: 60vh;
   outline: none;
-  font-family: var(--font-serif);
-  font-size: 1.075rem;
+  font-family: var(--font-sans);
+  font-size: 1rem;
   line-height: 1.75;
   color: var(--color-ink);
 }
 .notes-doc > * + * {
   margin-top: 0.7em;
 }
+.notes-doc h2,
+.notes-doc h3 {
+  font-family: var(--font-serif);
+}
 .notes-doc h2 {
   margin-top: 1.7em;
-  font-size: 1.6rem;
+  font-size: 1.75rem;
+  font-weight: 600;
   line-height: 1.3;
 }
 .notes-doc h3 {
   margin-top: 1.3em;
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: 1.4rem;
+  font-weight: 700;
   line-height: 1.35;
 }
 .notes-doc > h2:first-child,
@@ -139,7 +154,7 @@ body {
   margin-top: 0.25em;
 }
 .notes-doc blockquote {
-  border-left: 2px solid rgb(166 75 79 / 0.5);
+  border-left: 2px solid rgb(26 44 74 / 0.4);
   padding-left: 1em;
   font-style: italic;
   color: var(--color-ink-soft);

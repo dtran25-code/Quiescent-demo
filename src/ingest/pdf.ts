@@ -20,12 +20,13 @@ export async function readPdf(file: Blob, fileName: string) {
   try {
     const pageCount = pdf.numPages
     const meta = await pdf.getMetadata().catch(() => null)
-    const metaTitle = (meta?.info as { Title?: string } | undefined)?.Title?.trim()
-    const title = metaTitle || fileName.replace(/\.pdf$/i, '')
+    const info = meta?.info as { Title?: string; Author?: string } | undefined
+    const title = info?.Title?.trim() || fileName.replace(/\.pdf$/i, '')
+    const author = info?.Author?.trim() || undefined
 
     let chapters = await chaptersFromOutline(pdf, pageCount)
     if (chapters.length === 0) chapters = chaptersFromPageRanges(pageCount)
-    return { title, pageCount, chapters }
+    return { title, author, pageCount, chapters }
   } finally {
     task.destroy()
   }

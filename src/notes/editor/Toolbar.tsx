@@ -144,7 +144,7 @@ function InsertHighlight({ editor, item, highlights }: { editor: Editor; item: I
                 }}
                 className="block w-full rounded-lg px-3 py-2 text-left hover:bg-paper"
               >
-                <span className="line-clamp-2 font-serif text-[13px] leading-snug text-ink">“{h.quote}”</span>
+                <span className="line-clamp-2 text-[13px] leading-snug text-ink">“{h.quote}”</span>
                 <span className="mt-0.5 block text-[11px] text-ink-faint">
                   {[h.page ? `Page ${h.page}` : item.chapters.find((c) => c.id === h.chapterId)?.title, onPage.has(h.id) ? 'already on the page' : '']
                     .filter(Boolean)

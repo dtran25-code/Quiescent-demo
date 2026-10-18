@@ -5,11 +5,12 @@
 //   items              -> Item[]            (the library, without file bytes)
 //   file:<itemId>      -> Blob              (PDF bytes)
 //   highlights:<id>    -> Highlight[]
+//   folders            -> Folder[]          (Library folders; items list theirs in folderIds)
 //   seeded             -> true once the sample items have been created
 
 import { del, get, set } from 'idb-keyval'
 import { useEffect, useState } from 'react'
-import type { Highlight, Item } from '../types'
+import type { Folder, Highlight, Item } from '../types'
 
 // --- change notifications, so screens re-render when data changes ---------
 
@@ -88,6 +89,48 @@ export const deleteItem = (id: string) =>
     notify()
   })
 
+/** Everything stored for one item, so a delete can be undone. */
+export interface ItemSnapshot {
+  item: Item
+  /** Where it sat in the library list, so Undo puts it back in the same place. */
+  index: number
+  values: [key: string, value: unknown][]
+}
+
+const itemKeys = (id: string) => [`file:${id}`, `highlights:${id}`, `chat:${id}`, `notesdoc:${id}`]
+
+/** Deletes an item and returns what's needed to restore it (see restoreItem). */
+export const deleteItemUndoable = (id: string) =>
+  serial(async () => {
+    const items = await getItems()
+    const index = items.findIndex((i) => i.id === id)
+    if (index < 0) return null
+    const values: ItemSnapshot['values'] = []
+    for (const key of itemKeys(id)) {
+      const value = await get(key)
+      if (value !== undefined) values.push([key, value])
+    }
+    await set(
+      'items',
+      items.filter((i) => i.id !== id),
+    )
+    for (const key of itemKeys(id)) await del(key)
+    notify()
+    return { item: items[index], index, values } satisfies ItemSnapshot
+  })
+
+export const restoreItem = (snapshot: ItemSnapshot) =>
+  serial(async () => {
+    for (const [key, value] of snapshot.values) await set(key, value)
+    const items = (await getItems()).filter((i) => i.id !== snapshot.item.id)
+    // Folders deleted in the meantime no longer exist; don't bring their ids back.
+    const folderIds = new Set((await getFolders()).map((f) => f.id))
+    const item = { ...snapshot.item, folderIds: snapshot.item.folderIds?.filter((f) => folderIds.has(f)) }
+    items.splice(Math.min(snapshot.index, items.length), 0, item)
+    await set('items', items)
+    notify()
+  })
+
 export async function getFile(id: string): Promise<Blob | undefined> {
   return get<Blob>(`file:${id}`)
 }
@@ -116,6 +159,64 @@ export const updateHighlights = (itemId: string, fn: (list: Highlight[]) => High
 export function useHighlights(itemId: string | undefined) {
   return useStored(async () => (itemId ? getHighlights(itemId) : []), [itemId])
 }
+
+// --- Library folders ---------------------------------------------------------
+// Folders are made and filled by hand. Deleting one only removes the folder:
+// its items stay in the library.
+
+export async function getFolders(): Promise<Folder[]> {
+  return (await get<Folder[]>('folders')) ?? []
+}
+
+export function useFolders() {
+  return useStored(getFolders, [])
+}
+
+export const createFolder = (name: string) =>
+  serial(async () => {
+    const folder: Folder = { id: newId(), name: name.trim(), createdAt: Date.now() }
+    await set('folders', [...(await getFolders()), folder])
+    notify()
+    return folder
+  })
+
+export const renameFolder = (id: string, name: string) =>
+  serial(async () => {
+    await set(
+      'folders',
+      (await getFolders()).map((f) => (f.id === id ? { ...f, name: name.trim() } : f)),
+    )
+    notify()
+  })
+
+export const deleteFolder = (id: string) =>
+  serial(async () => {
+    await set(
+      'folders',
+      (await getFolders()).filter((f) => f.id !== id),
+    )
+    const items = await getItems()
+    await set(
+      'items',
+      items.map((i) => (i.folderIds?.includes(id) ? { ...i, folderIds: i.folderIds.filter((f) => f !== id) } : i)),
+    )
+    notify()
+  })
+
+/** Adds the item to the folder, or takes it out if it's already there. */
+export const toggleItemFolder = (itemId: string, folderId: string) =>
+  serial(async () => {
+    const items = await getItems()
+    await set(
+      'items',
+      items.map((i) => {
+        if (i.id !== itemId) return i
+        const ids = i.folderIds ?? []
+        return { ...i, folderIds: ids.includes(folderId) ? ids.filter((f) => f !== folderId) : [...ids, folderId] }
+      }),
+    )
+    notify()
+  })
 
 // --- first-run seeding flag ------------------------------------------------
 

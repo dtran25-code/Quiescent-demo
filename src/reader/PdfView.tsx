@@ -138,7 +138,7 @@ export function PdfView({
             <div
               key={i}
               data-page={i + 1}
-              className="absolute left-1/2 -translate-x-1/2 bg-white shadow-[0_1px_3px_rgba(43,39,36,0.08),0_8px_24px_rgba(43,39,36,0.06)]"
+              className="absolute left-1/2 -translate-x-1/2 bg-white shadow-[0_1px_3px_rgba(26,44,74,0.08),0_8px_24px_rgba(26,44,74,0.06)]"
               style={{ top: p.top, width, height: p.height }}
             >
               {near(p) && (

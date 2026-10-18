@@ -67,6 +67,7 @@ function PdfUpload({ onReady }: { onReady: OnReady }) {
         {
           id: newId(),
           title: pdf.title,
+          author: pdf.author,
           type: 'pdf',
           fileName: file.name,
           addedAt: Date.now(),
@@ -139,10 +140,11 @@ function LinkForm({ onReady }: { onReady: OnReady }) {
   const [title, setTitle] = useState('')
   const [text, setText] = useState('')
 
-  async function save(article: ReturnType<typeof articleFromText>) {
+  async function save(article: ReturnType<typeof articleFromText>, meta?: { author?: string; siteName?: string }) {
     await onReady({
       id: newId(),
       title: article.title,
+      ...meta,
       type: 'article',
       sourceUrl: url.trim() || undefined,
       addedAt: Date.now(),
@@ -162,7 +164,10 @@ function LinkForm({ onReady }: { onReady: OnReady }) {
       if (!res.ok || data.error) throw new Error(data.error ?? 'Unknown error')
       const article = articleFromHtml(data.html, data.title)
       // Readability's title is usually better than the first heading on the page.
-      await save({ ...article, title: data.title || article.title })
+      await save(
+        { ...article, title: data.title || article.title },
+        { author: data.byline || undefined, siteName: data.siteName || undefined },
+      )
     } catch (err) {
       setFetchError((err as Error).message)
       setPasteMode(true)
@@ -220,7 +225,7 @@ function LinkForm({ onReady }: { onReady: OnReady }) {
             placeholder={'Paste the article text here.\n\nTip: start a line with "## " to mark a section heading.'}
             value={text}
             onChange={(e) => setText(e.target.value)}
-            className="field resize-y font-serif leading-relaxed"
+            className="field resize-y leading-relaxed"
           />
           <div className="flex justify-end gap-2">
             {!fetchError && (

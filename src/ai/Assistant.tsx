@@ -293,7 +293,7 @@ function ChatPanel({
         {attachment && (
           <div className="mb-2 flex items-start gap-2 rounded-lg bg-paper px-3 py-2 text-xs text-ink-soft">
             <span className="shrink-0 font-medium text-ink">{attachment.kind === 'note' ? 'Note:' : 'Selected:'}</span>
-            <span className="line-clamp-2 flex-1 font-serif italic">
+            <span className="line-clamp-2 flex-1 italic">
               {attachment.kind === 'note' && attachment.note?.trim() ? attachment.note : `“${attachment.text}”`}
             </span>
             <button onClick={onClearAttachment} className="shrink-0 text-ink-faint hover:text-ink" aria-label="Remove attachment">

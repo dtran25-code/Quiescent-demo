@@ -12,7 +12,7 @@ export function LandingPage() {
   return (
     <div className="flex min-h-full flex-col items-center justify-center px-8 py-16 text-center">
       <Logo size="lg" />
-      <p className="mt-5 max-w-md font-serif text-xl leading-relaxed text-ink-soft">
+      <p className="mt-5 max-w-md text-lg leading-relaxed text-ink-soft">
         Save what you read, highlight what matters, and keep your notes in one place.
       </p>
 

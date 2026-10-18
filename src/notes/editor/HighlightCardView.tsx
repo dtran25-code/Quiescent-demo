@@ -52,7 +52,7 @@ export function HighlightCardView({ node, deleteNode, selected }: ReactNodeViewP
           </p>
         ) : null}
 
-        <blockquote className={`${editing || hasNote ? 'mt-3' : ''} border-l-2 border-accent/40 pl-3 font-serif text-[15px] italic leading-relaxed text-ink-soft`}>
+        <blockquote className={`${editing || hasNote ? 'mt-3' : ''} border-l-2 border-accent/40 pl-3 text-[15px] italic leading-relaxed text-ink-soft`}>
           “{h.quote}”
         </blockquote>
 

@@ -48,11 +48,11 @@ export function HighlightsPanel({
   return (
     <aside
       aria-label="Your highlights"
-      className="absolute inset-y-0 right-0 z-30 flex w-[22rem] flex-col border-l border-rule bg-paper shadow-[-8px_0_24px_rgba(43,39,36,0.06)]"
+      className="absolute inset-y-0 right-0 z-30 flex w-[22rem] flex-col border-l border-rule bg-paper shadow-[-8px_0_24px_rgba(26,44,74,0.06)]"
     >
       <div className="flex items-center justify-between border-b border-rule px-5 py-4">
         <div>
-          <h2 className="font-serif text-lg">Your highlights</h2>
+          <h2 className="font-serif text-xl font-semibold">Your highlights</h2>
           <p className="text-xs text-ink-faint">
             {highlights.length} {highlights.length === 1 ? 'highlight' : 'highlights'} · {noteCount}{' '}
             {noteCount === 1 ? 'note' : 'notes'}
@@ -89,7 +89,7 @@ export function HighlightsPanel({
                           h.id === activeId ? 'bg-accent-soft' : ''
                         }`}
                       >
-                        <p className="line-clamp-2 border-l-2 border-accent/50 pl-2.5 font-serif text-[14px] leading-snug text-ink">
+                        <p className="line-clamp-2 border-l-2 border-accent/50 pl-2.5 text-[14px] leading-snug text-ink">
                           {h.quote}
                         </p>
                         {h.note.trim() && (
