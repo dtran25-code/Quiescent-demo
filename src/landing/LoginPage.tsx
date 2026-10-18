@@ -33,7 +33,7 @@ export function LoginPage() {
       </Link>
 
       <div className="mt-10 w-full max-w-sm">
-        <h1 className="text-center font-serif text-2xl">
+        <h1 className="text-center font-serif text-3xl font-semibold">
           {pending ? 'Sign in to save your reading' : 'Sign in to Quiescent'}
         </h1>
 
@@ -43,7 +43,7 @@ export function LoginPage() {
               {pending.item.type === 'pdf' ? <FileText size={17} /> : <Newspaper size={17} />}
             </div>
             <div className="min-w-0">
-              <p className="truncate font-serif">{pending.item.title}</p>
+              <p className="truncate font-serif text-lg font-semibold">{pending.item.title}</p>
               <p className="text-xs text-ink-faint">
                 {pending.item.type === 'pdf' ? `PDF · ${pending.item.pageCount} pages` : 'Article'} ·{' '}
                 {pending.item.chapters.length} sections

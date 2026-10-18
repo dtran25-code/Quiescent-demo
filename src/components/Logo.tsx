@@ -4,7 +4,7 @@ export function Logo({ size = 'md' }: { size?: 'md' | 'lg' }) {
   return (
     <div className="inline-flex items-center gap-3">
       <TurtleMark size={px} />
-      <span className={`font-serif tracking-tight ${size === 'lg' ? 'text-5xl' : 'text-3xl'}`}>Quiescent</span>
+      <span className={`font-serif font-semibold tracking-tight ${size === 'lg' ? 'text-5xl' : 'text-3xl'}`}>Quiescent</span>
     </div>
   )
 }

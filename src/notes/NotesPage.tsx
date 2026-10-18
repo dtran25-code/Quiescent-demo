@@ -26,7 +26,7 @@ export function NotesPage() {
   if (item === null) {
     return (
       <div className="mx-auto max-w-xl px-8 py-24 text-center">
-        <p className="font-serif text-2xl">This item isn't in your library.</p>
+        <p className="font-serif text-3xl font-semibold">This item isn't in your library.</p>
         <Link to="/library" className="btn-primary mt-6">
           Back to library
         </Link>
@@ -158,7 +158,7 @@ function Notes({ item, highlights, stored }: { item: Item; highlights: Highlight
             </div>
           </div>
           <p className="mt-6 text-xs font-semibold uppercase tracking-wider text-accent">Notes</p>
-          <h1 className="mt-1 font-serif text-3xl leading-tight">{item.title}</h1>
+          <h1 className="mt-1 font-serif text-4xl font-semibold leading-tight">{item.title}</h1>
           <div className="mt-3 flex items-center justify-between gap-4">
             <p className="text-sm text-ink-soft">
               {highlights.length} {highlights.length === 1 ? 'highlight' : 'highlights'} · {noteCount}{' '}
@@ -182,7 +182,7 @@ function Notes({ item, highlights, stored }: { item: Item; highlights: Highlight
             <main className="min-w-0 max-w-[52rem] flex-1">
               <Toolbar editor={editor} item={item} highlights={highlights} status={status} />
               <div
-                className="min-h-[70vh] cursor-text rounded-sm bg-white px-14 py-12 shadow-[0_1px_3px_rgba(43,39,36,0.08),0_10px_30px_rgba(43,39,36,0.06)] ring-1 ring-rule"
+                className="min-h-[70vh] cursor-text rounded-sm bg-white px-14 py-12 shadow-[0_1px_3px_rgba(26,44,74,0.08),0_10px_30px_rgba(26,44,74,0.06)] ring-1 ring-rule"
                 onClick={(e) => e.target === e.currentTarget && editor.commands.focus('end')}
               >
                 <EditorContent editor={editor} />
@@ -255,11 +255,11 @@ function UndoToast({ message, onUndo, onExpire }: { message: string; onUndo: () 
       className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-4 overflow-hidden rounded-xl bg-ink py-3 pl-5 pr-3 text-sm text-paper shadow-xl"
     >
       <span>{message}</span>
-      <button onClick={onUndo} className="rounded-md px-3 py-1 font-semibold text-[#f3c9c3] hover:bg-paper/10">
+      <button onClick={onUndo} className="rounded-md px-3 py-1 font-semibold text-sage hover:bg-paper/10">
         Undo ({left}s)
       </button>
       <div
-        className="absolute bottom-0 left-0 h-0.5 bg-[#f3c9c3] transition-[width] duration-1000 ease-linear"
+        className="absolute bottom-0 left-0 h-0.5 bg-sage transition-[width] duration-1000 ease-linear"
         style={{ width: `${(left / UNDO_SECONDS) * 100}%` }}
       />
     </div>

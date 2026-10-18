@@ -89,7 +89,7 @@ export function LibraryPage() {
   }
 
   return (
-    <div className="library-theme min-h-full bg-paper">
+    <div className="min-h-full bg-paper">
       <div className="mx-auto max-w-3xl px-8 py-14">
         <header className="flex items-end justify-between border-b border-rule pb-6">
           <div>

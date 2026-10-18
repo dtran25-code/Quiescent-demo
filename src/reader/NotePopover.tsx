@@ -82,7 +82,7 @@ export function NotePopover({
       style={{ left: x, top: y }}
     >
       <div className="border-b border-rule px-4 py-2.5">
-        <p className="line-clamp-2 font-serif text-sm italic leading-snug text-ink-soft">“{highlight.quote}”</p>
+        <p className="line-clamp-2 text-sm italic leading-snug text-ink-soft">“{highlight.quote}”</p>
       </div>
       <textarea
         autoFocus

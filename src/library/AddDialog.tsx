@@ -225,7 +225,7 @@ function LinkForm({ onReady }: { onReady: OnReady }) {
             placeholder={'Paste the article text here.\n\nTip: start a line with "## " to mark a section heading.'}
             value={text}
             onChange={(e) => setText(e.target.value)}
-            className="field resize-y font-serif leading-relaxed"
+            className="field resize-y leading-relaxed"
           />
           <div className="flex justify-end gap-2">
             {!fetchError && (
