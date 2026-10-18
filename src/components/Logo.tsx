@@ -1,31 +1,11 @@
-/**
- * ReadHub mark plus the wordmark. `mark="turtle"` is the new logo (a turtle whose
- * shell is a speech bubble around an open book); so far only the Library uses it.
- * The other pages still show the original open book on the accent color.
- */
-export function Logo({ size = 'md', mark = 'book' }: { size?: 'md' | 'lg'; mark?: 'book' | 'turtle' }) {
+/** Quiescent mark (a turtle whose shell is a speech bubble around an open book) plus the wordmark. */
+export function Logo({ size = 'md' }: { size?: 'md' | 'lg' }) {
   const px = size === 'lg' ? 52 : 34
   return (
     <div className="inline-flex items-center gap-3">
-      {mark === 'turtle' ? <TurtleMark size={px} /> : <BookMark size={px} />}
-      <span className={`font-serif tracking-tight ${size === 'lg' ? 'text-5xl' : 'text-3xl'}`}>ReadHub</span>
+      <TurtleMark size={px} />
+      <span className={`font-serif tracking-tight ${size === 'lg' ? 'text-5xl' : 'text-3xl'}`}>Quiescent</span>
     </div>
-  )
-}
-
-function BookMark({ size }: { size: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
-      <rect width="32" height="32" rx="7" fill="#A64B4F" />
-      <path
-        d="M8 9.5c2.8-.9 5.5-.6 8 1 2.5-1.6 5.2-1.9 8-1v13c-2.8-.9-5.5-.6-8 1-2.5-1.6-5.2-1.9-8-1z"
-        fill="none"
-        stroke="#FBF8F3"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-      <path d="M16 10.5v13" stroke="#FBF8F3" strokeWidth="1.8" />
-    </svg>
   )
 }
 

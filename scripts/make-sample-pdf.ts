@@ -1,5 +1,5 @@
 // Generates public/samples/wealth-of-nations.pdf: a small book-sized PDF with a
-// built-in outline (table of contents), so ReadHub's chapter detection has
+// built-in outline (table of contents), so Quiescent's chapter detection has
 // something real to read. Run with: npm run make-sample-pdf
 
 import { writeFileSync, mkdirSync } from 'node:fs'

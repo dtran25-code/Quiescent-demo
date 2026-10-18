@@ -28,13 +28,13 @@ export function LoginPage() {
 
   return (
     <div className="flex min-h-full flex-col items-center justify-center px-8 py-16">
-      <Link to="/" aria-label="ReadHub home">
+      <Link to="/" aria-label="Quiescent home">
         <Logo />
       </Link>
 
       <div className="mt-10 w-full max-w-sm">
         <h1 className="text-center font-serif text-2xl">
-          {pending ? 'Sign in to save your reading' : 'Sign in to ReadHub'}
+          {pending ? 'Sign in to save your reading' : 'Sign in to Quiescent'}
         </h1>
 
         {pending && (

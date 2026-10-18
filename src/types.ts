@@ -1,4 +1,4 @@
-// Core data model for ReadHub. Everything saved in the browser has one of these shapes.
+// Core data model for Quiescent. Everything saved in the browser has one of these shapes.
 
 export type ItemType = 'article' | 'pdf'
 

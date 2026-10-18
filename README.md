@@ -1,4 +1,4 @@
-# ReadHub (clickable mockup)
+# Quiescent (clickable mockup)
 
 A personal reading notebook: save articles and PDFs, read them in a focused view,
 highlight passages and write quick notes, then review those notes grouped by chapter.
