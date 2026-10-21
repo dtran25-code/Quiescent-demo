@@ -78,7 +78,7 @@ export function NotePopover({
       ref={box}
       role="dialog"
       aria-label="Note"
-      className="absolute z-30 w-[22rem] rounded-xl bg-white font-sans shadow-xl ring-1 ring-rule"
+      className="absolute z-30 w-[22rem] rounded-xl bg-card font-sans shadow-xl ring-1 ring-rule"
       style={{ left: x, top: y }}
     >
       <div className="border-b border-rule px-4 py-2.5">

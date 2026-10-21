@@ -10,14 +10,14 @@ export function HighlightsButton({ count, right, onClick }: { count: number; rig
       onClick={onClick}
       title={count ? `Your highlights (${count})` : 'No highlights yet'}
       aria-label={`Your highlights: ${count}`}
-      className={`absolute top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-md ring-1 ring-rule transition-all hover:scale-105 hover:text-accent ${
+      className={`absolute top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-card shadow-md ring-1 ring-rule transition-all hover:scale-105 hover:text-accent ${
         count ? 'text-ink-soft' : 'text-ink-faint opacity-60'
       }`}
       style={{ right }}
     >
       <Highlighter size={19} strokeWidth={1.8} />
       {count > 0 && (
-        <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[11px] font-semibold tabular-nums text-white">
+        <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[11px] font-semibold tabular-nums text-on-accent">
           {count}
         </span>
       )}
@@ -48,7 +48,7 @@ export function HighlightsPanel({
   return (
     <aside
       aria-label="Your highlights"
-      className="absolute inset-y-0 right-0 z-30 flex w-[22rem] flex-col border-l border-rule bg-paper shadow-[-8px_0_24px_rgba(43,39,36,0.06)]"
+      className="absolute inset-y-0 right-0 z-30 flex w-[22rem] flex-col border-l border-rule bg-paper shadow-[-8px_0_24px_color-mix(in_srgb,var(--color-shadow)_6%,transparent)]"
     >
       <div className="flex items-center justify-between border-b border-rule px-5 py-4">
         <div>
@@ -113,7 +113,7 @@ export function HighlightsPanel({
         <div className="min-h-4 grow-[3]" />
         <Link
           to={`/notes/${item.id}`}
-          className="mx-auto flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-rule bg-white/60 px-4 py-2.5 text-xs font-medium text-ink-soft transition-colors hover:border-accent/40 hover:bg-accent-soft hover:text-accent"
+          className="mx-auto flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-rule bg-card/60 px-4 py-2.5 text-xs font-medium text-ink-soft transition-colors hover:border-accent/40 hover:bg-accent-soft hover:text-accent"
         >
           <PenLine size={13} /> Open all notes in Notes view <ArrowRight size={13} />
         </Link>

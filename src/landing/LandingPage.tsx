@@ -18,7 +18,7 @@ export function LandingPage() {
 
       <button
         onClick={() => setChoosing(true)}
-        className="mt-14 inline-flex items-center gap-3 rounded-2xl bg-accent px-12 py-6 text-xl font-medium text-white shadow-lg shadow-accent/20 transition-all hover:-translate-y-0.5 hover:bg-accent-dark hover:shadow-xl hover:shadow-accent/25"
+        className="mt-14 inline-flex items-center gap-3 rounded-2xl bg-accent px-12 py-6 text-xl font-medium text-on-accent shadow-lg shadow-accent/20 transition-all hover:-translate-y-0.5 hover:bg-accent-dark hover:shadow-xl hover:shadow-accent/25"
       >
         <Upload size={24} strokeWidth={2} />
         Upload your reading

@@ -137,12 +137,12 @@ function Bubble(props: {
       onPointerCancel={() => (drag.current = null)}
       aria-label="Open AI assistant"
       title="AI assistant (drag to move)"
-      className="fixed z-40 flex touch-none select-none items-center justify-center rounded-full bg-accent text-white shadow-lg shadow-accent/30 transition-[transform,box-shadow] hover:scale-105 hover:shadow-xl active:cursor-grabbing"
+      className="fixed z-40 flex touch-none select-none items-center justify-center rounded-full bg-accent text-on-accent shadow-lg shadow-accent/30 transition-[transform,box-shadow] hover:scale-105 hover:shadow-xl active:cursor-grabbing"
       style={{ left: props.cx - BUBBLE / 2, top: props.cy - BUBBLE / 2, width: BUBBLE, height: BUBBLE }}
     >
       <Sparkles size={22} />
       {props.hasAttachment && (
-        <span className="absolute right-0 top-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-ink" aria-hidden="true" />
+        <span className="absolute right-0 top-0 h-3.5 w-3.5 rounded-full border-2 border-card bg-ink" aria-hidden="true" />
       )}
     </button>
   )
@@ -225,12 +225,12 @@ function ChatPanel({
     <div
       role="dialog"
       aria-label="AI assistant"
-      className="fixed z-40 flex flex-col overflow-hidden rounded-2xl bg-white font-sans shadow-2xl ring-1 ring-rule"
+      className="fixed z-40 flex flex-col overflow-hidden rounded-2xl bg-card font-sans shadow-2xl ring-1 ring-rule"
       style={{ left, top, width: w, height: h }}
     >
       {/* Header */}
       <div className="flex items-center gap-2 border-b border-rule px-4 py-3">
-        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-accent text-white">
+        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-accent text-on-accent">
           <Sparkles size={15} />
         </div>
         <div className="min-w-0 flex-1">
@@ -331,7 +331,7 @@ function ChatPanel({
           <button
             onClick={send}
             disabled={!draft.trim() || thinking}
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-white disabled:opacity-40"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-on-accent disabled:opacity-40"
             aria-label="Send"
           >
             <ArrowUp size={15} />

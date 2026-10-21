@@ -1,0 +1,120 @@
+/*
+ * Quiescent design tokens — the ONLY place colors, fonts, spacing and radii are defined.
+ *
+ * Imported once by src/index.css. Every surface uses these through Tailwind
+ * utilities (bg-paper, text-ink, rounded-xl, w-popup…) or var(--…):
+ *   - the web app (library, reader, account, sign-in)
+ *   - the simulated Chrome extension popup (/demo-browser)
+ *   - the dev panels (Dev menu, Event log, /screens, /events)
+ *   - SVG icons (SteleIcon, QTurtle) via style={{ fill: 'var(--color-…)' }}
+ *
+ * Tailwind's default palette and font stacks are reset below, so a class like
+ * `bg-red-500` or `font-mono` produces nothing unless it is defined here.
+ */
+
+@theme {
+  /* Reset Tailwind defaults: only Quiescent tokens exist. */
+  --color-*: initial;
+  --font-*: initial;
+
+  /* --- Surfaces & text (calm, editorial) --------------------------------- */
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-paper: #fbf8f3;
+  --color-paper-deep: #f3eee5;
+  --color-card: #ffffff;
+  --color-ink: #2b2724;
+  --color-ink-soft: #6b635b;
+  --color-ink-faint: #a39a90;
+  --color-rule: #e6dfd4;
+  --color-shadow: #2b2724;
+
+  /* --- The one accent ---------------------------------------------------- */
+  --color-accent: #a64b4f;
+  --color-accent-dark: #8a3c40;
+  --color-accent-soft: #f3e3e1;
+  --color-on-accent: #fbf8f3;
+
+  /* --- Status ------------------------------------------------------------ */
+  --color-ok: #4f7a52;
+  --color-ok-soft: #e3ecdc;
+  --color-warn: #8a6d12;
+  --color-warn-soft: #f6ecc4;
+  --color-danger: #a64b4f;
+  --color-danger-soft: #f3e3e1;
+
+  /* Library status groups */
+  --color-status-progress: #a64b4f;
+  --color-status-later: #7d7364;
+  --color-status-finished: #4f7a52;
+
+  /* --- Stone (turtle stele + Q). Warm greys that sit on paper. ----------- */
+  --color-stone-50: #f4efe6;
+  --color-stone-100: #e9e2d5;
+  --color-stone-200: #d8cebd;
+  --color-stone-300: #bfb29d;
+  --color-stone-400: #a39580;
+  --color-stone-500: #857866;
+  --color-stone-700: #5c5244;
+  --color-stone-900: #3a332a;
+  /* Q's shell carries a little moss so the character reads as alive, not carved. */
+  --color-moss-100: #e4e8d6;
+  --color-moss-300: #b9c39c;
+  --color-moss-500: #879567;
+  --color-moss-700: #59633f;
+
+  /* --- Highlights in the reader ------------------------------------------ */
+  --color-selection: #ecc9c4;
+  --color-highlight: #f6dcd3;
+  --color-highlight-hover: #efc3b6;
+  --color-highlight-pulse: #e8a290;
+  --color-highlight-underline: rgb(166 75 79 / 0.55);
+  --color-highlight-pdf: rgb(214 120 100 / 0.32);
+  --color-highlight-pdf-hover: rgb(214 110 90 / 0.48);
+  --color-highlight-pdf-pulse: rgb(200 90 70 / 0.6);
+  --color-selection-pdf: rgb(166 75 79 / 0.25);
+
+  /* --- Dev annotations (yellow sticky notes, shown with "Show dev notes") - */
+  --color-devnote: #fbf3cf;
+  --color-devnote-border: #e9d88a;
+  --color-devnote-ink: #5c4a12;
+  --color-devnote-badge: #f2e3a0;
+
+  /* --- Simulated Chrome window (/demo-browser) and OS toast -------------- */
+  --color-chrome-frame: #dee1e6;
+  --color-chrome-tab: #ffffff;
+  --color-chrome-toolbar: #ffffff;
+  --color-chrome-omnibox: #f1f3f4;
+  --color-chrome-ink: #3c4043;
+  --color-desktop: #c9c3b8;
+  --color-toast: #2f2f31;
+  --color-toast-ink: #f1f1f1;
+
+  /* --- Third-party marks (Google sign-in button) -------------------------- */
+  --color-google-yellow: #ffc107;
+  --color-google-red: #ff3d00;
+  --color-google-green: #4caf50;
+  --color-google-blue: #1976d2;
+
+  /* --- Type --------------------------------------------------------------- */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Consolas, monospace;
+
+  /* --- Spacing: 4px base unit, plus named layout sizes --------------------- */
+  --spacing: 0.25rem;
+  --spacing-sidebar: 15rem;
+  --spacing-sidebar-collapsed: 4rem;
+  --spacing-panel: 22rem;
+  --spacing-popup: 360px; /* Chrome extension popup width */
+  --spacing-devpanel: 26rem;
+
+  /* --- Radius -------------------------------------------------------------- */
+  --radius-xs: 0.125rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+}
