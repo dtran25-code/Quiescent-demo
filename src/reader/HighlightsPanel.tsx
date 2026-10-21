@@ -1,5 +1,4 @@
-import { Link } from 'react-router'
-import { ArrowRight, Highlighter, PenLine, StickyNote, X } from 'lucide-react'
+import { Highlighter, StickyNote, X } from 'lucide-react'
 import type { Highlight, Item } from '../types'
 import { byReadingOrder } from './anchors'
 
@@ -63,7 +62,6 @@ export function HighlightsPanel({
         </button>
       </div>
 
-      {/* Column layout so the link below can sit inside the leftover space. */}
       <div className="flex flex-1 flex-col overflow-y-auto px-3 py-3">
         <div className="shrink-0">
           {groups.length === 0 ? (
@@ -108,16 +106,6 @@ export function HighlightsPanel({
           )}
         </div>
 
-        {/* Leftover space is split 3:1 around the link, placing it in the middle of the
-            bottom half. With a long list there's no leftover space and it follows the list. */}
-        <div className="min-h-4 grow-[3]" />
-        <Link
-          to={`/notes/${item.id}`}
-          className="mx-auto flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-rule bg-card/60 px-4 py-2.5 text-xs font-medium text-ink-soft transition-colors hover:border-accent/40 hover:bg-accent-soft hover:text-accent"
-        >
-          <PenLine size={13} /> Open all notes in Notes view <ArrowRight size={13} />
-        </Link>
-        <div className="min-h-2 grow" />
       </div>
     </aside>
   )

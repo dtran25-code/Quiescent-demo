@@ -1,0 +1,590 @@
+// The event dictionary. One entry per tracked event, used three ways:
+//   1. track() validates every event against it (unknown props are dropped),
+//   2. the Dev menu's Event log shows each row as it fires,
+//   3. /events renders it as the developer-facing table.
+//
+// Sources: the PRD's "Event Logging" catalog is canonical; events from the
+// feature sections (Save, Accounts & Sync, Reader) use the same names.
+// Events for UI the PRD doesn't cover are marked origin: 'proposed'
+// and shown as "proposed — not in PRD".
+//
+// PRIVACY RULE: properties hold IDs, counts, lengths, durations, booleans and
+// enums only. Never article text, highlight/note text, Q prompts or answers.
+// Free text is impossible by construction: there is no "string" prop type.
+
+export type PropSpec =
+  | { type: 'enum'; values: readonly string[] }
+  | { type: 'id' }
+  | { type: 'count' }
+  | { type: 'length' } // characters
+  | { type: 'ms' }
+  | { type: 'seconds' }
+  | { type: 'percent' }
+  | { type: 'bytes' }
+  | { type: 'bool' }
+  | { type: 'domain' } // hostname only, never a full URL
+
+export type Surface = 'extension' | 'web'
+export type Area = 'extension' | 'account' | 'library' | 'upload' | 'reader' | 'q'
+
+export interface EventDef {
+  name: string
+  area: Area
+  source: 'client' | 'server'
+  surface: Surface | 'both'
+  trigger: string
+  props: Record<string, PropSpec>
+  /** The metric(s) this event feeds. */
+  feeds: string
+  origin: 'prd' | 'proposed'
+  /** Where in the PRD it comes from, or why it's proposed. */
+  note?: string
+}
+
+const e = (values: readonly string[]): PropSpec => ({ type: 'enum', values })
+const id: PropSpec = { type: 'id' }
+const count: PropSpec = { type: 'count' }
+const bool: PropSpec = { type: 'bool' }
+const contentType = e(['article', 'pdf'])
+const status = e(['in_progress', 'read_later', 'finished'])
+
+export const EVENTS: EventDef[] = [
+  // --- Extension & saving ----------------------------------------------------------
+  {
+    name: 'extension_installed',
+    area: 'extension',
+    source: 'client',
+    surface: 'extension',
+    trigger: 'Extension installed (demo: first time /demo-browser loads in this browser)',
+    props: {},
+    feeds: 'Activation funnel (install → first save)',
+    origin: 'prd',
+  },
+  {
+    name: 'save_clicked',
+    area: 'extension',
+    source: 'client',
+    surface: 'extension',
+    trigger: '"Add to Quiescent" clicked',
+    props: { source_domain: { type: 'domain' } },
+    feeds: 'Save attempts; false-save rate denominator',
+    origin: 'prd',
+    note: 'PRD lists no properties; source_domain added so attempts can be joined to failures.',
+  },
+  {
+    name: 'save_confirmed',
+    area: 'extension',
+    source: 'server',
+    surface: 'extension',
+    trigger: 'Server confirms a save',
+    props: {
+      item_id: id,
+      content_type: contentType,
+      source_domain: { type: 'domain' },
+      word_count: count,
+      partial: bool,
+      destination: e(['read_later', 'in_progress']),
+    },
+    feeds: 'Save primary metric (60% save 3+ in 7 days); funnel step 1',
+    origin: 'prd',
+    note: 'With the adopted "Saved to Read Later" flow, destination is always read_later at confirm time; Read now is a separate read_now_clicked.',
+  },
+  {
+    name: 'save_shown',
+    area: 'extension',
+    source: 'client',
+    surface: 'extension',
+    trigger: 'Popup or OS notification shows "Saved"',
+    props: { item_id: id, shown_in: e(['popup', 'notification']) },
+    feeds: 'False-save rate (save_shown without save_confirmed)',
+    origin: 'prd',
+  },
+  {
+    name: 'save_failed',
+    area: 'extension',
+    source: 'server',
+    surface: 'extension',
+    trigger: '"Couldn\'t save", "Can\'t save this page", "Open an article to save it" or "Upload PDFs in Quiescent" shown',
+    props: {
+      error_type: e(['offline', 'timeout', 'server_error', 'not_article', 'blocked_page', 'local_pdf', 'extract_failed']),
+      source_domain: { type: 'domain' },
+    },
+    feeds: 'Save guardrail (<5% failures); top failing sites',
+    origin: 'prd',
+    note: 'local_pdf added for the file:// state, which the PRD shows but gives no error_type.',
+  },
+  {
+    name: 'save_duplicate',
+    area: 'extension',
+    source: 'client',
+    surface: 'extension',
+    trigger: '"Already in your library" shown',
+    props: { item_id: id, source_domain: { type: 'domain' } },
+    feeds: 'Duplicate rate',
+    origin: 'prd',
+  },
+  {
+    name: 'read_now_clicked',
+    area: 'extension',
+    source: 'client',
+    surface: 'both',
+    trigger: '"Read now" clicked',
+    props: { item_id: id, from: e(['popup', 'notification', 'duplicate', 'upload']) },
+    feeds: 'Save flow; share of saves read immediately',
+    origin: 'prd',
+    note: 'full_state value removed with the Read Later cap. upload value is proposed (Read now after an upload).',
+  },
+  {
+    name: 'save_popup_dismissed',
+    area: 'extension',
+    source: 'client',
+    surface: 'extension',
+    trigger: 'Popup closed after "Saved to Read Later" without clicking Read now (item stays in Read later)',
+    props: { item_id: id },
+    feeds: 'Validates the "Saved to Read Later" proposal (Read now vs. later split)',
+    origin: 'proposed',
+  },
+  {
+    name: 'item_fetched',
+    area: 'account',
+    source: 'server',
+    surface: 'web',
+    trigger: 'The web app loads a save made in the extension',
+    props: { item_id: id, ms_since_save_confirmed: { type: 'ms' } },
+    feeds: 'Sync latency p95 (guardrail: 95% within 10 s)',
+    origin: 'prd',
+  },
+  // --- Accounts & sync --------------------------------------------------------------
+  {
+    name: 'sign_in_prompt_shown',
+    area: 'account',
+    source: 'client',
+    surface: 'both',
+    trigger: 'A sign-in screen appears (web or popup)',
+    props: { trigger: e(['first_save', 'website', 'session_expired']) },
+    feeds: 'Sign-in completion rate (denominator)',
+    origin: 'prd',
+  },
+  {
+    name: 'sign_in_started',
+    area: 'account',
+    source: 'client',
+    surface: 'both',
+    trigger: '"Continue with Google" or "Send link" clicked',
+    props: { provider: e(['google', 'email']) },
+    feeds: 'Sign-in drop-off by step',
+    origin: 'prd',
+  },
+  {
+    name: 'sign_in_link_resent',
+    area: 'account',
+    source: 'client',
+    surface: 'both',
+    trigger: '"Resend" or "Send a new link" clicked',
+    props: { reason: e(['resend', 'expired']) },
+    feeds: 'Email deliverability signal',
+    origin: 'proposed',
+    note: 'The PRD has the Resend UI but no event for it.',
+  },
+  {
+    name: 'sign_in_completed',
+    area: 'account',
+    source: 'server',
+    surface: 'both',
+    trigger: 'Sign-in completes',
+    props: { provider: e(['google', 'email']), account: e(['new', 'returning']) },
+    feeds: 'Sign-in completion rate (numerator; target 70%)',
+    origin: 'prd',
+  },
+  {
+    name: 'sign_in_failed',
+    area: 'account',
+    source: 'server',
+    surface: 'both',
+    trigger: 'Any sign-in error',
+    props: { reason: e(['link_expired', 'rate_limited', 'provider_error', 'abandoned']) },
+    feeds: 'Sign-in drop-off reasons',
+    origin: 'prd',
+  },
+  {
+    name: 'new_device_sign_in',
+    area: 'account',
+    source: 'server',
+    surface: 'web',
+    trigger: 'First sign-in on a computer',
+    props: { items_available: count },
+    feeds: 'Multi-device usage',
+    origin: 'prd',
+  },
+  {
+    name: 'signed_out',
+    area: 'account',
+    source: 'server',
+    surface: 'both',
+    trigger: '"Sign out of this computer" clicked',
+    props: {},
+    feeds: 'Session health',
+    origin: 'prd',
+  },
+  {
+    name: 'sync_failed',
+    area: 'account',
+    source: 'server',
+    surface: 'web',
+    trigger: 'A change fails to reach the server (demo: any change while Dev → Offline is on)',
+    props: { object: e(['reading', 'highlight', 'note', 'folder']), reason: e(['offline', 'timeout']) },
+    feeds: 'Sync guardrail',
+    origin: 'prd',
+  },
+  {
+    name: 'extension_install_clicked',
+    area: 'account',
+    source: 'client',
+    surface: 'web',
+    trigger: '"Add to Chrome" clicked (empty library, Account page)',
+    props: { from: e(['empty_library', 'banner', 'account']) },
+    feeds: 'Install conversion from the website',
+    origin: 'proposed',
+  },
+  {
+    name: 'profile_photo_changed',
+    area: 'account',
+    source: 'server',
+    surface: 'web',
+    trigger: 'Photo uploaded or removed on the Account page',
+    props: { action: e(['uploaded', 'removed', 'rejected']), bytes: { type: 'bytes' } },
+    feeds: 'Profile feature usage',
+    origin: 'proposed',
+  },
+  {
+    name: 'profile_name_saved',
+    area: 'account',
+    source: 'server',
+    surface: 'web',
+    trigger: '"Save changes" on the Account page',
+    props: { name_length: { type: 'length' } },
+    feeds: 'Profile feature usage',
+    origin: 'proposed',
+  },
+  // --- Library (all proposed: folders, view switching, Most recent read) -------------
+  {
+    name: 'library_view_switched',
+    area: 'library',
+    source: 'client',
+    surface: 'web',
+    trigger: 'By Status / By Folder tab clicked',
+    props: { to: e(['status', 'folders']), folder_count: count },
+    feeds: 'Folder adoption',
+    origin: 'proposed',
+  },
+  {
+    name: 'item_status_changed',
+    area: 'library',
+    source: 'server',
+    surface: 'web',
+    trigger: 'An item moves between In progress, Read later and Finished',
+    props: { item_id: id, from: status, to: status, via: e(['card_menu', 'reader', 'opened', 'read_now']) },
+    feeds: 'Funnel step "finish" (to = finished); list health',
+    origin: 'proposed',
+    note: 'The PRD only has item_completed (progress ≥ 90%). Finishing is manual in v2, so this records it.',
+  },
+  {
+    name: 'item_removed',
+    area: 'library',
+    source: 'server',
+    surface: 'web',
+    trigger: '"Remove from library" confirmed',
+    props: { item_id: id, highlight_count: count, folder_count: count },
+    feeds: 'Churn of saved items',
+    origin: 'proposed',
+  },
+  {
+    name: 'most_recent_read_clicked',
+    area: 'library',
+    source: 'client',
+    surface: 'web',
+    trigger: 'Sidebar "Most recent read" clicked',
+    props: { item_id: id, status },
+    feeds: 'Return-to-reading shortcut usage',
+    origin: 'proposed',
+  },
+  {
+    name: 'folder_created',
+    area: 'library',
+    source: 'server',
+    surface: 'web',
+    trigger: '"Create folder" confirmed (modal or card menu "New folder…")',
+    props: { folder_id: id, items_added: count, folder_count: count, name_length: { type: 'length' }, from: e(['header', 'card_menu']) },
+    feeds: 'Folder adoption (P0 pending dev estimate)',
+    origin: 'proposed',
+  },
+  {
+    name: 'folder_renamed',
+    area: 'library',
+    source: 'server',
+    surface: 'web',
+    trigger: 'Rename saved in folder detail',
+    props: { folder_id: id, name_length: { type: 'length' } },
+    feeds: 'Folder adoption',
+    origin: 'proposed',
+  },
+  {
+    name: 'folder_deleted',
+    area: 'library',
+    source: 'server',
+    surface: 'web',
+    trigger: 'Delete folder confirmed (items stay in the library)',
+    props: { folder_id: id, item_count: count, folder_count: count },
+    feeds: 'Folder adoption',
+    origin: 'proposed',
+  },
+  {
+    name: 'folder_items_changed',
+    area: 'library',
+    source: 'server',
+    surface: 'web',
+    trigger: 'Items added to or removed from a folder',
+    props: { folder_id: id, added: count, removed: count, via: e(['card_menu', 'folder_detail', 'create_modal']) },
+    feeds: 'Folder adoption',
+    origin: 'proposed',
+  },
+  {
+    name: 'folder_opened',
+    area: 'library',
+    source: 'client',
+    surface: 'web',
+    trigger: 'A folder is opened from the By Folder grid',
+    props: { folder_id: id, item_count: count },
+    feeds: 'Folder adoption',
+    origin: 'proposed',
+  },
+  // --- Upload ---------------------------------------------------------------------
+  {
+    name: 'upload_started',
+    area: 'upload',
+    source: 'client',
+    surface: 'web',
+    trigger: 'A file is chosen or dropped in the Upload dialog',
+    props: { file_type: e(['pdf', 'epub', 'docx', 'other']), bytes: { type: 'bytes' } },
+    feeds: 'Upload attempts; requested file types',
+    origin: 'proposed',
+  },
+  {
+    name: 'upload_completed',
+    area: 'upload',
+    source: 'server',
+    surface: 'web',
+    trigger: 'Upload processed; item lands in Read later',
+    props: {
+      item_id: id,
+      file_type: e(['pdf']),
+      bytes: { type: 'bytes' },
+      pages: count,
+      text_extractable: bool,
+      chapters_detected: count,
+      processing_ms: { type: 'ms' },
+    },
+    feeds: 'Upload readable rate; secondary "new uploads per week"; funnel step 1',
+    origin: 'prd',
+  },
+  {
+    name: 'upload_failed',
+    area: 'upload',
+    source: 'server',
+    surface: 'web',
+    trigger: 'Upload rejected or processing failed',
+    props: { file_type: e(['pdf', 'epub', 'docx', 'other']), error_type: e(['wrong_type', 'too_large', 'read_error']) },
+    feeds: 'Upload guardrail (<5% errors)',
+    origin: 'prd',
+  },
+  // --- Reader --------------------------------------------------------------------
+  {
+    name: 'item_opened',
+    area: 'reader',
+    source: 'client',
+    surface: 'web',
+    trigger: 'An item opens in the reader',
+    props: {
+      item_id: id,
+      content_type: contentType,
+      entry_point: e(['library', 'read_now', 'most_recent', 'folder', 'notification', 'direct']),
+      open: e(['first', 'reopen']),
+      days_since_last_open: count,
+    },
+    feeds: 'Library primary (opened within 7 days of save); Reader supporting (reopen within 7 days); funnel steps 2 and 5',
+    origin: 'prd',
+  },
+  {
+    name: 'reading_session_ended',
+    area: 'reader',
+    source: 'client',
+    surface: 'web',
+    trigger: 'Reader closed (or 30 min idle)',
+    props: { item_id: id, duration_s: { type: 'seconds' }, progress_start: { type: 'percent' }, progress_end: { type: 'percent' } },
+    feeds: 'Reading time; progress per session',
+    origin: 'prd',
+  },
+  {
+    name: 'item_completed',
+    area: 'reader',
+    source: 'client',
+    surface: 'web',
+    trigger: 'Scroll progress first reaches 90%',
+    props: { item_id: id, progress: { type: 'percent' } },
+    feeds: 'Completion rate (independent of the manual Finished status)',
+    origin: 'prd',
+  },
+  {
+    name: 'highlight_created',
+    area: 'reader',
+    source: 'server',
+    surface: 'web',
+    trigger: 'Highlight or Highlight + note',
+    props: { item_id: id, highlight_id: id, has_note: bool, length: { type: 'length' } },
+    feeds: 'Reader primary (50% of opened readings get a highlight or note); funnel step 3',
+    origin: 'prd',
+  },
+  {
+    name: 'note_edited',
+    area: 'reader',
+    source: 'server',
+    surface: 'web',
+    trigger: 'A note is saved (debounced; once per note window)',
+    props: { item_id: id, highlight_id: id, length: { type: 'length' } },
+    feeds: 'Reader quality; funnel step 3',
+    origin: 'prd',
+  },
+  {
+    name: 'highlight_deleted',
+    area: 'reader',
+    source: 'server',
+    surface: 'web',
+    trigger: '"Remove highlight"',
+    props: { item_id: id, highlight_id: id, had_note: bool },
+    feeds: 'Reader quality',
+    origin: 'prd',
+  },
+  {
+    name: 'side_panel_opened',
+    area: 'reader',
+    source: 'client',
+    surface: 'web',
+    trigger: 'Highlights panel opened',
+    props: { item_id: id, highlight_count: count, days_since_first_highlight: count },
+    feeds: 'North Star proxy (reopening a past item\'s highlights in a later week)',
+    origin: 'prd',
+    note: 'days_since_first_highlight is proposed so the proxy can be computed.',
+  },
+  {
+    name: 'fullscreen_entered',
+    area: 'reader',
+    source: 'client',
+    surface: 'web',
+    trigger: 'Full screen button',
+    props: { item_id: id, from: e(['focus_button', 'extension']) },
+    feeds: 'Reader focus usage',
+    origin: 'prd',
+  },
+  // --- Q ----------------------------------------------------------------------------
+  {
+    name: 'q_opened',
+    area: 'q',
+    source: 'client',
+    surface: 'web',
+    trigger: 'Q panel opened (turtle clicked, or Ask AI)',
+    props: { item_id: id, has_selection: bool },
+    feeds: 'Q usage',
+    origin: 'prd',
+  },
+  {
+    name: 'question_asked',
+    area: 'q',
+    source: 'server',
+    surface: 'web',
+    trigger: 'A request is sent to Q',
+    props: {
+      item_id: id,
+      request_type: e(['explanation', 'summary', 'notes_summary', 'outside_info', 'other']),
+      has_selection: bool,
+      session_turn: count,
+      question_length: { type: 'length' },
+    },
+    feeds: 'Q primary (50% of sessions with ≥1 question); questions per session',
+    origin: 'prd',
+    note: 'Prompt text is never logged (PRD open question); only its length and category.',
+  },
+  {
+    name: 'answer_rendered',
+    area: 'q',
+    source: 'server',
+    surface: 'web',
+    trigger: 'Q answer shown',
+    props: { item_id: id, total_ms: { type: 'ms' }, time_to_first_words_ms: { type: 'ms' } },
+    feeds: 'Q speed; Q cost (tokens — not available in mock mode)',
+    origin: 'prd',
+  },
+  {
+    name: 'answer_failed',
+    area: 'q',
+    source: 'server',
+    surface: 'web',
+    trigger: 'Q request fails (demo: Dev → Q provider error)',
+    props: { item_id: id, error_type: e(['provider_error', 'timeout', 'limit']) },
+    feeds: 'Q guardrail (≤2% errors)',
+    origin: 'prd',
+  },
+  {
+    name: 'reading_resumed',
+    area: 'q',
+    source: 'client',
+    surface: 'web',
+    trigger: 'Q panel closed after an answer',
+    props: { item_id: id, seconds_after_answer: { type: 'seconds' } },
+    feeds: 'Return-to-reading (resumed within 60 s ÷ answer_rendered)',
+    origin: 'prd',
+  },
+  {
+    name: 'q_toggled',
+    area: 'q',
+    source: 'client',
+    surface: 'web',
+    trigger: 'Q switched on or off',
+    props: { on: bool },
+    feeds: 'AI default question (on or off for new users)',
+    origin: 'prd',
+  },
+  {
+    name: 'answer_rated',
+    area: 'q',
+    source: 'client',
+    surface: 'web',
+    trigger: '👍 / 👎 on an answer — NOT BUILT (rating UI is P1 in the Q PRD)',
+    props: { item_id: id, helpful: bool },
+    feeds: 'Q guardrail (unhelpful < 20%)',
+    origin: 'prd',
+  },
+]
+
+export const EVENT_BY_NAME = new Map(EVENTS.map((d) => [d.name, d]))
+
+export const AREA_LABEL: Record<Area, string> = {
+  extension: 'Extension & saving',
+  account: 'Accounts & sync',
+  library: 'Library',
+  upload: 'Upload',
+  reader: 'Reader',
+  q: 'Q',
+}
+
+/** Funnel shown on /events: save → open → highlight/note → finish → return within 7 days. */
+export const FUNNEL = [
+  { step: 'Save', events: ['save_confirmed', 'upload_completed'], rule: 'Any confirmed save or completed upload' },
+  { step: 'Open', events: ['item_opened'], rule: 'item_opened for that item (open = first)' },
+  { step: 'Highlight / note', events: ['highlight_created', 'note_edited'], rule: 'At least one highlight or note on that item' },
+  { step: 'Finish', events: ['item_status_changed'], rule: 'item_status_changed with to = finished' },
+  {
+    step: 'Return within 7 days',
+    events: ['item_opened'],
+    rule: 'item_opened with open = reopen and days_since_last_open ≤ 7',
+  },
+] as const

@@ -5,9 +5,11 @@
 //   items              -> Item[]            (the library, without file bytes)
 //   file:<itemId>      -> Blob              (PDF bytes)
 //   highlights:<id>    -> Highlight[]
-//   seeded             -> true once the sample items have been created
+//   seeded-v2          -> 2 once the v2 sample library has been created
+//   session            -> the mock sign-in
+//   chat:<id>          -> Q conversation for one item
 
-import { del, get, set } from 'idb-keyval'
+import { clear, del, get, set } from 'idb-keyval'
 import { useEffect, useState } from 'react'
 import type { Highlight, Item } from '../types'
 
@@ -15,9 +17,31 @@ import type { Highlight, Item } from '../types'
 
 type Listener = () => void
 const listeners = new Set<Listener>()
+// Other tabs (e.g. /demo-browser saving into an open Library tab) refresh too.
+const channel = (() => {
+  try {
+    const c = new BroadcastChannel('quiescent-db')
+    c.onmessage = () => listeners.forEach((l) => l())
+    return c
+  } catch {
+    return null
+  }
+})()
 function notify() {
   listeners.forEach((l) => l())
+  try {
+    channel?.postMessage('changed')
+  } catch {
+    // Cross-tab refresh is a nicety; ignore failures.
+  }
 }
+
+/** Dev "Reset demo data" / user-state switch: wipe every stored item, file, highlight and chat. */
+export const clearAllData = () =>
+  serial(async () => {
+    await clear()
+    notify()
+  })
 function useStored<T>(load: () => Promise<T>, deps: unknown[]): T | undefined {
   const [value, setValue] = useState<T>()
   useEffect(() => {
@@ -84,7 +108,6 @@ export const deleteItem = (id: string) =>
     await del(`file:${id}`)
     await del(`highlights:${id}`)
     await del(`chat:${id}`)
-    await del(`notesdoc:${id}`)
     notify()
   })
 
@@ -120,40 +143,17 @@ export function useHighlights(itemId: string | undefined) {
 // --- first-run seeding flag ------------------------------------------------
 
 export async function isSeeded() {
-  return (await get<boolean>('seeded')) === true
+  return (await get<number>('seeded-v2')) === 2
 }
 export async function markSeeded() {
-  await set('seeded', true)
-}
-
-// --- pending upload (chosen on the landing page, saved after sign-in) --------
-
-export interface PendingUpload {
-  item: Item
-  file?: Blob
-}
-
-export async function setPending(item: Item, file?: Blob) {
-  await set('pending', { item, file } satisfies PendingUpload)
-}
-
-export async function getPending() {
-  return get<PendingUpload>('pending')
-}
-
-/** Move the pending upload into the library (dated now), then forget it. */
-export async function commitPending() {
-  const pending = await getPending()
-  if (!pending) return
-  await addItem({ ...pending.item, addedAt: Date.now() }, pending.file)
-  await del('pending')
+  await set('seeded-v2', 2)
 }
 
 // --- mock session ------------------------------------------------------------
 // MOCKUP ONLY: "signing in" just records which button was clicked. There is no
 // real account, password check, or identity provider behind it.
 
-export type SignInMethod = 'google' | 'apple' | 'microsoft' | 'email'
+export type SignInMethod = 'google' | 'email'
 
 export interface Session {
   method: SignInMethod
@@ -205,24 +205,3 @@ export function useChat(itemId: string | undefined) {
   return useStored(async () => (itemId ? getChat(itemId) : []), [itemId])
 }
 
-// --- Notes page (one free-form document per item) -------------------------------
-// The page is the user's own document. It embeds highlight cards by id, but
-// editing or clearing it never changes the highlights themselves.
-
-export interface NotesDoc {
-  /** TipTap/ProseMirror document JSON. */
-  doc: unknown
-  /** Every highlight id ever placed on the page, so cleared ones don't come back on their own. */
-  known: string[]
-  updatedAt: number
-}
-
-export async function getNotesDoc(itemId: string): Promise<NotesDoc | undefined> {
-  return get<NotesDoc>(`notesdoc:${itemId}`)
-}
-
-/** Saved quietly (no re-render broadcast): the editor already shows what it saves. */
-export const saveNotesDoc = (itemId: string, value: NotesDoc) =>
-  serial(async () => {
-    await set(`notesdoc:${itemId}`, value)
-  })
