@@ -52,6 +52,8 @@ export function Assistant({
       // Seen it: the toggle's answered/error badge clears once the panel is open.
       setQState((s) => (s === 'answered' || s === 'error' ? 'idle' : s))
     }
+    // Closing after seeing the answer: no badge. (An answer that lands while closed still shows one.)
+    if (!open && wasOpen.current) setQState((s) => (s === 'answered' || s === 'error' ? 'idle' : s))
     if (!open && wasOpen.current && answeredAt.current) {
       track('reading_resumed', { item_id: item.id, seconds_after_answer: (Date.now() - answeredAt.current) / 1000 })
       answeredAt.current = null

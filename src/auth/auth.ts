@@ -15,7 +15,17 @@ export async function completeSignIn(provider: 'google' | 'email', email: string
   if (email) protoStore.set((s) => ({ ...s, profile: { ...s.profile, email, method: provider } }))
   else protoStore.set((s) => ({ ...s, profile: { ...s.profile, method: provider } }))
   track('sign_in_completed', { provider, account: isNew ? 'new' : 'returning' }, surface)
-  if (!isNew) track('new_device_sign_in', { items_available: (await getItems()).length }, 'web')
+  if (!isNew && firstSignInOnThisComputer()) track('new_device_sign_in', { items_available: (await getItems()).length }, 'web')
+}
+
+function firstSignInOnThisComputer() {
+  try {
+    if (localStorage.getItem('quiescent.v2.device')) return false
+    localStorage.setItem('quiescent.v2.device', '1')
+    return true
+  } catch {
+    return false
+  }
 }
 
 export async function signOutHere(surface: Surface) {
