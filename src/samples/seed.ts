@@ -78,11 +78,26 @@ export function seedSamples() {
 }
 
 /** Dev menu: switch user state (or reset). Wipes everything and signs in as that user. */
-export async function resetDemo(state: UserState) {
-  await clearAllData()
-  await buildLibrary(state)
-  const isNew = state === 'new'
-  await signIn('google', isNew ? 'new.reader@gmail.com' : 'tam@usf.edu')
+// One reset at a time. A second call for the same state while one is running
+// (e.g. React StrictMode running /dev/go's effect twice) joins it instead of
+// building a second copy of the library.
+let resetting: { state: UserState; run: Promise<void> } | null = null
+
+export function resetDemo(state: UserState): Promise<void> {
+  if (resetting?.state === state) return resetting.run
+  const previous = resetting?.run ?? Promise.resolve()
+  const run = previous.then(async () => {
+    await clearAllData()
+    await buildLibrary(state)
+    const isNew = state === 'new'
+    await signIn('google', isNew ? 'new.reader@gmail.com' : 'tam@usf.edu')
+  })
+  const entry = { state, run }
+  resetting = entry
+  run.finally(() => {
+    if (resetting === entry) resetting = null
+  })
+  return run
 }
 
 async function buildLibrary(state: UserState) {

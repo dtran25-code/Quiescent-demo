@@ -1,6 +1,7 @@
 # Quiescent prototype v2 — changelog
 
-Branch `prototype-v2`. v1 (`main`, readhub-demo.netlify.app) is untouched.
+Branch `prototype-v2`, built on top of `main` **including PR #1** (Reading Room palette, Cormorant Garamond + Open
+Sans, turtle logo). v1 (`main`, readhub-demo.netlify.app) is untouched.
 Everything here is a **prototype for developers**: mock data, no backend, state in the browser.
 
 Start at **/screens** (every screen and state), **/events** (event dictionary + funnel), **/demo-browser** (simulated
@@ -9,6 +10,16 @@ extension), and the **Dev** button (bottom-right of every page).
 ---
 
 ## What changed vs v1
+
+### Kept from PR #1 (merged into this branch)
+- **Theme:** the "Reading Room" palette (white/sage surfaces, navy ink, sage selection, soft yellow highlights) — now
+  defined in `src/styles/tokens.css`, the single tokens file.
+- **Fonts:** Cormorant Garamond (semibold) for titles and headings, Open Sans for body and reading text.
+- **Logo and favicon:** the turtle mark (shell as a speech bubble around an open book), drawn from tokens.
+- **Quiescent naming**, PDF author / article byline capture, reader typography.
+- Not kept from PR #1, because the v2 brief replaces them: its Library sort and filters (`libraryView.ts`), status and
+  folders stored on items in IndexedDB (v2 keeps them in localStorage), the Notes page, the landing page and the
+  undo-toast delete (v2 uses a confirm, per the brief).
 
 ### Removed
 - **Notes page** (`/notes/:id`), its TipTap editor, and every link to it (library row, highlights panel, note popover).
@@ -25,11 +36,11 @@ extension), and the **Dev** button (bottom-right of every page).
 | Area | What |
 |---|---|
 | Shell (A1) | Left sidebar: logo → Library → Most recent read → (sync status) → Account at the bottom. Collapsible to icons; active page highlighted; replaces all top-nav links. Hidden in browser full screen. |
-| Library (A2) | Notion-style view tabs **By Status** / **By Folder**, **+ Create new folder**, **Upload**. Cards with title, source domain, type, date saved, progress % (In progress only), ⋯ menu (Change status, Add to folder, Remove from library). |
+| Library (A2) | Notion-style view tabs **By Status** / **By Folder**, **+ Create new folder**, **Upload**. **By Status has three sub-views — In progress · Read later · Finished — shown one at a time** (segmented control with counts, ←/→ keys, `?status=` in the URL; DEFAULT opens on In progress). Cards with title, source domain, type, date saved, progress % (In progress only), ⋯ menu (Change status, Add to folder, Remove from library). |
 | Folders (A2) | Create (name ≤ 40, unique, + searchable item checklist), grid of steles, folder detail (breadcrumb, status badges, Rename, Add items, Delete with "Items stay in your library"), card "Add to folder" multi-select + "New folder…". |
 | Upload (A2) | PDF only, ≤ 25 MB: picker, uploading (progress), success → Read later (+ Read now), errors for wrong type / too large / unreadable. |
-| Stele icon (A3) | `src/icons/SteleIcon.tsx`, original flat SVG: arched slab with carved border and inscription lines on a hex-shelled tortoise, head forward and raised, feet tucked. 96 px and 24 px (24 drops inscription and shell detail). States: default, hover (lift), selected, empty (blank slab). |
-| Q turtle (A4) | `src/icons/QTurtle.tsx`: same shell pattern and stone palette plus moss; eye and smile so it reads as a character. 44 px toggle, 20 px beside Q's messages. States: idle, thinking (head tucks, shell pulses; static under reduced motion), answered (✓ badge), error (! badge). Q's behavior and panel logic unchanged; toggle now also opens with Enter/Space. |
+| Stele icon (A3) | `src/icons/SteleIcon.tsx`, original flat SVG in cool stone tones matched to the sage palette: arched slab with carved border and inscription lines on a hex-shelled tortoise, head forward and raised, feet tucked. 96 px and 24 px (24 drops inscription and shell detail). States: default, hover (lift), selected, empty (blank slab). |
+| Q turtle (A4) | `src/icons/QTurtle.tsx`: same shell pattern as the stele, in the logo's colors (sage shell, navy outline); eye and smile so it reads as a character. 44 px toggle, 20 px beside Q's messages. States: idle, thinking (head tucks, shell pulses; static under reduced motion), answered (✓ badge), error (! badge). Q's behavior and panel logic unchanged; toggle now also opens with Enter/Space. |
 | Account (A5) | Rebuilt from the reference inside the shell: Profile (photo upload/remove with Uploading / Saved / Couldn't upload states, name + Save), Sign-in (email, method, 30-day note), Sync (status, extension, computers, item count), Sign out of this computer, Delete account via support email. Date of birth removed. Annotation badges show only with dev notes on. |
 | Sign-in (A6) | `/signin` with every state: Continue with Google · email + Send link; Check your email (Resend after 60 s, Use a different email, "Simulate clicking the email link"); Signing you in…; Link expired; Too many requests; Signed out. Shares components with the popup so both surfaces match. |
 | Reader | Sits inside the shell (sidebar collapsed by default), Q turtle, and a **Mark as finished** / **Finished** toggle in the header (Finished is manual). Everything else unchanged. |
@@ -48,6 +59,7 @@ All brief DEFAULTs were **kept as written**:
 | DEFAULT | Where |
 |---|---|
 | Sidebar starts collapsed to icons inside the reader | `src/shell/AppShell.tsx` |
+| By Status opens on the In progress sub-view (my default; the brief doesn't say which) | `src/library/LibraryPage.tsx` |
 | Order: In progress by last opened · Read later by last saved · Finished by last finished; no user-facing sort | `src/library/useLibrary.ts` |
 | New saves → Read later (In progress if saved with "Read now"); opening a Read later item → In progress; Finished set by hand | `src/proto/actions.ts` |
 | An item can be in several folders or none; folders independent of status; removing from a folder never deletes the item | `src/proto/actions.ts` |
@@ -85,7 +97,7 @@ Added properties or values on PRD events:
 Proposed events (marked "proposed — not in PRD" in the Event log and on /events):
 `save_popup_dismissed`, `sign_in_link_resent`, `extension_install_clicked`, `profile_photo_changed`,
 `profile_name_saved`, `library_view_switched`, `item_status_changed`, `item_removed`, `most_recent_read_clicked`,
-`folder_created`, `folder_renamed`, `folder_deleted`, `folder_items_changed`, `folder_opened`, `upload_started`.
+`library_status_switched`, `folder_created`, `folder_renamed`, `folder_deleted`, `folder_items_changed`, `folder_opened`, `upload_started`.
 
 `answer_rated` is in the dictionary but not fired: the rating UI is P1 in the Q PRD.
 

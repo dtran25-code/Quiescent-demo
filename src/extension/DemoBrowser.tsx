@@ -265,7 +265,11 @@ export default function DemoBrowser() {
       setPopup(null)
       readNow(id, from)
     },
-    onOpenLibrary: () => navigate('/library'),
+    // "Open library" lands on the sub-view the item is in (Read later for a fresh save).
+    onOpenLibrary: () => {
+      const id = popup && 'itemId' in popup ? popup.itemId : null
+      navigate(id ? `/library?status=${metaOf(id).status}` : '/library')
+    },
     onRetry: add,
     onUpload: () => window.open('/library?upload=picker', '_blank', 'noopener'),
   }

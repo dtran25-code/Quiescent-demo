@@ -39,7 +39,9 @@ const GROUPS: { title: string; brief: string; screens: Screen[] }[] = [
     brief: 'A2',
     screens: [
       { name: 'Empty library (new user): install the extension or upload', to: go('new', '/library'), state: 'new' },
-      { name: 'By Status: In progress · Read later · Finished (no folders, so no By Folder tab)', to: go('existing', '/library'), state: 'existing' },
+      { name: 'By Status → In progress sub-view (default; no folders, so no By Folder tab)', to: go('existing', '/library'), state: 'existing' },
+      { name: 'By Status → Read later sub-view', to: go('existing', '/library?status=read_later'), state: 'existing' },
+      { name: 'By Status → Finished sub-view', to: go('existing', '/library?status=finished'), state: 'existing' },
       { name: 'Card ⋯ menu → Add to folder (multi-select + New folder…)', to: go('existing_folders', '/library?addto=seed-hashing'), state: 'existing_folders' },
       { name: 'Card ⋯ menu → Remove from library (confirm)', to: go('existing', '/library?remove=seed-dull-tools'), state: 'existing' },
       { name: 'Create new folder modal (name + searchable checklist)', to: go('existing', '/library?create=1'), state: 'existing', note: 'Create one to see By Folder appear.' },

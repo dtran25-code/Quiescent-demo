@@ -117,7 +117,11 @@ export function LibraryPage() {
       ) : (
         <>
           {!extensionConnected && <InstallBanner />}
-          {view === 'status' && <StatusView entries={entries} actions={actions} />}
+          {view === 'status' && (
+            <div role="tabpanel" aria-label="By Status">
+              <StatusView entries={entries} actions={actions} />
+            </div>
+          )}
           {view === 'folders' && !folder && <FolderGrid folders={folders} highlightId={params.get('new')} onSeen={() => setParams({ view: 'folders' }, { replace: true })} />}
           {view === 'folders' && folder && <FolderDetail folder={folder} entries={entries} actions={actions} />}
         </>
@@ -190,31 +194,87 @@ const EMPTY_LINE: Record<Status, string> = {
   finished: 'Nothing finished yet. Mark a reading as finished from the reader or its ⋯ menu.',
 }
 
+/**
+ * By Status has three sub-views — In progress · Read later · Finished — shown one
+ * at a time (?status=…). DEFAULT: opens on In progress.
+ */
 function StatusView({ entries, actions }: { entries: Entry[]; actions: CardActions }) {
+  const [params, setParams] = useSearchParams()
   const groups = useMemo(() => groupByStatus(entries), [entries])
+  const raw = params.get('status') as Status | null
+  const active: Status = raw && STATUSES.includes(raw) ? raw : 'in_progress'
+  const tabs = useRef<(HTMLButtonElement | null)[]>([])
+
+  function select(status: Status, focus = false) {
+    if (status === active) return
+    track('library_status_switched', { to: status, item_count: groups[status].length })
+    const next = new URLSearchParams(params)
+    next.set('status', status)
+    setParams(next, { replace: true })
+    if (focus) tabs.current[STATUSES.indexOf(status)]?.focus()
+  }
+
   return (
-    <div className="mt-8 space-y-10" role="tabpanel" aria-label="By Status">
-      {STATUSES.map((status) => (
-        <section key={status} aria-labelledby={`grp-${status}`}>
-          <h2 id={`grp-${status}`} className="mb-3 flex items-baseline gap-2">
-            <span className="font-serif font-semibold text-xl">{STATUS_LABEL[status]}</span>
-            <span className="rounded-full bg-paper-deep px-2 py-0.5 text-xs font-semibold tabular-nums text-ink-soft">{groups[status].length}</span>
-          </h2>
-          {groups[status].length === 0 ? (
-            <p className="rounded-xl border border-dashed border-rule px-4 py-4 text-sm text-ink-faint">{EMPTY_LINE[status]}</p>
-          ) : (
-            <ul className="grid grid-cols-[repeat(auto-fill,minmax(17rem,1fr))] gap-3">
-              {groups[status].map((e) => (
-                <ItemCard key={e.item.id} entry={e} actions={actions} />
-              ))}
-            </ul>
-          )}
-        </section>
-      ))}
-      <DevNote>
-        DEFAULT order, no user-facing sort: In progress by last opened · Read later by last saved · Finished by last finished.
-        DEFAULT status rules: new saves → Read later (In progress if saved with "Read now"); opening a Read later item →
-        In progress; Finished is set by hand (reader button or ⋯ menu). Opening a Finished item keeps it Finished.
+    <div className="mt-6">
+      <div
+        role="tablist"
+        aria-label="Reading status"
+        className="inline-flex gap-1 rounded-xl bg-paper-deep p-1"
+        onKeyDown={(e) => {
+          const i = STATUSES.indexOf(active)
+          if (e.key === 'ArrowRight') select(STATUSES[(i + 1) % 3], true)
+          else if (e.key === 'ArrowLeft') select(STATUSES[(i + 2) % 3], true)
+          else return
+          e.preventDefault()
+        }}
+      >
+        {STATUSES.map((status, i) => {
+          const selected = status === active
+          return (
+            <button
+              key={status}
+              ref={(el) => {
+                tabs.current[i] = el
+              }}
+              id={`status-tab-${status}`}
+              role="tab"
+              aria-selected={selected}
+              aria-controls="status-panel"
+              tabIndex={selected ? 0 : -1}
+              onClick={() => select(status)}
+              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
+                selected ? 'bg-card text-ink shadow-sm' : 'text-ink-soft hover:text-ink'
+              }`}
+            >
+              {STATUS_LABEL[status]}
+              <span
+                className={`rounded-full px-2 py-0.5 text-xs tabular-nums ${selected ? 'bg-sage text-ink' : 'bg-card/70 text-ink-soft'}`}
+              >
+                {groups[status].length}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+
+      <div id="status-panel" role="tabpanel" aria-labelledby={`status-tab-${active}`} className="mt-6">
+        {groups[active].length === 0 ? (
+          <p className="rounded-xl border border-dashed border-rule px-4 py-6 text-center text-sm text-ink-faint">{EMPTY_LINE[active]}</p>
+        ) : (
+          <ul className="grid grid-cols-[repeat(auto-fill,minmax(17rem,1fr))] gap-3">
+            {groups[active].map((e) => (
+              <ItemCard key={e.item.id} entry={e} actions={actions} />
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <DevNote className="mt-8">
+        By Status has three sub-views, one shown at a time (<code>?status=in_progress|read_later|finished</code>); DEFAULT opens
+        on In progress. ←/→ move between them. DEFAULT order, no user-facing sort: In progress by last opened · Read later
+        by last saved · Finished by last finished. DEFAULT status rules: new saves → Read later (In progress if saved with
+        "Read now"); opening a Read later item → In progress; Finished is set by hand (reader button or ⋯ menu). Opening a
+        Finished item keeps it Finished.
       </DevNote>
     </div>
   )

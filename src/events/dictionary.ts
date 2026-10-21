@@ -278,6 +278,16 @@ export const EVENTS: EventDef[] = [
     origin: 'proposed',
   },
   {
+    name: 'library_status_switched',
+    area: 'library',
+    source: 'client',
+    surface: 'web',
+    trigger: 'In progress / Read later / Finished sub-view selected inside By Status',
+    props: { to: status, item_count: count },
+    feeds: 'Which lists readers check; Read later backlog visits',
+    origin: 'proposed',
+  },
+  {
     name: 'item_status_changed',
     area: 'library',
     source: 'server',
