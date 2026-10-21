@@ -7,6 +7,8 @@
 // No sort or filter controls (removed in v2). Query params for /screens:
 //   ?upload=picker|uploading|success|wrong-type|too-large   open Upload in that state
 //   ?new=<folderId>                                         highlight a just-created folder
+//   ?create=1 · ?addto=<itemId> · ?remove=<itemId>           open Create folder / Add to folder / Remove confirm
+//   (folder detail) ?rename=1 · ?add=1 · ?delete=1           open Rename / Add items / Delete confirm
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
@@ -30,13 +32,22 @@ export function LibraryPage() {
   const folders = useProto((s) => s.folders)
   const extensionConnected = useProto((s) => s.extensionConnected)
 
-  const [creating, setCreating] = useState(false)
+  const [creating, setCreating] = useState(() => params.get('create') === '1')
   const [uploading, setUploading] = useState<UploadState | null>(() => {
     const u = params.get('upload')
     return u ? (DEMO_UPLOAD_STATES[u] ?? { kind: 'picker' }) : null
   })
   const [addingToFolder, setAddingToFolder] = useState<Entry | null>(null)
   const [toRemove, setToRemove] = useState<Entry | null>(null)
+  // Deep links from /screens open a card dialog once the library has loaded.
+  const deepLinked = useRef(false)
+  useEffect(() => {
+    if (!entries || deepLinked.current) return
+    deepLinked.current = true
+    const find = (id: string | null) => entries.find((e) => e.item.id === id) ?? null
+    if (params.get('addto')) setAddingToFolder(find(params.get('addto')))
+    if (params.get('remove')) setToRemove(find(params.get('remove')))
+  }, [entries, params])
 
   const folder = folderId ? folders.find((f) => f.id === folderId) : undefined
   const view: 'status' | 'folders' = folderId || (params.get('view') === 'folders' && folders.length > 0) ? 'folders' : 'status'
@@ -258,9 +269,10 @@ function FolderGrid({ folders, highlightId, onSeen }: { folders: Folder[]; highl
 
 function FolderDetail({ folder, entries, actions }: { folder: Folder; entries: Entry[]; actions: CardActions }) {
   const navigate = useNavigate()
-  const [renaming, setRenaming] = useState(false)
-  const [picking, setPicking] = useState(false)
-  const [deleting, setDeleting] = useState(false)
+  const [params] = useSearchParams()
+  const [renaming, setRenaming] = useState(() => params.get('rename') === '1')
+  const [picking, setPicking] = useState(() => params.get('add') === '1')
+  const [deleting, setDeleting] = useState(() => params.get('delete') === '1')
   const inFolder = folder.itemIds.map((id) => entries.find((e) => e.item.id === id)).filter((e): e is Entry => !!e)
 
   return (

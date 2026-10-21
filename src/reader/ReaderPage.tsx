@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
-import { Maximize2, Minimize2, X } from 'lucide-react'
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router'
+import { CheckCircle2, Maximize2, Minimize2, X } from 'lucide-react'
 import { getFile, newId, updateHighlights, updateItem, useHighlights, useItem } from '../storage/db'
+import { metaOf, patchMeta, useProto } from '../proto/store'
+import { markOpened, setStatus } from '../proto/actions'
+import { track } from '../events/track'
 import type { Chapter, Highlight, Item } from '../types'
 import { anchorFromSelection, type SelectionAnchor } from './anchors'
 import { ArticleView } from './ArticleView'
@@ -18,7 +21,7 @@ export function ReaderPage() {
   const { id } = useParams()
   const item = useItem(id)
 
-  if (item === undefined) return <div className="fixed inset-0 bg-paper" />
+  if (item === undefined) return <div className="absolute inset-0 bg-paper" />
   if (item === null) {
     return (
       <div className="mx-auto max-w-xl px-8 py-24 text-center">
@@ -66,7 +69,8 @@ function Reader({ item }: { item: Item }) {
   const [atTop, setAtTop] = useState(true)
   const [toolbar, setToolbar] = useState<ToolbarState | null>(null)
   const [note, setNote] = useState<{ id: string; x: number; y: number } | null>(null)
-  const [panelOpen, setPanelOpen] = useState(false)
+  // /screens deep link: ?panel=1 opens the highlights panel (e.g. its empty state).
+  const [panelOpen, setPanelOpen] = useState(() => params.get('panel') === '1')
   const [pulseId, setPulseId] = useState<string | null>(null)
   const [markers, setMarkers] = useState<Marker[]>([])
   const [scrollbar, setScrollbar] = useState(0)
@@ -75,6 +79,51 @@ function Reader({ item }: { item: Item }) {
   const [assistantSignal, setAssistantSignal] = useState(0)
   const fullscreen = useFullscreen()
   const restored = useRef(false)
+  const location = useLocation()
+  const status = useProto((s) => s.meta[item.id]?.status ?? 'read_later')
+
+  // --- v2: open / session events and the status rule ------------------------------
+  // Opening a Read later item moves it to In progress (DEFAULT). One item_opened per
+  // open; reading_session_ended when the reader closes.
+  const progressRef = useRef(item.progress)
+  useEffect(() => {
+    progressRef.current = item.progress
+  }, [item.progress])
+  useEffect(() => {
+    const id = item.id
+    // React StrictMode remounts once in development: that isn't a new session.
+    const pending = endTimers.get(id)
+    if (pending) {
+      window.clearTimeout(pending.timer)
+      endTimers.delete(id)
+    } else {
+      const { first, daysSince } = markOpened(id, item.addedAt)
+      const entry = (location.state as { entry?: string } | null)?.entry
+      track('item_opened', {
+        item_id: id,
+        content_type: item.type,
+        entry_point: ['library', 'read_now', 'most_recent', 'folder', 'notification'].includes(entry ?? '') ? entry : 'direct',
+        open: first ? 'first' : 'reopen',
+        days_since_last_open: daysSince,
+      })
+      sessionStart.set(id, { at: Date.now(), progress: item.progress })
+    }
+    return () => {
+      const timer = window.setTimeout(() => {
+        endTimers.delete(id)
+        const s = sessionStart.get(id)
+        sessionStart.delete(id)
+        track('reading_session_ended', {
+          item_id: id,
+          duration_s: s ? (Date.now() - s.at) / 1000 : 0,
+          progress_start: s?.progress ?? 0,
+          progress_end: progressRef.current,
+        })
+      }, 50)
+      endTimers.set(id, { timer })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item.id])
 
   useEffect(() => {
     if (item.type === 'pdf') getFile(item.id).then((f) => setFile(f ?? null))
@@ -119,6 +168,10 @@ function Reader({ item }: { item: Item }) {
         const max = scroller.scrollHeight - scroller.clientHeight
         const ratio = max > 0 ? Math.min(1, scroller.scrollTop / max) : 1
         updateItem(item.id, { progress: Math.round(ratio * 100), lastScroll: ratio })
+        if (ratio >= 0.9 && !metaOf(item.id).completedAt) {
+          patchMeta(item.id, { completedAt: Date.now() })
+          track('item_completed', { item_id: item.id, progress: Math.round(ratio * 100) })
+        }
       }, 400)
     }
     updatePosition()
@@ -188,6 +241,7 @@ function Reader({ item }: { item: Item }) {
       updatedAt: now,
     }
     updateHighlights(item.id, (list) => [...list, hl])
+    track('highlight_created', { item_id: item.id, highlight_id: hl.id, has_note: withNote, length: hl.quote.length })
     window.getSelection()?.removeAllRanges()
     setToolbar(null)
     if (withNote) setNote({ id: hl.id, x: toolbar.noteX, y: toolbar.noteY })
@@ -309,7 +363,7 @@ function Reader({ item }: { item: Item }) {
   const closeNote = useCallback(() => setNote(null), [])
 
   return (
-    <div className="fixed inset-0 bg-paper">
+    <div className="absolute inset-0 bg-paper">
       {/* Slim top bar: hidden while reading, returns when you hover near the top. */}
       <header
         className={`absolute inset-x-0 top-0 z-20 flex items-center gap-4 bg-gradient-to-b from-paper via-paper/95 to-paper/0 px-5 pb-6 pt-3 transition-opacity duration-300 hover:opacity-100 ${
@@ -323,9 +377,30 @@ function Reader({ item }: { item: Item }) {
           <p className="truncate font-serif text-[15px] text-ink">{item.title}</p>
           {position.chapter && <p className="truncate text-xs text-ink-faint">{position.chapter}</p>}
         </div>
+        {status === 'finished' ? (
+          <button
+            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-ok hover:bg-ok-soft"
+            onClick={() => setStatus(item.id, 'in_progress', 'reader')}
+            title="Finished. Click to move back to In progress"
+            aria-pressed="true"
+          >
+            <CheckCircle2 size={15} /> Finished
+          </button>
+        ) : (
+          <button
+            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-ink-soft hover:bg-paper-deep hover:text-ink"
+            onClick={() => setStatus(item.id, 'finished', 'reader')}
+            aria-pressed="false"
+          >
+            <CheckCircle2 size={15} /> Mark as finished
+          </button>
+        )}
         <AssistantToggle />
         <button
-          onClick={fullscreen.toggle}
+          onClick={() => {
+            if (!fullscreen.on) track('fullscreen_entered', { item_id: item.id, from: 'focus_button' })
+            fullscreen.toggle()
+          }}
           className="icon-btn"
           title={fullscreen.on ? 'Exit full screen' : 'Full screen'}
           aria-label={fullscreen.on ? 'Exit full screen' : 'Full screen'}
@@ -404,7 +479,16 @@ function Reader({ item }: { item: Item }) {
           onClose={() => setPanelOpen(false)}
         />
       ) : (
-        <HighlightsButton count={highlights.length} right={scrollbar + 22} onClick={() => setPanelOpen(true)} />
+        <HighlightsButton count={highlights.length} right={scrollbar + 22} onClick={() => {
+            const first = Math.min(...highlights.map((h) => h.createdAt))
+            track('side_panel_opened', {
+              item_id: item.id,
+              highlight_count: highlights.length,
+              days_since_first_highlight: highlights.length ? Math.floor((Date.now() - first) / 86_400_000) : 0,
+            })
+            setPanelOpen(true)
+          }}
+        />
       )}
 
       {toolbar && (
@@ -430,6 +514,10 @@ function Reader({ item }: { item: Item }) {
 }
 
 // --- helpers -------------------------------------------------------------------
+
+/** Open reading sessions, and session ends waiting out a StrictMode remount. */
+const sessionStart = new Map<string, { at: number; progress: number }>()
+const endTimers = new Map<string, { timer: number }>()
 
 /** Poll until `get` returns something (e.g. a PDF page finishes drawing), or give up. */
 function waitFor<T>(get: () => T | null, timeout: number): Promise<T | null> {

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Check, Sparkles, Trash2, X } from 'lucide-react'
 import { updateHighlights } from '../storage/db'
 import type { Highlight } from '../types'
+import { track } from '../events/track'
 
 const SAVE_DELAY = 400
 
@@ -46,11 +47,19 @@ export function NotePopover({
     }, SAVE_DELAY)
   }
 
-  // Save anything still waiting when the window closes.
+  // Save anything still waiting when the window closes, and log one note_edited
+  // per note window (length only; never the note text).
+  const latest = useRef(highlight.note)
+  const removed = useRef(false)
+  useEffect(() => {
+    latest.current = text
+  }, [text])
   useEffect(
     () => () => {
       window.clearTimeout(timer.current)
       if (pending.current !== null) save(pending.current)
+      if (!removed.current && latest.current !== highlight.note)
+        track('note_edited', { item_id: highlight.itemId, highlight_id: highlight.id, length: latest.current.length })
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
@@ -68,7 +77,9 @@ export function NotePopover({
   function remove() {
     window.clearTimeout(timer.current)
     pending.current = null
+    removed.current = true
     updateHighlights(highlight.itemId, (list) => list.filter((h) => h.id !== highlight.id))
+    track('highlight_deleted', { item_id: highlight.itemId, highlight_id: highlight.id, had_note: !!highlight.note.trim() })
     onClose()
   }
 

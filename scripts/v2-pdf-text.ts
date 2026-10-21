@@ -91,6 +91,37 @@ export const v2Books: SampleBook[] = [
     ],
   },
   {
+    // The "online PDF" page in /demo-browser saves this file.
+    file: 'interest-rates-report.pdf',
+    title: 'Interest Rates, Plainly',
+    subtitle: 'A short public report on how policy rates reach households',
+    author: 'Example Policy Institute (2026)',
+    chapters: [
+      {
+        title: 'Summary',
+        paragraphs: [
+          'This report follows one change in the policy rate from the moment it is announced to the moment it shows up in a family budget. The path is longer and slower than most people expect.',
+          'Within days, rates on short-term loans between banks adjust. Within weeks, new variable-rate loans and savings accounts follow. Fixed-rate mortgages respond only when they are renewed, which can take years.',
+        ],
+      },
+      {
+        title: 'How the change travels',
+        paragraphs: [
+          'Banks fund themselves partly by borrowing from each other overnight. When that rate rises, their cost of money rises, and they pass the increase on to new borrowers. Savers see higher rates more slowly, because banks compete less hard for deposits than for loans.',
+          'Households with variable-rate debt feel the change first. Renters feel it later, through landlords who refinance. Households with savings and no debt may come out ahead.',
+          'Firms respond mainly through investment. A project that looked profitable at a four percent borrowing cost may not at six. The effect on hiring arrives months after the effect on investment.',
+        ],
+      },
+      {
+        title: 'What to watch',
+        paragraphs: [
+          'The best early signal is the rate on new loans, not the stock of existing ones. The second is credit growth: if banks lend less, the policy is working its way through.',
+          'Expectations matter throughout. A change that markets already expected has much of its effect before it is announced.',
+        ],
+      },
+    ],
+  },
+  {
     file: 'monetary-policy-basics.pdf',
     title: 'Monetary Policy Basics',
     subtitle: 'Course reader, Introductory Macroeconomics, unit 4',

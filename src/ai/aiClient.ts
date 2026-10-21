@@ -9,6 +9,7 @@
 //    serverless function. The UI won't need to change.
 
 import { mockReply } from './mockResponses'
+import { devStore } from '../proto/store'
 import type { AIRequest } from './types'
 
 export type AIMode = 'mock' | 'live'
@@ -23,6 +24,8 @@ export async function ask(request: AIRequest): Promise<string> {
 async function askMock(request: AIRequest): Promise<string> {
   // A short, slightly variable pause so it feels like a real assistant thinking.
   await new Promise((r) => setTimeout(r, 700 + Math.random() * 700))
+  // Prototype only: Dev → "Q provider error" makes every request fail, to show Q's error state.
+  if (devStore.get().qError) throw new Error("Q can't answer right now (simulated provider error). Try again.")
   return mockReply(request)
 }
 
