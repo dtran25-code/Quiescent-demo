@@ -148,7 +148,7 @@ export function UploadDialog({ onClose, initial }: { onClose: () => void; initia
             <CheckCircle2 size={22} className="mt-0.5 shrink-0 text-ok" />
             <div className="min-w-0">
               <p className="font-medium">Added to Read later</p>
-              <p className="mt-1 line-clamp-2 font-serif text-ink">{state.item.title}</p>
+              <p className="mt-1 line-clamp-2 font-serif font-semibold text-ink">{state.item.title}</p>
               {state.item.pageCount ? <p className="text-xs text-ink-faint">PDF · {state.item.pageCount} pages</p> : null}
             </div>
           </div>

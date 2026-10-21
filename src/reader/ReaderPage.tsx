@@ -25,7 +25,7 @@ export function ReaderPage() {
   if (item === null) {
     return (
       <div className="mx-auto max-w-xl px-8 py-24 text-center">
-        <p className="font-serif text-2xl">This item isn't in your library.</p>
+        <p className="font-serif text-3xl font-semibold">This item isn't in your library.</p>
         <Link to="/library" className="btn-primary mt-6">
           Back to library
         </Link>
@@ -374,7 +374,7 @@ function Reader({ item }: { item: Item }) {
           <X size={19} />
         </Link>
         <div className="min-w-0 flex-1 text-center">
-          <p className="truncate font-serif text-[15px] text-ink">{item.title}</p>
+          <p className="truncate font-serif text-[17px] font-semibold text-ink">{item.title}</p>
           {position.chapter && <p className="truncate text-xs text-ink-faint">{position.chapter}</p>}
         </div>
         {status === 'finished' ? (

@@ -2,7 +2,7 @@
 // "The Wealth of Nations" (1776, public domain). Each string is one paragraph.
 
 export const pdfTitle = 'The Wealth of Nations'
-export const pdfSubtitle = 'Selections from Book I, abridged for the ReadHub demo'
+export const pdfSubtitle = 'Selections from Book I, abridged for the Quiescent demo'
 export const pdfAuthor = 'Adam Smith (1776)'
 
 export const pdfChapters: { title: string; paragraphs: string[] }[] = [

@@ -2,7 +2,7 @@
 // blocked by CORS. It downloads the page and uses Mozilla Readability to pull
 // out the title and main article content.
 //
-//   GET /api/extract?url=https://...   ->   { title, html, siteName } or { error }
+//   GET /api/extract?url=https://...   ->   { title, html, siteName, byline } or { error }
 //
 // Used in two places with the same code:
 //  - locally, inside the Vite dev server (articleExtractor plugin below)
@@ -19,7 +19,7 @@ const MAX_BYTES = 5 * 1024 * 1024
 
 export interface ExtractResult {
   status: number
-  body: { title: string; html: string; siteName: string | null } | { error: string }
+  body: { title: string; html: string; siteName: string | null; byline: string | null } | { error: string }
 }
 
 export async function extract(rawUrl: string): Promise<ExtractResult> {
@@ -69,7 +69,12 @@ export async function extract(rawUrl: string): Promise<ExtractResult> {
   }
   return {
     status: 200,
-    body: { title: article.title ?? url.hostname, html: article.content, siteName: article.siteName ?? null },
+    body: {
+      title: article.title ?? url.hostname,
+      html: article.content,
+      siteName: article.siteName ?? null,
+      byline: article.byline?.trim() || null,
+    },
   }
 }
 

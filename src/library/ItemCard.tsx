@@ -56,7 +56,7 @@ export function ItemCard({
           <Link
             to={`/read/${item.id}`}
             state={{ entry: entryPoint }}
-            className="line-clamp-2 font-serif text-[17px] leading-snug text-ink after:absolute after:inset-0 after:rounded-xl after:content-[''] hover:text-accent-dark focus:outline-none"
+            className="line-clamp-2 font-serif font-semibold text-xl leading-snug text-ink after:absolute after:inset-0 after:rounded-xl after:content-[''] hover:text-accent-dark focus:outline-none"
           >
             {item.title}
           </Link>

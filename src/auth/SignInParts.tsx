@@ -110,7 +110,7 @@ export function CheckEmail({
         <Mail size={20} />
       </div>
       <div>
-        <h2 className="font-serif text-2xl">Check your email</h2>
+        <h2 className="font-serif font-semibold text-2xl">Check your email</h2>
         <p className="mt-1 font-medium">{email}</p>
         <p className="mt-2 text-sm text-ink-soft">
           {left > 0
@@ -146,7 +146,7 @@ export function LinkExpired({ onSendNew }: { onSendNew: () => void }) {
     <div className="space-y-4">
       <div className="flex items-center gap-2.5 rounded-lg bg-warn-soft px-4 py-3 text-warn" role="alert">
         <Clock size={18} />
-        <h2 className="font-serif text-xl text-ink">Link expired</h2>
+        <h2 className="font-serif font-semibold text-xl text-ink">Link expired</h2>
       </div>
       <p className="text-sm text-ink-soft">Sign-in links work once and expire after 15 minutes.</p>
       <button className="btn-primary w-full" onClick={onSendNew} data-autofocus>
@@ -161,7 +161,7 @@ export function TooManyRequests({ onDifferentEmail }: { onDifferentEmail: () => 
     <div className="space-y-4">
       <div className="flex items-center gap-2.5 rounded-lg bg-warn-soft px-4 py-3 text-warn" role="alert">
         <AlertCircle size={18} />
-        <h2 className="font-serif text-xl text-ink">Try again later</h2>
+        <h2 className="font-serif font-semibold text-xl text-ink">Try again later</h2>
       </div>
       <p className="text-sm text-ink-soft">Too many sign-in links were sent to this address in the last hour.</p>
       <button className="btn-link" onClick={onDifferentEmail}>
@@ -178,7 +178,7 @@ export function SigningIn() {
   return (
     <div className="flex items-center gap-3 py-6" role="status">
       <Loader2 size={20} className="animate-spin text-accent" />
-      <p className="font-serif text-xl">Signing you in…</p>
+      <p className="font-serif font-semibold text-xl">Signing you in…</p>
     </div>
   )
 }

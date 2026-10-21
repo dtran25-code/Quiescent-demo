@@ -148,7 +148,7 @@ export default function ScreensPage() {
         </Link>
         <div className="flex items-center gap-3">
           <LogoMark size={32} />
-          <h1 className="font-serif text-3xl">Screens & states</h1>
+          <h1 className="font-serif font-semibold text-3xl">Screens & states</h1>
         </div>
         <p className="mt-2 max-w-2xl text-ink-soft">
           Every screen and state in the v2 prototype. Links marked with a user state switch to it first, which resets the demo
@@ -159,7 +159,7 @@ export default function ScreensPage() {
         <div className="mt-8 grid gap-6 md:grid-cols-2">
           {GROUPS.map((g) => (
             <section key={g.title} className="rounded-xl border border-rule bg-card p-5">
-              <h2 className="font-serif text-xl">{g.title}</h2>
+              <h2 className="font-serif font-semibold text-xl">{g.title}</h2>
               <p className="eyebrow mt-0.5">{g.brief}</p>
               <ul className="mt-3 space-y-0.5">
                 {g.screens.map((s) => (
@@ -195,7 +195,7 @@ const Q_STATES: QState[] = ['idle', 'thinking', 'answered', 'error']
 function IconSpecimen() {
   return (
     <section id="icons" className="mt-10 rounded-xl border border-rule bg-card p-6">
-      <h2 className="font-serif text-2xl">Icons: the turtle stele and Q</h2>
+      <h2 className="font-serif font-semibold text-2xl">Icons: the turtle stele and Q</h2>
       <p className="mt-1 text-sm text-ink-soft">
         Original flat drawings sharing one hexagonal shell pattern and the stone tokens. Shown at real size (the size used in
         the app), on paper and on card backgrounds.
@@ -236,7 +236,7 @@ function IconSpecimen() {
         <code>&lt;QTurtle size={'{44 | 20}'} state="idle | thinking | answered | error" /&gt;</code> in <code>src/icons/</code>. The
         24 px stele drops the inscription and shell detail; the folder name always sits below or beside the icon, never on the
         slab. Q's thinking state tucks the head and pulses the shell; with prefers-reduced-motion the head stays tucked and nothing
-        moves. All colors come from tokens.css (stone-*, moss-*).
+        moves. All colors come from tokens.css (stone-*, sage-*).
       </DevNote>
     </section>
   )

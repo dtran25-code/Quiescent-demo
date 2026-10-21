@@ -25,7 +25,7 @@ export function AccountPage() {
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-5 px-6 pb-16 pt-10">
-      <h1 className="font-serif text-3xl">Account</h1>
+      <h1 className="font-serif font-semibold text-3xl">Account</h1>
 
       <Section title="Profile" badge="proposed">
         <ProfileEditor />
@@ -155,7 +155,7 @@ function ProfileEditor() {
         {profile.photo ? (
           <img src={profile.photo} alt="Your profile photo" className="h-18 w-18 rounded-full object-cover" />
         ) : (
-          <div className="flex h-18 w-18 items-center justify-center rounded-full bg-moss-100 font-serif text-3xl text-moss-700" aria-hidden="true">
+          <div className="flex h-18 w-18 items-center justify-center rounded-full bg-sage-100 font-serif font-semibold text-3xl text-ink" aria-hidden="true">
             {initial}
           </div>
         )}

@@ -83,7 +83,7 @@ export function LibraryPage() {
   return (
     <div className="mx-auto max-w-6xl px-8 pb-24 pt-10">
       <header className="flex flex-wrap items-end gap-x-6 gap-y-4 border-b border-rule">
-        <h1 className="pb-3 font-serif text-3xl">Library</h1>
+        <h1 className="pb-3 font-serif font-semibold text-3xl">Library</h1>
         <div role="tablist" aria-label="Library views" className="flex gap-1">
           <ViewTab active={view === 'status'} onClick={() => switchView('status')}>
             By Status
@@ -197,7 +197,7 @@ function StatusView({ entries, actions }: { entries: Entry[]; actions: CardActio
       {STATUSES.map((status) => (
         <section key={status} aria-labelledby={`grp-${status}`}>
           <h2 id={`grp-${status}`} className="mb-3 flex items-baseline gap-2">
-            <span className="font-serif text-xl">{STATUS_LABEL[status]}</span>
+            <span className="font-serif font-semibold text-xl">{STATUS_LABEL[status]}</span>
             <span className="rounded-full bg-paper-deep px-2 py-0.5 text-xs font-semibold tabular-nums text-ink-soft">{groups[status].length}</span>
           </h2>
           {groups[status].length === 0 ? (
@@ -291,7 +291,7 @@ function FolderDetail({ folder, entries, actions }: { folder: Folder; entries: E
       <div className="mb-6 flex flex-wrap items-center gap-4">
         <SteleIcon size={96} state={inFolder.length ? 'default' : 'empty'} />
         <div className="mr-auto">
-          <h2 className="font-serif text-2xl">{folder.name}</h2>
+          <h2 className="font-serif font-semibold text-2xl">{folder.name}</h2>
           <p className="text-sm text-ink-faint">
             {inFolder.length} {inFolder.length === 1 ? 'item' : 'items'}
           </p>
@@ -309,7 +309,7 @@ function FolderDetail({ folder, entries, actions }: { folder: Folder; entries: E
 
       {inFolder.length === 0 ? (
         <div className="rounded-xl border border-dashed border-rule px-6 py-10 text-center">
-          <p className="font-serif text-lg">This folder is empty.</p>
+          <p className="font-serif font-semibold text-lg">This folder is empty.</p>
           <p className="mt-1 text-sm text-ink-soft">Add items from your library. They stay in their status lists too.</p>
           <button className="btn-primary mt-4" onClick={() => setPicking(true)}>
             <FolderPlus size={16} /> Add items
@@ -348,7 +348,7 @@ function EmptyLibrary({ onUpload }: { onUpload: () => void }) {
   return (
     <div className="mx-auto mt-12 max-w-2xl text-center">
       <SteleIcon size={96} state="empty" className="mx-auto" />
-      <h2 className="mt-4 font-serif text-2xl">Your library is empty</h2>
+      <h2 className="mt-4 font-serif font-semibold text-2xl">Your library is empty</h2>
       <p className="mt-2 text-ink-soft">Save your first reading. Everything you add lands here, in Read later.</p>
       <div className="mt-8 grid gap-4 text-left sm:grid-cols-2">
         <div className="rounded-xl border border-rule bg-card p-5">

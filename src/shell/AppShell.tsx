@@ -70,7 +70,7 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
         aria-label="Quiescent, go to Library"
       >
         <LogoMark size={collapsed ? 32 : 30} />
-        {!collapsed && <span className="font-serif text-xl tracking-tight">Quiescent</span>}
+        {!collapsed && <span className="font-serif font-semibold text-xl tracking-tight">Quiescent</span>}
       </Link>
 
       <ul className="space-y-1">

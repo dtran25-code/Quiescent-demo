@@ -216,7 +216,7 @@ export function AddToFolderDialog({ entry, onClose }: { entry: Entry; onClose: (
 
   return (
     <Modal title="Add to folder" onClose={onClose}>
-      <p className="mb-3 line-clamp-2 font-serif text-ink">{entry.item.title}</p>
+      <p className="mb-3 line-clamp-2 font-serif font-semibold text-ink">{entry.item.title}</p>
       {folders.length > 0 && (
         <ul className="mb-3 max-h-64 space-y-0.5 overflow-y-auto rounded-lg border border-rule py-1" aria-label="Folders">
           {folders.map((f) => (

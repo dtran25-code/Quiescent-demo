@@ -64,7 +64,7 @@ export function LoginPage() {
         )}
         {(state === 'start' || state === 'signed-out') && (
           <>
-            <h1 className="mb-5 font-serif text-2xl">Sign in to Quiescent</h1>
+            <h1 className="mb-5 font-serif font-semibold text-2xl">Sign in to Quiescent</h1>
             <SignInOptions
               busy={busy}
               defaultEmail=""

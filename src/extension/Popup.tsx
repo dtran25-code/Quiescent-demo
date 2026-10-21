@@ -88,7 +88,7 @@ function Body({ state, title, source, h }: { state: PopupState; title: string; s
     case 'signed_out':
       return (
         <>
-          <h2 className="mb-4 font-serif text-xl">Sign in to save this article</h2>
+          <h2 className="mb-4 font-serif font-semibold text-xl">Sign in to save this article</h2>
           <SignInOptions compact onGoogle={h.onGoogle} onSendLink={h.onSendLink} defaultEmail={state.email ?? ''} />
           <Note>
             {state.reason === 'pending_expired'
@@ -115,7 +115,7 @@ function Body({ state, title, source, h }: { state: PopupState; title: string; s
       return (
         <div className="space-y-3">
           <ItemLine title={title} source={source} muted />
-          <h2 className="font-serif text-xl leading-snug">Finish signing in to save this article</h2>
+          <h2 className="font-serif font-semibold text-xl leading-snug">Finish signing in to save this article</h2>
           <p className="text-sm text-ink-soft">We sent a link to {state.email}. Held for 10 minutes.</p>
           <CheckEmail
             email={state.email}
@@ -257,7 +257,7 @@ function Body({ state, title, source, h }: { state: PopupState; title: string; s
 
 function Heading({ icon, children }: { icon: ReactNode; children: ReactNode }) {
   return (
-    <h2 className="mb-3 flex items-center gap-2.5 font-serif text-xl" role="status">
+    <h2 className="mb-3 flex items-center gap-2.5 font-serif font-semibold text-xl" role="status">
       {icon}
       {children}
     </h2>
@@ -267,8 +267,8 @@ function Heading({ icon, children }: { icon: ReactNode; children: ReactNode }) {
 function Calm({ icon, children }: { icon: ReactNode; children: ReactNode }) {
   return (
     <div>
-      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-moss-100 text-moss-700">{icon}</div>
-      <h2 className="mt-3 font-serif text-xl" role="status">
+      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sage-100 text-ink">{icon}</div>
+      <h2 className="mt-3 font-serif font-semibold text-xl" role="status">
         {children}
       </h2>
     </div>
@@ -278,7 +278,7 @@ function Calm({ icon, children }: { icon: ReactNode; children: ReactNode }) {
 function ItemLine({ title, source, muted }: { title: string; source: string; muted?: boolean }) {
   return (
     <div className={`border-y border-rule py-2 ${muted ? 'text-ink-soft' : ''}`}>
-      <p className="line-clamp-2 font-serif text-[15px] leading-snug">{title}</p>
+      <p className="line-clamp-2 font-serif font-semibold text-lg leading-snug">{title}</p>
       <p className="mt-0.5 flex items-center gap-1 text-xs text-ink-faint">
         <Globe size={11} /> {source}
       </p>

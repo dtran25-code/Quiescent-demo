@@ -233,7 +233,7 @@ function EventRow({ e, compact }: { e: LoggedEvent; compact: boolean }) {
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
         <span className="tabular-nums text-ink-faint">{time}</span>
         <span className="font-semibold text-ink">{e.name}</span>
-        <span className={`rounded px-1.5 py-px text-[10px] font-sans font-semibold uppercase ${e.surface === 'extension' ? 'bg-moss-100 text-moss-700' : 'bg-paper-deep text-ink-soft'}`}>
+        <span className={`rounded px-1.5 py-px text-[10px] font-sans font-semibold uppercase ${e.surface === 'extension' ? 'bg-sage-100 text-ink' : 'bg-paper-deep text-ink-soft'}`}>
           {e.surface}
         </span>
         {e.origin === 'proposed' && <span className="rounded bg-devnote-badge px-1.5 py-px font-sans text-[10px] font-semibold text-devnote-ink">proposed — not in PRD</span>}

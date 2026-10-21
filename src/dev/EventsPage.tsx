@@ -42,7 +42,7 @@ export default function EventsPage() {
         </Link>
         <div className="flex items-center gap-3">
           <LogoMark size={32} />
-          <h1 className="font-serif text-3xl">Event dictionary</h1>
+          <h1 className="font-serif font-semibold text-3xl">Event dictionary</h1>
         </div>
         <p className="mt-2 max-w-3xl text-ink-soft">
           {EVENTS.length} events: {prd} from the PRD's Event Logging catalog and feature sections, {EVENTS.length - prd} proposed for UI the PRD
@@ -61,7 +61,7 @@ export default function EventsPage() {
         </section>
 
         <section className="mt-8">
-          <h2 className="font-serif text-2xl">Funnel</h2>
+          <h2 className="font-serif font-semibold text-2xl">Funnel</h2>
           <p className="mt-1 text-sm text-ink-soft">
             Per item, each step counts only items that passed the step before. Live counts come from this browser's event log, so
             they start at zero; save something in /demo-browser and read it to watch them move.
@@ -70,7 +70,7 @@ export default function EventsPage() {
             {FUNNEL.map((f, i) => (
               <li key={f.step} className="rounded-xl border border-rule bg-card p-4">
                 <p className="eyebrow">Step {i + 1}</p>
-                <p className="mt-1 font-serif text-lg">{f.step}</p>
+                <p className="mt-1 font-serif font-semibold text-lg">{f.step}</p>
                 <p className="mt-2 font-mono text-[11px] text-ink-soft">{f.events.join(' · ')}</p>
                 <p className="mt-1 text-xs text-ink-faint">{f.rule}</p>
                 <p className="mt-3 text-2xl font-semibold tabular-nums">{funnel[i]}</p>
@@ -105,7 +105,7 @@ export default function EventsPage() {
 
         {AREAS.map((area) => (
           <section key={area} className="mt-10">
-            <h2 className="font-serif text-2xl">{AREA_LABEL[area]}</h2>
+            <h2 className="font-serif font-semibold text-2xl">{AREA_LABEL[area]}</h2>
             <div className="mt-3 overflow-x-auto rounded-xl border border-rule bg-card">
               <table className="w-full min-w-[56rem] text-left text-sm">
                 <thead className="border-b border-rule bg-paper-deep/60 text-xs uppercase tracking-wide text-ink-soft">

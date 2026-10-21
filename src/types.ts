@@ -1,6 +1,9 @@
-// Core data model for ReadHub. Everything saved in the browser has one of these shapes.
+// Core data model for Quiescent. Everything saved in the browser has one of these shapes.
 
 export type ItemType = 'article' | 'pdf'
+
+// v2: status, folders and folder membership live in localStorage (src/proto/store.ts),
+// not on the item, as the v2 brief asks.
 
 /** A chapter or section. PDFs: a page range. Articles: a heading. */
 export interface Chapter {
@@ -37,6 +40,10 @@ export interface Item {
   /** PDFs only. The file itself is stored separately (see storage/db.ts). */
   pageCount?: number
   isSample?: boolean
+  /** Byline from the article page or the PDF's metadata, when there is one. */
+  author?: string
+  /** Publication name reported by the article page (e.g. "Medium"). */
+  siteName?: string
   /** Where the reader left off, as a fraction (0–1) of the scrollable length. */
   lastScroll?: number
 }
