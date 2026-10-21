@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
-import { ArrowUp, EyeOff, FileText, Lightbulb, Minus, PenLine, RotateCcw, Sparkles, WandSparkles, X } from 'lucide-react'
+import { ArrowUp, EyeOff, FileText, Lightbulb, Minus, PenLine, RotateCcw, WandSparkles, X } from 'lucide-react'
 import { appendChat, clearChat, newId, useChat } from '../storage/db'
 import type { Highlight, Item } from '../types'
 import { ask, AI_MODE } from './aiClient'
@@ -7,14 +7,20 @@ import { buildContext } from './context'
 import { RichText } from './RichText'
 import { saveAssistantSettings, useAssistantSettings } from './settings'
 import type { AIAction, Attachment } from './types'
+import { QTurtle, type QState } from '../icons/QTurtle'
+import { track } from '../events/track'
 
-const BUBBLE = 52
+const BUBBLE = 44
 const PANEL_W = 384
 const PANEL_H = 560
 
 /**
- * The AI assistant: a small floating circle you can drag anywhere (it remembers
- * where), which opens into a chat panel. Shared by the Reading and Notes views.
+ * Q, the AI assistant: a small floating turtle you can drag anywhere (it remembers
+ * where), which opens into a chat panel.
+ *
+ * v2 changed only the look: the toggle and avatars are the Q turtle, which shows
+ * Q's status (idle · thinking · answered · error). Behavior and panel logic are
+ * v1's; events are logged alongside (q_opened, question_asked, answer_rendered…).
  */
 export function Assistant({
   item,
@@ -36,6 +42,25 @@ export function Assistant({
 }) {
   const settings = useAssistantSettings()
   const [open, setOpen] = useState(false)
+  const [qState, setQState] = useState<QState>('idle')
+  const answeredAt = useRef<number | null>(null)
+  // Events for opening and closing the panel.
+  const wasOpen = useRef(false)
+  useEffect(() => {
+    if (open && !wasOpen.current) {
+      track('q_opened', { item_id: item.id, has_selection: !!attachment })
+      // Seen it: the toggle's answered/error badge clears once the panel is open.
+      setQState((s) => (s === 'answered' || s === 'error' ? 'idle' : s))
+    }
+    // Closing after seeing the answer: no badge. (An answer that lands while closed still shows one.)
+    if (!open && wasOpen.current) setQState((s) => (s === 'answered' || s === 'error' ? 'idle' : s))
+    if (!open && wasOpen.current && answeredAt.current) {
+      track('reading_resumed', { item_id: item.id, seconds_after_answer: (Date.now() - answeredAt.current) / 1000 })
+      answeredAt.current = null
+    }
+    wasOpen.current = open
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
   // While dragging, the bubble follows the pointer; on release the spot is saved.
   const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null)
   const pos = dragPos ?? { x: settings.x, y: settings.y }
@@ -82,12 +107,18 @@ export function Assistant({
       anchor={{ x: cx, y: cy }}
       viewport={viewport}
       onMinimize={() => setOpen(false)}
+      qState={qState}
+      onStatus={(s) => {
+        setQState(s)
+        if (s === 'answered') answeredAt.current = Date.now()
+      }}
     />
   ) : (
     <Bubble
       cx={cx}
       cy={cy}
       hasAttachment={!!attachment}
+      qState={qState}
       onMove={(x, y) => setDragPos({ x: x / viewport.w, y: y / viewport.h })}
       onDrop={(x, y) => {
         saveAssistantSettings({ x: x / viewport.w, y: y / viewport.h })
@@ -104,6 +135,7 @@ function Bubble(props: {
   cx: number
   cy: number
   hasAttachment: boolean
+  qState: QState
   onMove: (x: number, y: number) => void
   onDrop: (x: number, y: number) => void
   onClick: () => void
@@ -135,15 +167,20 @@ function Bubble(props: {
       onPointerMove={move}
       onPointerUp={up}
       onPointerCancel={() => (drag.current = null)}
-      aria-label="Open AI assistant"
-      title="AI assistant (drag to move)"
-      className="fixed z-40 flex touch-none select-none items-center justify-center rounded-full bg-accent text-white shadow-lg shadow-accent/30 transition-[transform,box-shadow] hover:scale-105 hover:shadow-xl active:cursor-grabbing"
+      // Keyboard activation (Enter/Space) arrives as a click with no pointer.
+      onClick={(e) => e.detail === 0 && props.onClick()}
+      aria-label={`Open Q${STATUS_TEXT[props.qState]}`}
+      title="Q (drag to move)"
+      className="fixed z-40 flex touch-none select-none items-center justify-center rounded-full bg-card shadow-lg ring-1 ring-rule transition-[transform,box-shadow] hover:scale-105 hover:shadow-xl active:cursor-grabbing"
       style={{ left: props.cx - BUBBLE / 2, top: props.cy - BUBBLE / 2, width: BUBBLE, height: BUBBLE }}
     >
-      <Sparkles size={22} />
+      <QTurtle size={44} state={props.qState} />
       {props.hasAttachment && (
-        <span className="absolute right-0 top-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-ink" aria-hidden="true" />
+        <span className="absolute -left-0.5 top-0 h-3.5 w-3.5 rounded-full border-2 border-card bg-ink" aria-hidden="true" />
       )}
+      <span className="sr-only" aria-live="polite">
+        {STATUS_TEXT[props.qState]}
+      </span>
     </button>
   )
 }
@@ -159,6 +196,8 @@ function ChatPanel({
   anchor,
   viewport,
   onMinimize,
+  qState,
+  onStatus,
 }: {
   item: Item
   highlights: Highlight[]
@@ -168,6 +207,8 @@ function ChatPanel({
   anchor: { x: number; y: number }
   viewport: { w: number; h: number }
   onMinimize: () => void
+  qState: QState
+  onStatus: (s: QState) => void
 }) {
   const messages = useChat(item.id) ?? []
   const [draft, setDraft] = useState('')
@@ -198,11 +239,25 @@ function ChatPanel({
     const label = userLabel(action, chapterName, attachment, typed)
     await appendChat(item.id, { id: newId(), role: 'user', text: label, createdAt: Date.now() })
     setThinking(true)
+    onStatus('thinking')
+    const started = performance.now()
+    track('question_asked', {
+      item_id: item.id,
+      request_type: REQUEST_TYPE[action],
+      has_selection: !!attachment,
+      session_turn: messages.filter((m) => m.role === 'user').length + 1,
+      question_length: (typed ?? '').length,
+    })
     try {
       const context = await buildContext({ item, chapterId: chapter.id, attachment, highlights })
       const reply = await ask({ action, message: typed, context })
       await appendChat(item.id, { id: newId(), role: 'assistant', text: reply, createdAt: Date.now() })
+      const ms = performance.now() - started
+      track('answer_rendered', { item_id: item.id, total_ms: ms, time_to_first_words_ms: ms })
+      onStatus('answered')
     } catch (err) {
+      track('answer_failed', { item_id: item.id, error_type: 'provider_error' })
+      onStatus('error')
       await appendChat(item.id, {
         id: newId(),
         role: 'assistant',
@@ -224,17 +279,15 @@ function ChatPanel({
   return (
     <div
       role="dialog"
-      aria-label="AI assistant"
-      className="fixed z-40 flex flex-col overflow-hidden rounded-2xl bg-white font-sans shadow-2xl ring-1 ring-rule"
+      aria-label="Q"
+      className="fixed z-40 flex flex-col overflow-hidden rounded-2xl bg-card font-sans shadow-2xl ring-1 ring-rule"
       style={{ left, top, width: w, height: h }}
     >
       {/* Header */}
       <div className="flex items-center gap-2 border-b border-rule px-4 py-3">
-        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-accent text-white">
-          <Sparkles size={15} />
-        </div>
+        <QTurtle size={20} state={qState} />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold leading-tight">Assistant</p>
+          <p className="text-sm font-semibold leading-tight">Q</p>
           <p className="truncate text-[11px] text-ink-faint">
             {AI_MODE === 'mock' ? 'Demo mode · canned responses' : 'Live'}
           </p>
@@ -242,7 +295,13 @@ function ChatPanel({
         <HeaderButton label="Clear conversation" onClick={() => clearChat(item.id)} disabled={messages.length === 0}>
           <RotateCcw size={15} />
         </HeaderButton>
-        <HeaderButton label="Turn off assistant" onClick={() => saveAssistantSettings({ enabled: false })}>
+        <HeaderButton
+          label="Turn off Q"
+          onClick={() => {
+            track('q_toggled', { on: false })
+            saveAssistantSettings({ enabled: false })
+          }}
+        >
           <EyeOff size={15} />
         </HeaderButton>
         <HeaderButton label="Minimize" onClick={onMinimize}>
@@ -274,13 +333,21 @@ function ChatPanel({
               {m.text}
             </div>
           ) : (
-            <div key={m.id} className="mr-4">
-              <RichText text={m.text} />
+            <div key={m.id} className="mr-4 flex gap-2">
+              <span className="mt-0.5">
+                <QTurtle size={20} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <RichText text={m.text} />
+              </div>
             </div>
           ),
         )}
         {thinking && (
-          <div className="flex items-center gap-1.5 py-1" aria-label="Assistant is thinking">
+          <div className="flex items-center gap-1.5 py-1" aria-label="Q is thinking">
+            <span className="mr-1">
+              <QTurtle size={20} state="thinking" />
+            </span>
             {[0, 1, 2].map((i) => (
               <span key={i} className="h-1.5 w-1.5 animate-bounce rounded-full bg-accent/60" style={{ animationDelay: `${i * 120}ms` }} />
             ))}
@@ -331,7 +398,7 @@ function ChatPanel({
           <button
             onClick={send}
             disabled={!draft.trim() || thinking}
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-white disabled:opacity-40"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-on-accent disabled:opacity-40"
             aria-label="Send"
           >
             <ArrowUp size={15} />
@@ -397,17 +464,36 @@ export function AssistantToggle({ className = '' }: { className?: string }) {
   const { enabled } = useAssistantSettings()
   return (
     <button
-      onClick={() => saveAssistantSettings({ enabled: !enabled })}
+      onClick={() => {
+        track('q_toggled', { on: !enabled })
+        saveAssistantSettings({ enabled: !enabled })
+      }}
       className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${
         enabled ? 'text-accent hover:bg-accent-soft' : 'text-ink-faint hover:bg-paper-deep hover:text-ink'
       } ${className}`}
-      title={enabled ? 'Turn off the AI assistant' : 'Turn on the AI assistant'}
+      title={enabled ? 'Turn off Q' : 'Turn on Q'}
       aria-pressed={enabled}
     >
-      <Sparkles size={14} />
-      {enabled ? 'Assistant on' : 'Assistant off'}
+      <QTurtle size={20} />
+      {enabled ? 'Q on' : 'Q off'}
     </button>
   )
+}
+
+const STATUS_TEXT: Record<QState, string> = {
+  idle: '',
+  thinking: ' — thinking',
+  answered: ' — new answer',
+  error: " — couldn't answer",
+}
+
+/** question_asked.request_type. The PRD has the model assign it; the prototype maps the action. */
+const REQUEST_TYPE: Record<AIAction, 'explanation' | 'summary' | 'notes_summary' | 'outside_info' | 'other'> = {
+  explain: 'explanation',
+  summarize: 'summary',
+  polish: 'notes_summary',
+  expand: 'other',
+  chat: 'other',
 }
 
 function clamp(v: number, min: number, max: number) {

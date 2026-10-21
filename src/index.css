@@ -1,31 +1,6 @@
 @import "tailwindcss";
-
-/* Design tokens: the "Reading Room" palette. White surfaces, ink type, sage as a
-   quiet signal, soft light for highlights and notices. */
-@theme {
-  --color-paper: #f3f6f4;
-  --color-paper-deep: #e3edda; /* sage tint: rules, soft fills */
-  --color-surface: #ffffff;
-  --color-ink: #1a2c4a;
-  --color-ink-soft: #4a5a72;
-  --color-ink-faint: #66758a;
-  --color-rule: #d3dcd6;
-  --color-accent: #1a2c4a;
-  --color-accent-dark: #0f1b30;
-  --color-accent-soft: #e3edda;
-  --color-sage: #c9ddb8;
-  --color-notice: #f2e6a7;
-  --color-highlight: #f2e6a7;
-
-  /* Cormorant Garamond for titles and headings, Open Sans for body text. */
-  --font-sans: "Open Sans", "Lato", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Cormorant Garamond", Garamond, Georgia, serif;
-}
-
-:focus-visible {
-  outline: 2px solid var(--color-ink);
-  outline-offset: 2px;
-}
+/* All colors, fonts, spacing and radii live in the shared tokens file. */
+@import "./styles/tokens.css";
 
 html,
 body,
@@ -41,22 +16,37 @@ body {
 }
 
 ::selection {
-  background: var(--color-sage);
+  background: var(--color-selection);
+}
+
+/* Visible keyboard focus everywhere (PRD: "visible focus"). */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 /* Shared button styles */
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-dark disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-on-accent transition-colors hover:bg-accent-dark disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-rule bg-card px-4 py-2 text-sm font-medium text-ink transition-colors hover:border-ink-faint disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn-ghost {
-    @apply inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-ink-soft transition-colors hover:bg-paper-deep hover:text-ink;
+    @apply inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-ink-soft transition-colors hover:bg-paper-deep hover:text-ink disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-link {
+    @apply inline-flex items-center gap-1 text-sm font-medium text-ink underline decoration-ink-faint underline-offset-4 hover:decoration-accent disabled:cursor-not-allowed disabled:opacity-50;
   }
   .icon-btn {
     @apply inline-flex h-9 w-9 items-center justify-center rounded-lg text-ink-soft transition-colors hover:bg-accent-soft hover:text-accent;
   }
   .field {
-    @apply w-full rounded-lg border border-rule bg-white/70 px-3 py-2 text-sm outline-none placeholder:text-ink-faint focus:border-accent focus:ring-2 focus:ring-accent/15;
+    @apply w-full rounded-lg border border-rule bg-card/70 px-3 py-2 text-sm outline-none placeholder:text-ink-faint focus:border-accent focus:ring-2 focus:ring-accent/15;
+  }
+  .eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-wider text-ink-faint;
   }
 }
 
@@ -69,36 +59,36 @@ body {
   transition: background-color 0.15s;
 }
 .rh-mark.has-note {
-  box-shadow: inset 0 -2px 0 rgb(26 44 74 / 0.55);
+  box-shadow: inset 0 -2px 0 var(--color-highlight-underline);
 }
 .rh-mark:hover,
 .rh-mark.active {
-  background: #e9d77c;
+  background: var(--color-highlight-hover);
 }
 /* On PDFs the text layer is invisible text over the page image, so the
    highlight must be translucent to let the printed text show through. */
 .textLayer .rh-mark {
-  background: rgb(236 206 70 / 0.38);
+  background: var(--color-highlight-pdf);
   color: transparent;
   border-radius: 0;
 }
 .textLayer .rh-mark:hover,
 .textLayer .rh-mark.active {
-  background: rgb(226 190 40 / 0.5);
+  background: var(--color-highlight-pdf-hover);
 }
 /* More specific than pdf.js's own rule, which loads later. */
 .react-pdf__Page .textLayer ::selection {
-  background: rgb(201 221 184 / 0.6);
+  background: var(--color-selection-pdf);
 }
 
 /* Brief pulse when jumping to a highlight */
 @keyframes rh-pulse {
   0%, 100% { background-color: var(--color-highlight); }
-  25%, 65% { background-color: #dcc350; }
+  25%, 65% { background-color: var(--color-highlight-pulse); }
 }
 @keyframes rh-pulse-pdf {
-  0%, 100% { background-color: rgb(236 206 70 / 0.38); }
-  25%, 65% { background-color: rgb(214 176 20 / 0.6); }
+  0%, 100% { background-color: var(--color-highlight-pdf); }
+  25%, 65% { background-color: var(--color-highlight-pdf-pulse); }
 }
 .rh-mark.pulse {
   animation: rh-pulse 1.6s ease-in-out;
@@ -107,65 +97,70 @@ body {
   animation-name: rh-pulse-pdf;
 }
 
-/* Notes page: a Word-like document */
-.notes-doc {
-  min-height: 60vh;
-  outline: none;
-  font-family: var(--font-sans);
-  font-size: 1rem;
-  line-height: 1.75;
-  color: var(--color-ink);
+/* --- Stele (folder icon) --------------------------------------------------- */
+.stele {
+  transition: transform 0.18s ease, filter 0.18s ease;
 }
-.notes-doc > * + * {
-  margin-top: 0.7em;
+.stele[data-state="hover"],
+.stele-host:hover .stele,
+.stele-host:focus-visible .stele {
+  transform: translateY(-3px);
+  filter: drop-shadow(0 4px 3px color-mix(in srgb, var(--color-shadow) 18%, transparent));
 }
-.notes-doc h2,
-.notes-doc h3 {
-  font-family: var(--font-serif);
+
+/* --- Q, the turtle ---------------------------------------------------------- */
+@keyframes q-tuck {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-4px) scale(0.85); }
 }
-.notes-doc h2 {
-  margin-top: 1.7em;
-  font-size: 1.75rem;
-  font-weight: 600;
-  line-height: 1.3;
+@keyframes q-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
 }
-.notes-doc h3 {
-  margin-top: 1.3em;
-  font-size: 1.4rem;
-  font-weight: 700;
-  line-height: 1.35;
+@keyframes q-pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); }
 }
-.notes-doc > h2:first-child,
-.notes-doc > h3:first-child {
-  margin-top: 0;
+.q-turtle[data-state="thinking"] .q-head {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: q-tuck 1.1s ease-in-out infinite;
 }
-.notes-doc ul {
-  list-style: disc;
-  padding-left: 1.5em;
+.q-turtle[data-state="thinking"] .q-shell {
+  animation: q-pulse 1.1s ease-in-out infinite;
 }
-.notes-doc ol {
-  list-style: decimal;
-  padding-left: 1.5em;
+.q-turtle[data-state="answered"] .q-badge,
+.q-turtle[data-state="error"] .q-badge {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: q-pop 0.35s ease-out;
 }
-.notes-doc li::marker {
-  color: var(--color-accent);
+
+/* Fresh folder: a soft ring that fades out. */
+@keyframes q-ring {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 45%, transparent); }
+  100% { box-shadow: 0 0 0 14px transparent; }
 }
-.notes-doc li + li {
-  margin-top: 0.25em;
+.just-created {
+  animation: q-ring 1.2s ease-out 3;
 }
-.notes-doc blockquote {
-  border-left: 2px solid rgb(26 44 74 / 0.4);
-  padding-left: 1em;
-  font-style: italic;
-  color: var(--color-ink-soft);
-}
-.notes-doc strong {
-  font-weight: 600;
-}
-.notes-doc p.is-editor-empty:first-child::before {
-  content: attr(data-placeholder);
-  float: left;
-  height: 0;
-  pointer-events: none;
-  color: var(--color-ink-faint);
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  /* Thinking still needs to read as "waiting" without motion: head stays tucked. */
+  .q-turtle[data-state="thinking"] .q-head {
+    animation: none !important;
+    transform: translateX(-4px) scale(0.85);
+  }
+  .q-turtle[data-state="thinking"] .q-shell {
+    animation: none !important;
+    opacity: 0.7;
+  }
 }

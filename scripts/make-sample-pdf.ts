@@ -1,10 +1,11 @@
-// Generates public/samples/wealth-of-nations.pdf: a small book-sized PDF with a
-// built-in outline (table of contents), so Quiescent's chapter detection has
-// something real to read. Run with: npm run make-sample-pdf
+// Generates the sample PDFs in public/samples: small book-sized PDFs with a
+// built-in outline (table of contents), so chapter detection has something real
+// to read. Run with: npm run make-sample-pdf
 
 import { writeFileSync, mkdirSync } from 'node:fs'
 import { PDFDocument, PDFHexString, PDFName, StandardFonts, rgb, type PDFFont, type PDFPage, type PDFRef } from 'pdf-lib'
 import { pdfAuthor, pdfChapters, pdfSubtitle, pdfTitle } from './sample-pdf-text.ts'
+import { v2Books, type SampleBook } from './v2-pdf-text.ts'
 
 const W = 432 // 6in
 const H = 648 // 9in
@@ -30,10 +31,10 @@ function wrap(text: string, font: PDFFont, size: number, width: number): string[
   return lines
 }
 
-async function main() {
+async function build({ file, title: pdfTitle, subtitle: pdfSubtitle, author: pdfAuthor, chapters: pdfChapters }: SampleBook) {
   const doc = await PDFDocument.create()
   doc.setTitle(pdfTitle)
-  doc.setAuthor('Adam Smith')
+  doc.setAuthor(pdfAuthor)
   const body = await doc.embedFont(StandardFonts.TimesRoman)
   const bold = await doc.embedFont(StandardFonts.TimesRomanBold)
   const italic = await doc.embedFont(StandardFonts.TimesRomanItalic)
@@ -111,8 +112,15 @@ async function main() {
 
   mkdirSync('public/samples', { recursive: true })
   const bytes = await doc.save()
-  writeFileSync('public/samples/wealth-of-nations.pdf', bytes)
-  console.log(`Wrote public/samples/wealth-of-nations.pdf (${doc.getPageCount()} pages, ${bytes.length} bytes)`)
+  writeFileSync(`public/samples/${file}`, bytes)
+  console.log(`Wrote public/samples/${file} (${doc.getPageCount()} pages, ${bytes.length} bytes)`)
+}
+
+// `npm run make-sample-pdf -- --all` also rebuilds the original v1 sample.
+async function main() {
+  if (process.argv.includes('--all'))
+    await build({ file: 'wealth-of-nations.pdf', title: pdfTitle, subtitle: pdfSubtitle, author: pdfAuthor, chapters: pdfChapters })
+  for (const book of v2Books) await build(book)
 }
 
 main()

@@ -1,0 +1,124 @@
+/*
+ * Quiescent design tokens — the ONLY place colors, fonts, spacing and radii are defined.
+ *
+ * Imported once by src/index.css. Every surface uses these through Tailwind
+ * utilities (bg-paper, text-ink, rounded-xl, w-popup…) or var(--…):
+ *   - the web app (library, reader, account, sign-in)
+ *   - the simulated Chrome extension popup (/demo-browser)
+ *   - the dev panels (Dev menu, Event log, /screens, /events)
+ *   - SVG icons (SteleIcon, QTurtle) via style={{ fill: 'var(--color-…)' }}
+ *
+ * `@theme static` emits every token as a CSS variable even when no utility uses
+ * it (the SVG icons read them directly). Tailwind's default palette and font stacks are reset below, so a class like
+ * `bg-red-500` or `font-mono` produces nothing unless it is defined here.
+ */
+
+@theme static {
+  /* Reset Tailwind defaults: only Quiescent tokens exist. */
+  --color-*: initial;
+  --font-*: initial;
+
+  /* --- Surfaces & text: the "Reading Room" palette (PR #1) ----------------
+     White surfaces, navy ink type, sage as a quiet signal, soft light yellow
+     for highlights and notices. */
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-paper: #f3f6f4;
+  --color-paper-deep: #e3edda; /* sage tint: soft fills */
+  --color-card: #ffffff;
+  --color-ink: #1a2c4a;
+  --color-ink-soft: #4a5a72;
+  --color-ink-faint: #66758a;
+  --color-rule: #d3dcd6;
+  --color-shadow: #1a2c4a;
+
+  /* --- The accent is the ink (navy); sage marks selection ----------------- */
+  --color-accent: #1a2c4a;
+  --color-accent-dark: #0f1b30;
+  --color-accent-soft: #e3edda;
+  --color-on-accent: #ffffff;
+  --color-sage: #c9ddb8;
+  --color-sage-100: #e3edda;
+  --color-sage-300: #c9ddb8;
+  --color-sage-500: #9fbe86;
+  --color-notice: #f2e6a7;
+
+  /* --- Status ------------------------------------------------------------ */
+  --color-ok: #3e6b35;
+  --color-ok-soft: #e3edda;
+  --color-warn: #6b5a12;
+  --color-warn-soft: #f2e6a7;
+  --color-danger: #9b3b2e;
+  --color-danger-soft: #f6e4df;
+
+  /* Library status sub-views */
+  --color-status-progress: #1a2c4a;
+  --color-status-later: #4a5a72;
+  --color-status-finished: #3e6b35;
+
+  /* --- Stone (turtle stele). Cool grey-greens that sit on the sage paper. -- */
+  --color-stone-50: #eef2ef;
+  --color-stone-100: #e1e7e2;
+  --color-stone-200: #cdd6cf;
+  --color-stone-300: #b2bdb5;
+  --color-stone-400: #97a39b;
+  --color-stone-500: #6f7d77;
+  --color-stone-700: #46524e;
+  --color-stone-900: #1a2c4a;
+
+  /* --- Highlights in the reader ------------------------------------------ */
+  --color-selection: #c9ddb8;
+  --color-highlight: #f2e6a7;
+  --color-highlight-hover: #e9d77c;
+  --color-highlight-pulse: #dcc350;
+  --color-highlight-underline: rgb(26 44 74 / 0.55);
+  --color-highlight-pdf: rgb(236 206 70 / 0.38);
+  --color-highlight-pdf-hover: rgb(226 190 40 / 0.5);
+  --color-highlight-pdf-pulse: rgb(214 176 20 / 0.6);
+  --color-selection-pdf: rgb(201 221 184 / 0.6);
+
+  /* --- Dev annotations (yellow notes, shown with "Show dev notes") -------- */
+  --color-devnote: #fbf6dc;
+  --color-devnote-border: #e6d68a;
+  --color-devnote-ink: #5c4a12;
+  --color-devnote-badge: #f2e6a7;
+
+  /* --- Simulated Chrome window (/demo-browser) and OS toast -------------- */
+  --color-chrome-frame: #dee1e6;
+  --color-chrome-tab: #ffffff;
+  --color-chrome-toolbar: #ffffff;
+  --color-chrome-omnibox: #f1f3f4;
+  --color-chrome-ink: #3c4043;
+  --color-desktop: #bfcac4;
+  --color-toast: #2f2f31;
+  --color-toast-ink: #f1f1f1;
+
+  /* --- Third-party marks (Google sign-in button) -------------------------- */
+  --color-google-yellow: #ffc107;
+  --color-google-red: #ff3d00;
+  --color-google-green: #4caf50;
+  --color-google-blue: #1976d2;
+
+  /* --- Type (PR #1): Cormorant Garamond for titles and headings, Open Sans for body.
+     Cormorant is loaded at 500/600/700 only, so headings use font-semibold. */
+  --font-sans: "Open Sans", "Lato", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", Garamond, Georgia, serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Consolas, monospace;
+
+  /* --- Spacing: 4px base unit, plus named layout sizes --------------------- */
+  --spacing: 0.25rem;
+  --spacing-sidebar: 15rem;
+  --spacing-sidebar-collapsed: 4rem;
+  --spacing-panel: 22rem;
+  --spacing-popup: 360px; /* Chrome extension popup width */
+  --spacing-devpanel: 26rem;
+
+  /* --- Radius -------------------------------------------------------------- */
+  --radius-xs: 0.125rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+}

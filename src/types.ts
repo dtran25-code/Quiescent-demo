@@ -2,15 +2,8 @@
 
 export type ItemType = 'article' | 'pdf'
 
-/** Which Library tab an item sits in. Set by hand from the item's menu. */
-export type ItemStatus = 'in-progress' | 'read-later' | 'done'
-
-/** A user-made folder. Items point at folders by id (see Item.folderIds). */
-export interface Folder {
-  id: string
-  name: string
-  createdAt: number
-}
+// v2: status, folders and folder membership live in localStorage (src/proto/store.ts),
+// not on the item, as the v2 brief asks.
 
 /** A chapter or section. PDFs: a page range. Articles: a heading. */
 export interface Chapter {
@@ -51,10 +44,6 @@ export interface Item {
   author?: string
   /** Publication name reported by the article page (e.g. "Medium"). */
   siteName?: string
-  /** Missing on items saved before tabs existed; treated as 'in-progress'. */
-  status?: ItemStatus
-  /** Folders this item has been added to. One item can be in several. */
-  folderIds?: string[]
   /** Where the reader left off, as a fraction (0–1) of the scrollable length. */
   lastScroll?: number
 }
