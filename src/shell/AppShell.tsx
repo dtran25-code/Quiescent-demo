@@ -7,7 +7,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate, matchPath } from 'react-router'
-import { BookOpenText, CircleUserRound, CloudOff, Check, Library, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { Activity, BookOpenText, CircleUserRound, CloudOff, Check, LayoutGrid, Library, PanelLeftClose, PanelLeftOpen, Puzzle, Table2 } from 'lucide-react'
 import { LogoMark } from '../components/Logo'
 import { useItems } from '../storage/db'
 import { devStore, metaOf, mostRecentId, useDev, useProto } from '../proto/store'
@@ -129,6 +129,29 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
 
       <div className="flex-1" />
 
+      {/* Prototype-only entry points: not part of the product's navigation. */}
+      <div className={`mb-3 border-t border-dashed border-rule pt-3 ${collapsed ? '' : 'px-1'}`}>
+        {!collapsed && <p className="eyebrow mb-1 px-2">Prototype tools</p>}
+        <ul className="space-y-0.5">
+          <ToolLink collapsed={collapsed} to="/demo-browser" icon={<Puzzle size={17} />} label="Chrome extension (demo)" itemClass={itemClass} />
+          <li>
+            <Tooltip label="Event log" show={collapsed}>
+              <button
+                type="button"
+                className={`${itemClass(false)} h-9`}
+                aria-label={collapsed ? 'Event log' : undefined}
+                onClick={() => devStore.set({ panelOpen: true, panelTab: 'events' })}
+              >
+                <Activity size={17} />
+                {!collapsed && 'Event log (live)'}
+              </button>
+            </Tooltip>
+          </li>
+          <ToolLink collapsed={collapsed} to="/events" icon={<Table2 size={17} />} label="Event dictionary" itemClass={itemClass} />
+          <ToolLink collapsed={collapsed} to="/screens" icon={<LayoutGrid size={17} />} label="All screens & states" itemClass={itemClass} />
+        </ul>
+      </div>
+
       <div
         role="status"
         className={`mb-2 flex items-center gap-2 text-xs ${offline ? 'text-warn' : 'text-ink-faint'} ${collapsed ? 'justify-center' : 'px-3'}`}
@@ -159,6 +182,19 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
         {!collapsed && <span className="text-xs">Collapse</span>}
       </button>
     </nav>
+  )
+}
+
+function ToolLink(props: { collapsed: boolean; to: string; icon: React.ReactNode; label: string; itemClass: (active: boolean) => string }) {
+  return (
+    <li>
+      <Tooltip label={props.label} show={props.collapsed}>
+        <Link to={props.to} className={`${props.itemClass(false)} h-9`} aria-label={props.collapsed ? props.label : undefined}>
+          {props.icon}
+          {!props.collapsed && props.label}
+        </Link>
+      </Tooltip>
+    </li>
   )
 }
 
