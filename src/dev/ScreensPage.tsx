@@ -50,7 +50,7 @@ const GROUPS: { title: string; brief: string; screens: Screen[] }[] = [
   },
   {
     title: 'Library — By folder',
-    brief: 'A2 · A3 · P0 pending dev estimate',
+    brief: 'A2 · A3',
     screens: [
       { name: 'By folder grid (steles; one empty folder)', to: go('existing_folders', '/library?view=folders'), state: 'existing_folders' },
       { name: 'Just-created folder highlighted', to: go('existing_folders', '/library?view=folders&new=folder-2'), state: 'existing_folders' },

@@ -2,7 +2,7 @@ import { useId, useMemo, useState } from 'react'
 import { FileText, Newspaper, Plus, Search } from 'lucide-react'
 import { Modal } from '../components/Modal'
 import { SteleIcon } from '../icons/SteleIcon'
-import { Badge, DevNote } from '../dev/DevNote'
+import { DevNote } from '../dev/DevNote'
 import { FOLDER_NAME_MAX, createFolder, folderNameError, renameFolder, setFolderItems, setItemFolders } from '../proto/actions'
 import { protoStore, useProto, type Folder } from '../proto/store'
 import { sourceLabel, type Entry } from './useLibrary'
@@ -120,7 +120,7 @@ export function CreateFolderDialog({ entries, onClose, onCreated }: { entries: E
         </div>
         <DevNote>
           Name: required, ≤ 40 characters, unique (case-insensitive). On create → switch to By folder and highlight the new
-          folder. Items can be in several folders. <Badge kind="P0 pending dev estimate" />
+          folder. Items can be in several folders.
         </DevNote>
         <div className="flex justify-end gap-2">
           <button type="button" onClick={onClose} className="btn-ghost">

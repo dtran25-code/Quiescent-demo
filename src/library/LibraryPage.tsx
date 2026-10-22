@@ -17,7 +17,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { ChevronRight, FolderPlus, Pencil, Plus, Puzzle, Trash2, Upload } from 'lucide-react'
 import { ConfirmDialog } from '../components/Modal'
 import { SteleIcon } from '../icons/SteleIcon'
-import { Badge, DevNote } from '../dev/DevNote'
+import { DevNote } from '../dev/DevNote'
 import { STATUSES, STATUS_LABEL, patchMeta, protoStore, useProto, type Folder, type Status } from '../proto/store'
 import { deleteFolder, removeFromFolder, removeItem } from '../proto/actions'
 import { track } from '../events/track'
@@ -120,8 +120,7 @@ export function LibraryPage() {
 
       <DevNote className="mt-4">
         Two views, one page (Notion-style tabs). <b>By folder</b> appears once ≥ 1 folder exists and disappears when the last
-        folder is deleted. Folders <Badge kind="P0 pending dev estimate" /> — the PRD has
-        "custom shelves" as Phase 2. <Badge kind="proposed — not in PRD" />
+        folder is deleted. Folders are P0 (team decision); an item can be in several folders or none.
       </DevNote>
 
       {entries === undefined ? (

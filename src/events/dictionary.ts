@@ -346,7 +346,7 @@ export const EVENTS: EventDef[] = [
     surface: 'web',
     trigger: '"Create folder" confirmed (modal or card menu "New folder…")',
     props: { folder_id: id, items_added: count, folder_count: count, name_length: { type: 'length' }, from: e(['header', 'card_menu']) },
-    feeds: 'Folder adoption (P0 pending dev estimate)',
+    feeds: 'Folder adoption',
     origin: 'proposed',
   },
   {

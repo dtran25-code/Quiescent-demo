@@ -25,6 +25,7 @@ item 9, Q quick actions, is not confirmed and was skipped).
 | A7 | **Sort and filter in the library** (team meeting). Sort: Newest first (default) · Oldest first · Title A to Z; "newest" means **date saved**, everywhere, which replaces the old fixed order (In progress by last opened, Finished by last finished). Filter: type (Article, PDF) and source (site, or "Uploaded PDF"). They apply inside the current status sub-view or folder, live in the URL (`?sort=&type=&site=`) so they survive switching sub-views, and the sub-view counts follow the filter. No matches: "No items match these filters." with Clear filters. Proposed events `library_sorted` and `library_filtered`. Manual reordering stays out (moved to P1). |
 | A8 | **"Read now" opens the reader full screen** from the popup, "Already in your library" and the Chrome notification, same as the reader's full screen button (`fullscreen_entered` with `from = extension`). If the browser refuses, the reader opens in the window. |
 | A10 | **Sentence case:** "Saved to Read later" (popup), "By status" / "By folder" (library view tabs, the folder breadcrumb, screen-reader labels), and the same names on /screens, in the event dictionary and in this changelog. |
+| A11 | **Docs brought up to date:** rating is P0 and built (A2); folders are P0, not "pending dev estimate" (conflict 3, open question 3, and the dev-note badges in the library, the create-folder dialog, /screens and the event dictionary; the "custom shelves as Phase 2" dev note is gone); README gives the MVP date, Nov 15, 2026 (the old "Oct 23" was in this changelog). |
 
 ---
 
@@ -129,7 +130,7 @@ is dropped and flagged red in the Event log, so article, highlight, note and Q t
 
 1. **List names:** PRD "Reading" → brief "In progress". Used "In progress" everywhere.
 2. **Read Later cap of 10:** PRD Save section has it; the PRD Library section says no limit; brief drops it. Dropped.
-3. **Folders:** PRD calls custom shelves Phase 2; brief makes them P0. Tagged "P0 pending dev estimate" in dev notes.
+3. **Folders:** PRD calls custom shelves Phase 2; brief makes them P0. Now decided: folders are **P0** (the UI says "folder", never "shelf").
 4. **Saved popup:** PRD "Read now" + "Later"; brief adopts "Saved to Read later" with one Read now.
 5. **Upload:** PRD PDF + EPUB up to 100 MB / 1,000 pages; brief DEFAULT PDF only, 25 MB.
 6. **Library sort/filter:** PRD Library goals mention them; brief removes them. Later reversed by the team meeting: sort and filter added in spec alignment (A7).
@@ -154,7 +155,7 @@ Brief inconsistencies I resolved:
 ## Open questions
 1. Opening a Finished item: keep Finished (current) or move to In progress?
 2. ~~Should the reader also ask "Finished?" at 95% (PRD), now that Finished is manual?~~ Answered: yes, both (A1).
-3. Folders are P0 here vs Phase 2 in the PRD: dev estimate needed before committing to Oct 23.
+3. ~~Folders are P0 here vs Phase 2 in the PRD: dev estimate needed before committing to Oct 23.~~ Answered: folders are P0. MVP date is **Nov 15, 2026**.
 4. `save_confirmed.destination` is always `read_later` under the adopted popup flow. Keep the property, or drop it and
    derive Read-now share from `read_now_clicked`?
 5. Is "Try again later" enough, or should it say when ("in an hour")?
