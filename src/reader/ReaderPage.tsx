@@ -68,6 +68,8 @@ function Reader({ item }: { item: Item }) {
     chapterId: null,
   })
   const [atTop, setAtTop] = useState(true)
+  // How far through the item (0–1): the same scroll position the reader resumes at.
+  const [ratio, setRatio] = useState(item.lastScroll ?? 0)
   const [toolbar, setToolbar] = useState<ToolbarState | null>(null)
   const [note, setNote] = useState<{ id: string; x: number; y: number } | null>(null)
   // /screens deep link: ?panel=1 opens the highlights panel (e.g. its empty state).
@@ -164,6 +166,11 @@ function Reader({ item }: { item: Item }) {
     let timer: number | undefined
     const updatePosition = () => {
       setAtTop(scroller.scrollTop < 40)
+      // Before the saved position is restored (PDF pages still sizing), keep showing it.
+      if (restored.current) {
+        const max = scroller.scrollHeight - scroller.clientHeight
+        setRatio(max > 0 ? Math.min(1, scroller.scrollTop / max) : 1)
+      }
       if (item.type === 'article') setPosition(articlePosition(scroller, chaptersRef.current))
     }
     const onScroll = () => {
@@ -376,6 +383,19 @@ function Reader({ item }: { item: Item }) {
 
   return (
     <div className="absolute inset-0 bg-paper">
+      {/* Progress through the item: stays visible while reading and in full screen. */}
+      <div
+        className="absolute left-0 top-0 z-30 h-[3px] bg-rule/60"
+        style={{ right: panelOpen ? PANEL_WIDTH : 0 }}
+        role="progressbar"
+        aria-label="Reading progress"
+        aria-valuenow={Math.round(ratio * 100)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+      >
+        <div className="h-full bg-accent transition-[width] duration-150" style={{ width: `${ratio * 100}%` }} />
+      </div>
+
       {/* Slim top bar: hidden while reading, returns when you hover near the top. */}
       <header
         className={`absolute inset-x-0 top-0 z-20 flex items-center gap-4 bg-gradient-to-b from-paper via-paper/95 to-paper/0 px-5 pb-6 pt-3 transition-opacity duration-300 hover:opacity-100 ${
@@ -480,7 +500,7 @@ function Reader({ item }: { item: Item }) {
           title={item.type === 'pdf' ? 'Page' : 'Section'}
         >
           {item.type === 'pdf' ? 'Page ' : 'Section '}
-          {position.label}
+          {position.label} · {Math.round(ratio * 100)}%
         </div>
       )}
 

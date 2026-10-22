@@ -20,6 +20,7 @@ item 9, Q quick actions, is not confirmed and was skipped).
 | A2 | **👍 / 👎** under every Q answer (not under the "couldn't answer" error). The choice is saved with the chat; clicking it again clears it. Fires `answer_rated` (`helpful` = true/false). No reason field (P1). |
 | A3 | **"Ask AI" → "Ask Q!"** in the selection menu and the note box, with the Q turtle instead of the sparkle icon (on a light disc in the dark selection menu). Tooltips and the one canned Q reply that named "Ask AI" now say "Ask Q!". |
 | A4 | **Q off hides "Ask Q!"** in the selection menu and the note box (it used to stay and do nothing). Turning Q back on brings it back. |
+| A5 | **Progress bar in the reader:** a thin accent bar along the top of the page shows how far through the item you are, from the same scroll position the reader resumes at. Visible while reading and in full screen; narrows with the highlights panel. The Section / Page pill adds the % ("Section 2 / 6 · 42%"). |
 
 ---
 
