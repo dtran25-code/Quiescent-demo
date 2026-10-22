@@ -29,6 +29,7 @@ item 9, Q quick actions, is not confirmed and was skipped).
 | B12 | **Leaving the reader returns to the item's own tab** (In progress, Read later or Finished), from the ✕ button or Esc, instead of always opening on In progress. |
 | B13 | **"Delete highlight and note?"** confirm when removing a highlight that has a note (Delete / Cancel). A highlight without a note still goes straight away. |
 | B14 | **Read later cards show reading time** ("4 min read": word count ÷ 230, rounded up) and, for articles, the **first two lines** of text in small grey type. PDFs show no reading time: the demo doesn't count the words in PDF text (the real build should). |
+| B15 | **Remove from library offers Undo.** The confirm stays (its message no longer says "This can't be undone."); after confirming, an **Undo** button shows at the bottom of the page for 8 seconds and puts back the item with its file, highlights, notes, Q chat, status and folders (proposed `item_restored`). The real build keeps removed items for a while, so the demo no longer promises the opposite. |
 
 ---
 
@@ -42,7 +43,7 @@ item 9, Q quick actions, is not confirmed and was skipped).
 - **Quiescent naming**, PDF author / article byline capture, reader typography.
 - Not kept from PR #1, because the v2 brief replaces them: its Library sort and filters (`libraryView.ts`), status and
   folders stored on items in IndexedDB (v2 keeps them in localStorage), the Notes page, the landing page and the
-  undo-toast delete (v2 uses a confirm, per the brief).
+  undo-toast delete (v2 uses a confirm, per the brief; spec alignment adds an Undo after the confirm, B15).
 
 ### Removed
 - **Notes page** (`/notes/:id`), its TipTap editor, and every link to it (library row, highlights panel, note popover).
@@ -90,7 +91,7 @@ All brief DEFAULTs were **kept as written**:
 
 Decisions I made where the brief was silent (please confirm):
 - **Opening a Finished item keeps it Finished** (it doesn't move back to In progress). The reader's "Finished" button moves it back by hand.
-- **Remove from library also removes the item from every folder** (folder membership can't point at a deleted item).
+- **Remove from library also removes the item from every folder** (folder membership can't point at a deleted item). Undo (B15) puts it back in the folders that still exist.
 - **Saved-after-sign-in when the article is already in the library** shows the "Saved to Quiescent" notification for the existing item rather than a duplicate notice.
 - **Most recent read ignores removed items**; if the most recent one is removed it falls back to the next most recent.
 

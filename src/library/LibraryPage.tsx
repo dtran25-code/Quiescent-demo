@@ -14,12 +14,12 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
-import { ChevronRight, FolderPlus, Pencil, Plus, Puzzle, Trash2, Upload } from 'lucide-react'
+import { ChevronRight, FolderPlus, Pencil, Plus, Puzzle, RotateCcw, Trash2, Upload } from 'lucide-react'
 import { ConfirmDialog } from '../components/Modal'
 import { SteleIcon } from '../icons/SteleIcon'
 import { DevNote } from '../dev/DevNote'
 import { STATUSES, STATUS_LABEL, patchMeta, protoStore, useProto, type Folder, type Status } from '../proto/store'
-import { deleteFolder, removeFromFolder, removeItem } from '../proto/actions'
+import { deleteFolder, removeFromFolder, removeItem, undoRemove } from '../proto/actions'
 import { track } from '../events/track'
 import { ItemCard, type CardActions } from './ItemCard'
 import { AddToFolderDialog, CreateFolderDialog, FolderItemsDialog, RenameFolderDialog } from './FolderDialogs'
@@ -53,6 +53,8 @@ export function LibraryPage() {
   })
   const [addingToFolder, setAddingToFolder] = useState<Entry | null>(null)
   const [toRemove, setToRemove] = useState<Entry | null>(null)
+  // After a remove: a short-lived Undo.
+  const [undo, setUndo] = useState<Entry | null>(null)
   // Deep links from /screens open a card dialog once the library has loaded.
   const deepLinked = useRef(false)
   useEffect(() => {
@@ -169,17 +171,20 @@ export function LibraryPage() {
           message={
             <>
               <span className="font-medium text-ink">{toRemove.item.title}</span> and all of its highlights and notes will be
-              deleted, and it leaves every folder it's in. This can't be undone.
+              deleted, and it leaves every folder it's in.
             </>
           }
           confirmLabel="Remove"
           onCancel={() => setToRemove(null)}
-          onConfirm={() => {
-            removeItem(toRemove.item.id)
+          onConfirm={async () => {
+            const entry = toRemove
             setToRemove(null)
+            await removeItem(entry.item.id)
+            setUndo(entry)
           }}
         />
       )}
+      {undo && <UndoRemove key={undo.item.id} entry={undo} onDone={() => setUndo(null)} />}
     </div>
   )
 }
@@ -425,6 +430,37 @@ function FolderDetail({ folder, entries, actions }: { folder: Folder; entries: E
           }}
         />
       )}
+    </div>
+  )
+}
+
+// --- Undo after "Remove from library" -----------------------------------------------------
+
+const UNDO_MS = 8000
+
+/** Just an "Undo" button for a few seconds after a remove (the real build keeps removed items for a while). */
+function UndoRemove({ entry, onDone }: { entry: Entry; onDone: () => void }) {
+  // The library re-renders often; the timer runs once from when the button appears.
+  const done = useRef(onDone)
+  useEffect(() => {
+    done.current = onDone
+  }, [onDone])
+  useEffect(() => {
+    const t = window.setTimeout(() => done.current(), UNDO_MS)
+    return () => window.clearTimeout(t)
+  }, [])
+  return (
+    <div className="fixed bottom-6 left-1/2 z-40 -translate-x-1/2 rounded-xl bg-card p-1.5 shadow-lg ring-1 ring-rule">
+      <button
+        className="btn-ghost"
+        aria-label={`Undo removing ${entry.item.title}`}
+        onClick={async () => {
+          onDone()
+          await undoRemove(entry.item.id)
+        }}
+      >
+        <RotateCcw size={15} /> Undo
+      </button>
     </div>
   )
 }

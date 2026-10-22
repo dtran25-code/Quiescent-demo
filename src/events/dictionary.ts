@@ -328,6 +328,17 @@ export const EVENTS: EventDef[] = [
     props: { item_id: id, highlight_count: count, folder_count: count },
     feeds: 'Churn of saved items',
     origin: 'proposed',
+    note: 'Undo right after removing fires item_restored.',
+  },
+  {
+    name: 'item_restored',
+    area: 'library',
+    source: 'server',
+    surface: 'web',
+    trigger: '"Undo" clicked right after "Remove from library"',
+    props: { item_id: id, highlight_count: count, folder_count: count },
+    feeds: 'Accidental removals (item_removed followed by item_restored)',
+    origin: 'proposed',
   },
   {
     name: 'most_recent_read_clicked',

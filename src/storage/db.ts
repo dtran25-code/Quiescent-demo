@@ -111,6 +111,17 @@ export const deleteItem = (id: string) =>
     notify()
   })
 
+/** Undo "Remove from library": put back an item with its file, highlights and Q chat. */
+export const restoreItem = (item: Item, data: { file?: Blob; highlights: Highlight[]; chat: ChatMessage[] }) =>
+  serial(async () => {
+    if (data.file) await set(`file:${item.id}`, data.file)
+    if (data.highlights.length) await set(`highlights:${item.id}`, data.highlights)
+    if (data.chat.length) await set(`chat:${item.id}`, data.chat)
+    const items = await getItems()
+    if (!items.some((i) => i.id === item.id)) await set('items', [item, ...items])
+    notify()
+  })
+
 export async function getFile(id: string): Promise<Blob | undefined> {
   return get<Blob>(`file:${id}`)
 }
