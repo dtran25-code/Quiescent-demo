@@ -9,6 +9,17 @@ extension), and the **Dev** button (bottom-right of every page).
 
 ---
 
+## Spec alignment (branch `spec-alignment`)
+
+Edits after the Oct 21, 2026 check against `quiescent-spec.md` (items from `prototype-edits.md`, sections A and B;
+item 9, Q quick actions, is not confirmed and was skipped).
+
+| Item | What changed |
+|---|---|
+| A1 | Reader asks **"Finished?"** with **Mark as finished** / **Not yet** when progress reaches 95%, once per reading session (only when the session started below 95%, so reopening a nearly finished item doesn't ask straight away; not shown if already Finished). The header's manual Mark as finished stays. `item_completed` now fires at 95% (was 90%). |
+
+---
+
 ## What changed vs v1
 
 ### Kept from PR #1 (merged into this branch)
@@ -82,7 +93,7 @@ Decisions I made where the brief was silent (please confirm):
 - Popup **Saved to Read Later** replaces "Saved" + Read now/Later (adopted proposal).
 - Library: **Create folder / Rename / Add items / Add to folder / Delete folder** dialogs, folder detail, empty folder, By Folder grid.
 - Upload: **wrong type** and **too large** use the v2 limits; **unreadable PDF** state.
-- Reader: **Mark as finished** control in the header (the PRD's "Finished?" prompt at 95% is not built).
+- Reader: **Mark as finished** control in the header, plus the PRD's "Finished?" prompt at 95% (added in spec alignment, A1).
 
 ### Events
 Canonical names come from the PRD's **Event Logging** catalog (it says the feature sections match it). Where the two
@@ -134,7 +145,7 @@ Brief inconsistencies I resolved:
 
 ## Open questions
 1. Opening a Finished item: keep Finished (current) or move to In progress?
-2. Should the reader also ask "Finished?" at 95% (PRD), now that Finished is manual?
+2. ~~Should the reader also ask "Finished?" at 95% (PRD), now that Finished is manual?~~ Answered: yes, both (A1).
 3. Folders are P0 here vs Phase 2 in the PRD: dev estimate needed before committing to Oct 23.
 4. `save_confirmed.destination` is always `read_later` under the adopted popup flow. Keep the property, or drop it and
    derive Read-now share from `read_now_clicked`?

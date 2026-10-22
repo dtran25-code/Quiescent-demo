@@ -21,7 +21,7 @@ function syncCheck(object: 'reading' | 'highlight' | 'note' | 'folder') {
 
 // --- statuses -------------------------------------------------------------------
 
-export function setStatus(itemId: string, to: Status, via: 'card_menu' | 'reader' | 'opened' | 'read_now') {
+export function setStatus(itemId: string, to: Status, via: 'card_menu' | 'reader' | 'finished_prompt' | 'opened' | 'read_now') {
   const from = metaOf(itemId).status
   if (from === to) return
   patchMeta(itemId, { status: to, finishedAt: to === 'finished' ? Date.now() : undefined })

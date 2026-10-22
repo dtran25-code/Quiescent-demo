@@ -81,6 +81,10 @@ function Reader({ item }: { item: Item }) {
   const restored = useRef(false)
   const location = useLocation()
   const status = useProto((s) => s.meta[item.id]?.status ?? 'read_later')
+  // "Finished?" asks once per reading session, the first time progress reaches 95%.
+  const [finishPrompt, setFinishPrompt] = useState(false)
+  const prompted = useRef(false)
+  const belowFinish = useRef((item.lastScroll ?? 0) < FINISH_AT)
 
   // --- v2: open / session events and the status rule ------------------------------
   // Opening a Read later item moves it to In progress (DEFAULT). One item_opened per
@@ -168,9 +172,14 @@ function Reader({ item }: { item: Item }) {
         const max = scroller.scrollHeight - scroller.clientHeight
         const ratio = max > 0 ? Math.min(1, scroller.scrollTop / max) : 1
         updateItem(item.id, { progress: Math.round(ratio * 100), lastScroll: ratio })
-        if (ratio >= 0.9 && !metaOf(item.id).completedAt) {
+        if (ratio >= FINISH_AT && !metaOf(item.id).completedAt) {
           patchMeta(item.id, { completedAt: Date.now() })
           track('item_completed', { item_id: item.id, progress: Math.round(ratio * 100) })
+        }
+        if (ratio < FINISH_AT) belowFinish.current = true
+        else if (belowFinish.current && !prompted.current && metaOf(item.id).status !== 'finished') {
+          prompted.current = true
+          setFinishPrompt(true)
         }
       }, 400)
     }
@@ -468,6 +477,30 @@ function Reader({ item }: { item: Item }) {
         </div>
       )}
 
+      {/* "Finished?" at 95%: once per reading session. */}
+      {finishPrompt && status !== 'finished' && (
+        <div
+          role="region"
+          aria-label="Finished?"
+          className="absolute bottom-14 z-30 flex -translate-x-1/2 items-center gap-3 rounded-xl bg-card px-4 py-3 shadow-lg ring-1 ring-rule"
+          style={{ left: panelOpen ? `calc((100% - ${PANEL_WIDTH}px) / 2)` : '50%' }}
+        >
+          <p className="font-serif text-lg font-semibold">Finished?</p>
+          <button
+            className="btn-primary"
+            onClick={() => {
+              setStatus(item.id, 'finished', 'finished_prompt')
+              setFinishPrompt(false)
+            }}
+          >
+            Mark as finished
+          </button>
+          <button className="btn-ghost" onClick={() => setFinishPrompt(false)}>
+            Not yet
+          </button>
+        </div>
+      )}
+
       {/* Where your highlights are: margin ticks, a button, and a side panel. */}
       <MarginMarkers markers={markers} right={scrollbar + 3} onJump={jumpTo} />
       {panelOpen ? (
@@ -532,6 +565,8 @@ function waitFor<T>(get: () => T | null, timeout: number): Promise<T | null> {
   })
 }
 
+/** Progress at which an item counts as completed and the reader asks "Finished?". */
+const FINISH_AT = 0.95
 const NOTE_WIDTH = 352
 const PANEL_WIDTH = 352 // matches w-[22rem] in HighlightsPanel
 

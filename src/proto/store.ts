@@ -27,7 +27,7 @@ export interface ItemMeta {
   canonicalUrl?: string
   /** Extension saves: when the server "confirmed" (for item_fetched latency). */
   confirmedAt?: number
-  /** Scroll progress first reached 90% (item_completed fired). */
+  /** Scroll progress first reached 95% (item_completed fired). */
   completedAt?: number
   /** The web app has loaded this save at least once (item_fetched fired). */
   fetched?: boolean
