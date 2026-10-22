@@ -37,7 +37,7 @@ export function Assistant({
   /** A passage or note the user pointed the assistant at. */
   attachment: Attachment | null
   onClearAttachment: () => void
-  /** Changes whenever the page wants the panel opened (e.g. "Ask AI" was clicked). */
+  /** Changes whenever the page wants the panel opened (e.g. "Ask Q!" was clicked). */
   openSignal: number
 }) {
   const settings = useAssistantSettings()
@@ -66,7 +66,7 @@ export function Assistant({
   const pos = dragPos ?? { x: settings.x, y: settings.y }
   const [viewport, setViewport] = useState({ w: window.innerWidth, h: window.innerHeight })
 
-  // Open when the page asks (e.g. "Ask AI" clicked).
+  // Open when the page asks (e.g. "Ask Q!" clicked).
   const [seenSignal, setSeenSignal] = useState(openSignal)
   if (openSignal !== seenSignal) {
     setSeenSignal(openSignal)
@@ -384,7 +384,7 @@ function ChatPanel({
             label="Explain this"
             onClick={() => run('explain')}
             disabled={thinking || !attachment}
-            title={attachment ? 'Explain the selected passage' : 'Select a passage (or use Ask AI on a note) first'}
+            title={attachment ? 'Explain the selected passage' : 'Select a passage (or use Ask Q! on a note) first'}
           />
           <Chip icon={<FileText size={13} />} label="Summarize this section" onClick={() => run('summarize')} disabled={thinking} />
           <Chip icon={<PenLine size={13} />} label="Polish my notes" onClick={() => run('polish')} disabled={thinking} />

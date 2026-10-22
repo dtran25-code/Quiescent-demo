@@ -1,4 +1,5 @@
-import { Highlighter, MessageSquarePlus, Sparkles } from 'lucide-react'
+import { Highlighter, MessageSquarePlus } from 'lucide-react'
+import { QTurtle } from '../icons/QTurtle'
 
 /** Small floating toolbar shown above a text selection. Positioned in window coordinates. */
 export function SelectionToolbar({
@@ -6,13 +7,13 @@ export function SelectionToolbar({
   y,
   onHighlight,
   onHighlightNote,
-  onAskAI,
+  onAskQ,
 }: {
   x: number
   y: number
   onHighlight: () => void
   onHighlightNote: () => void
-  onAskAI: () => void
+  onAskQ: () => void
 }) {
   return (
     <div
@@ -26,7 +27,16 @@ export function SelectionToolbar({
       <ToolButton onClick={onHighlight} icon={<Highlighter size={15} />} label="Highlight" />
       <ToolButton onClick={onHighlightNote} icon={<MessageSquarePlus size={15} />} label="Highlight + note" />
       <div className="mx-0.5 h-5 w-px bg-paper/20" />
-      <ToolButton onClick={onAskAI} icon={<Sparkles size={15} />} label="Ask AI" />
+      <ToolButton
+        onClick={onAskQ}
+        // The turtle sits on a light disc so its navy outline reads on the dark toolbar.
+        icon={
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-card">
+            <QTurtle size={16} />
+          </span>
+        }
+        label="Ask Q!"
+      />
     </div>
   )
 }

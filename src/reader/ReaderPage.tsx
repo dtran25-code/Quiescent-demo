@@ -289,7 +289,7 @@ function Reader({ item }: { item: Item }) {
 
   // --- AI assistant ---------------------------------------------------------------
 
-  function askAI() {
+  function askQ() {
     if (!toolbar) return
     setAttachment({ kind: 'selection', text: toolbar.anchor.quote, chapterId: chapterOf(toolbar.anchor) })
     setAssistantSignal((n) => n + 1)
@@ -448,7 +448,7 @@ function Reader({ item }: { item: Item }) {
               x={note.x}
               y={note.y}
               onClose={closeNote}
-              onAskAI={(noteText) => {
+              onAskQ={(noteText) => {
                 // Same as the ✨ button on a Notes View card.
                 setAttachment({
                   kind: 'note',
@@ -530,7 +530,7 @@ function Reader({ item }: { item: Item }) {
           y={toolbar.y}
           onHighlight={() => createHighlight(false)}
           onHighlightNote={() => createHighlight(true)}
-          onAskAI={askAI}
+          onAskQ={askQ}
         />
       )}
 

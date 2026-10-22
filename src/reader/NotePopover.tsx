@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { Check, Sparkles, Trash2, X } from 'lucide-react'
+import { Check, Trash2, X } from 'lucide-react'
+import { QTurtle } from '../icons/QTurtle'
 import { updateHighlights } from '../storage/db'
 import type { Highlight } from '../types'
 import { track } from '../events/track'
@@ -15,14 +16,14 @@ export function NotePopover({
   x,
   y,
   onClose,
-  onAskAI,
+  onAskQ,
 }: {
   highlight: Highlight
   x: number
   y: number
   onClose: () => void
   /** Point the AI assistant at this highlight, with the note as currently typed. */
-  onAskAI: (note: string) => void
+  onAskQ: (note: string) => void
 }) {
   const [text, setText] = useState(highlight.note)
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
@@ -109,11 +110,11 @@ export function NotePopover({
         </button>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => onAskAI(text)}
+            onClick={() => onAskQ(text)}
             className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-accent hover:bg-accent-soft"
-            title="Ask the AI assistant about this highlight"
+            title="Ask Q about this highlight"
           >
-            <Sparkles size={13} /> Ask AI
+            <QTurtle size={16} /> Ask Q!
           </button>
           <span className="text-xs text-ink-faint" aria-live="polite">
             {status === 'saving' ? 'Saving…' : status === 'saved' ? (

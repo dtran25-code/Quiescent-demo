@@ -501,7 +501,7 @@ export const EVENTS: EventDef[] = [
     area: 'q',
     source: 'client',
     surface: 'web',
-    trigger: 'Q panel opened (turtle clicked, or Ask AI)',
+    trigger: 'Q panel opened (turtle clicked, or Ask Q!)',
     props: { item_id: id, has_selection: bool },
     feeds: 'Q usage',
     origin: 'prd',
