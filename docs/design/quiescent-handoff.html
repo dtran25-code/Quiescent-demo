@@ -1,8 +1,9 @@
+<meta charset="utf-8">
 <title>Quiescent Design Handoff</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caladea:wght@700&family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Open+Sans:wght@400;600;700&display=swap">
 <style>
 /* Layout: a three-pane build tool. State list | the live screen | the spec card. Stacks on phones. */
 :root{
@@ -11,9 +12,9 @@
   /* Product colors: the product is light-only, so these never change with the theme */
   --q-ink:#1A2C4A; --q-ink70:#4A5A72; --q-sage:#C9DDB8; --q-tint:#E3EDDA; --q-soft:#F2E6A7;
   --q-mist:#F3F6F4; --q-white:#FFFFFF; --q-line:#D3DCD6; --q-chrome:#E2E7E4; --q-os:#ECECEC; --q-os-fg:#1F1F1F;
-  --f-word:Caladea, Cambria, Georgia, serif;
-  --f-serif:'Source Serif 4', Georgia, 'Times New Roman', serif;
-  --f-sans:'Source Sans 3', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-word:'Cormorant Garamond', Garamond, Georgia, serif;
+  --f-serif:'Cormorant Garamond', Garamond, Georgia, serif;
+  --f-sans:'Open Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --f-mono:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 @media (prefers-color-scheme: dark){
@@ -103,10 +104,12 @@ a{color:inherit}
 .q *{box-sizing:border-box}
 .q-pop{width:360px;max-width:100%;background:var(--q-white);border:1px solid var(--q-line);border-radius:12px;box-shadow:0 8px 24px rgba(26,44,74,.10);overflow:hidden}
 .q-ph{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--q-tint)}
-.q-word{display:inline-flex;align-items:center;gap:10px;font-family:var(--f-word);font-weight:700;font-size:18px}
+.q-x{margin-left:auto;width:32px;height:32px;border:none;background:none;border-radius:6px;color:var(--q-ink70);cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.q-x:hover{background:var(--q-tint);color:var(--q-ink)}
+.q-word{display:inline-flex;align-items:center;gap:10px;font-family:var(--f-word);font-weight:600;font-size:18px}
 .q-word img{width:28px;height:28px;display:block}
 .q-body{padding:24px 20px 20px;display:flex;flex-direction:column;gap:16px}
-.q-kick{display:flex;align-items:center;gap:10px;margin:0;font-family:var(--f-word);font-weight:700;font-size:24px;line-height:1.2}
+.q-kick{display:flex;align-items:center;gap:10px;margin:0;font-family:var(--f-word);font-weight:600;font-size:24px;line-height:1.2}
 .q-dot{width:28px;height:28px;border-radius:50%;background:var(--q-sage);display:inline-flex;align-items:center;justify-content:center;flex:none;color:var(--q-ink)}
 .q-dot.plain{background:var(--q-tint)}
 .q-dot svg{width:15px;height:15px}
@@ -115,13 +118,13 @@ a{color:inherit}
 @media (prefers-reduced-motion:reduce){.q-spin{animation:none}}
 .q-note{display:flex;gap:10px;align-items:flex-start;background:var(--q-soft);padding:10px 12px;border-radius:8px}
 .q-note svg{flex:none;margin-top:3px}
-.q-note b{font-family:var(--f-word);font-size:20px;font-weight:700;display:block;line-height:1.25}
+.q-note b{font-family:var(--f-word);font-size:20px;font-weight:600;display:block;line-height:1.25}
 .q-note.ok{background:var(--q-tint)}
 .q-note.ok b{font-family:var(--f-sans);font-size:15px;font-weight:600}
 .q-art{border-top:1px solid var(--q-tint);border-bottom:1px solid var(--q-tint);padding:12px 0;background-image:repeating-linear-gradient(#FFFFFF 0 27px,#EEF3EA 27px 28px)}
-.q-at{font-family:var(--f-serif);font-size:17px;line-height:1.4;margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.q-at{font-family:var(--f-serif);font-weight:600;font-size:17px;line-height:1.4;margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .q-by{font-size:13px;color:var(--q-ink70);margin-top:4px}
-.q-h{font-family:var(--f-word);font-weight:700;font-size:22px;line-height:1.25;margin:0;text-wrap:balance}
+.q-h{font-family:var(--f-word);font-weight:600;font-size:22px;line-height:1.25;margin:0;text-wrap:balance}
 .q-txt{font-size:15px;line-height:1.5;margin:0}
 .q-row{display:flex;gap:10px}
 .q-btn{flex:1;min-height:44px;padding:0 16px;border-radius:8px;font:600 15px var(--f-sans);cursor:pointer;border:1.5px solid var(--q-ink)}
@@ -150,34 +153,26 @@ a{color:inherit}
 .q-wh{background:var(--q-white);border-bottom:1px solid var(--q-tint);display:flex;align-items:center;flex-wrap:wrap;gap:8px 28px;padding:10px 24px;min-height:64px}
 .q-wh .q-word{font-size:20px}
 .q-wh .q-word img{width:32px;height:32px}
-.q-nav{display:flex;gap:24px;flex:1}
-.q-nav a{text-decoration:none;font-size:15px;padding:8px 0;border-bottom:2px solid transparent;cursor:pointer}
-.q-nav a[aria-current="page"]{font-weight:600;border-bottom-color:var(--q-ink)}
 .q-sync{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--q-ink70)}
 .q-sync.off{background:var(--q-soft);color:var(--q-ink);font-weight:600;padding:4px 10px;border-radius:6px}
-.q-av{width:40px;height:40px;border-radius:50%;border:none;background:var(--q-sage);color:var(--q-ink);font:700 15px var(--f-sans);cursor:pointer;flex:none}
 .q-page{padding:32px 24px 40px;display:flex;flex-direction:column;gap:20px}
 .q-card{background:var(--q-white);border:1px solid var(--q-line);border-radius:12px;padding:32px 28px;width:100%;max-width:400px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
-.q-plate{font-family:var(--f-word);font-weight:700;font-size:34px;line-height:1.15;margin:0;text-wrap:balance}
+.q-plate{font-family:var(--f-word);font-weight:600;font-size:34px;line-height:1.15;margin:0;text-wrap:balance}
 .q-card .q-plate{font-size:28px}
 .q-banner{background:var(--q-tint);display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:14px 20px;border-radius:10px}
 .q-banner span{flex:1;min-width:200px}
 .q-banner .q-btn{flex:none}
 .q-ghost{border:2px dashed #B9C4BD;border-radius:12px;background:var(--q-white);color:var(--q-ink70);padding:28px 20px;text-align:center;font-size:14px;display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;width:100%;max-width:520px;min-height:220px}
 .q-ghost strong{color:var(--q-ink);font-size:16px}
-.q-menu{position:relative}
-.q-pop-menu{position:absolute;right:0;top:48px;width:250px;background:var(--q-white);border:1px solid var(--q-line);box-shadow:0 8px 24px rgba(26,44,74,.10);padding:8px;border-radius:10px;z-index:2}
-.q-pop-menu .em{padding:6px 12px;font-size:13px;color:var(--q-ink70)}
-.q-pop-menu button{width:100%;text-align:left;border:none;background:var(--q-tint);color:var(--q-ink);font:15px var(--f-sans);min-height:40px;padding:0 12px;border-radius:6px;cursor:pointer}
 .q-acc{max-width:680px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:20px}
 .q-sec{background:var(--q-white);border:1px solid var(--q-line);border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:14px}
-.q-sec h2{font-family:var(--f-word);font-weight:700;font-size:20px;margin:0}
+.q-sec h2{font-family:var(--f-word);font-weight:600;font-size:20px;margin:0}
 .q-dl{margin:0;display:flex;flex-direction:column}
 .q-kv{display:flex;justify-content:space-between;gap:4px 16px;flex-wrap:wrap;padding:10px 0;border-top:1px solid var(--q-tint)}
 .q-kv dt{color:var(--q-ink70)}
 .q-kv dd{margin:0;font-weight:600;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .q-photo{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
-.q-ph{width:72px;height:72px;border-radius:50%;background:var(--q-sage);display:flex;align-items:center;justify-content:center;font:700 28px var(--f-sans);flex:none}
+.q-av-lg{width:72px;height:72px;border-radius:50%;background:var(--q-sage);display:flex;align-items:center;justify-content:center;font:700 28px var(--f-sans);flex:none}
 .q-mailbox{background:var(--q-white);border:1px solid var(--q-line);border-radius:10px;width:100%;max-width:520px;box-shadow:0 8px 24px rgba(26,44,74,.10);overflow:hidden}
 .q-mailhead{padding:12px 18px;border-bottom:1px solid var(--q-tint);font-size:13px;display:flex;flex-direction:column;gap:2px}
 .q-mailbody{padding:24px 22px 28px;display:flex;flex-direction:column;gap:14px;align-items:flex-start}
@@ -190,15 +185,33 @@ a{color:inherit}
 .q-tb img{width:20px;height:20px}
 .q-tb b{position:absolute;right:-5px;bottom:-5px;width:16px;height:16px;border-radius:50%;background:var(--q-sage);display:flex;align-items:center;justify-content:center;border:1.5px solid var(--q-white)}
 .q-col{display:flex;flex-direction:column;gap:22px;align-items:center;width:100%}
-@media (max-width:520px){.q-plate{font-size:28px}.q-page{padding:20px 14px 28px}.q-sec{padding:18px}}
+.q-fold{display:flex;flex-direction:column;gap:6px}
+.q-fold p{font-size:14px;font-weight:600;margin:0}
+.q-fold p span{font-weight:400;color:var(--q-ink70)}
+.q-fold ul{list-style:none;margin:0;padding:4px 0;border:1px solid var(--q-line);border-radius:8px;max-height:148px;overflow-y:auto}
+.q-fold label{display:flex;align-items:center;gap:10px;min-height:40px;padding:0 12px;cursor:pointer;font-size:15px}
+.q-fold label:hover{background:var(--q-tint)}
+.q-fold input{width:18px;height:18px;accent-color:var(--q-ink);margin:0;flex:none}
+.q-app{display:flex;min-height:460px}
+.q-side{width:210px;flex:none;background:var(--q-white);border-right:1px solid var(--q-tint);padding:16px 12px;display:flex;flex-direction:column;gap:4px}
+.q-side .q-word{font-size:20px;padding:0 8px 16px}
+.q-side .q-word img{width:32px;height:32px}
+.q-sl{display:flex;align-items:center;gap:10px;min-height:40px;padding:0 12px;border-radius:8px;text-decoration:none;font-size:15px;color:var(--q-ink);cursor:pointer}
+.q-sl:hover{background:var(--q-tint)}
+.q-sl[aria-current="page"]{background:var(--q-tint);font-weight:600}
+.q-side .q-sync{padding:8px 12px;margin-top:auto}
+.q-side .q-sync.off{margin:auto 0 0}
+.q-main{flex:1;min-width:0}
+@media (max-width:520px){.q-plate{font-size:28px}.q-page{padding:20px 14px 28px}.q-sec{padding:18px}.q-app{flex-direction:column}.q-side{width:auto;flex-direction:row;flex-wrap:wrap;align-items:center;border-right:none;border-bottom:1px solid var(--q-tint)}.q-side .q-word{padding:0 8px}.q-side .q-sync{margin:0}}
 </style>
 
 <div class="wrap">
   <header class="top">
     <div>
-      <h1>Quiescent design handoff <span class="ver">v1.1 · Oct 22, 2026</span></h1>
+      <h1>Quiescent design handoff <span class="ver">v1.2 · Oct 22, 2026</span></h1>
       <p>Chrome extension popup and Accounts &amp; sync. Every state, its exact copy, what each button does, and the event it fires. Click buttons inside a screen to move through the flow.</p>
       <p><strong>v1.1:</strong> back to the original Reading Room look. Broadsheet and the Shell are removed. Flows, copy and events are unchanged.</p>
+      <p><strong>v1.2:</strong> matches the team decisions from the Oct 21 spec check: no Read later cap, status names In progress · Read later · Finished, the reader opens at the last position, an optional folder picker after saving, a left sidebar instead of the header and avatar menu, the prototype's fonts (Cormorant Garamond and Open Sans), a ✕ in the popup header, and the prototype's extra events.</p>
     </div>
     <div class="legend" aria-label="Copy tags">
       <span><span class="tag t-prd">PRD</span> copy from the PRD</span>
@@ -233,7 +246,7 @@ const I = {
 };
 
 /* ---------- product building blocks ---------- */
-const mast = () => `<div class="q-ph"><span class="q-word"><img src="${LOGO}" alt="">Quiescent</span></div>`;
+const mast = () => `<div class="q-ph"><span class="q-word"><img src="${LOGO}" alt="">Quiescent</span><button type="button" class="q-x" aria-label="Close popup"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div>`;
 const pop = (count, body) => `<div class="q q-pop">${mast()}<div class="q-body">${body}</div></div>`;
 const kick = (text, kind) => {
   const icon = kind === 'ok' ? `<span class="q-dot">${I.check16}</span>`
@@ -247,6 +260,8 @@ const kick = (text, kind) => {
 const note = (title, sub, icon, role) => `<div class="q-note" role="${role||'alert'}">${icon||I.alert}<div><b>${title}</b>${sub ? `<p class="q-meta" style="margin-top:4px">${sub}</p>` : ''}</div></div>`;
 const art = (t, by) => `<div class="q-art"><p class="q-at">${t||A.t}</p><div class="q-by">${by||A.src}</div></div>`;
 const lede = () => '';
+const FOLDERS = ['Interview prep', 'Econ 301', 'Thesis, someday'];
+const folders = () => `<div class="q-fold"><p>Add to a folder <span>(optional)</span></p><ul aria-label="Folders">${FOLDERS.map((f,i)=>`<li><label><input type="checkbox"${i===0?' checked':''}>${f}</label></li>`).join('')}</ul></div>`;
 const btn = (label, kind, to, dis) => `<button type="button" class="q-btn q-${kind}"${to?` data-to="${to}"`:''}${dis?' disabled':''}>${label}</button>`;
 const row = (...b) => `<div class="q-row">${b.join('')}</div>`;
 const qb = (label, to) => `<button type="button" class="q-qb"${to?` data-to="${to}"`:''}>${label}</button>`;
@@ -257,12 +272,17 @@ const hr = () => '';
 
 
 const br = (url, inner) => `<div class="q q-br"><div class="q-bar"><i></i><i></i><i></i><span>${url}</span></div>${inner}</div>`;
-const wh = (active, sync, menu) => `<div class="q-wh"><span class="q-word"><img src="${LOGO}" alt="">Quiescent</span>
-  ${active ? `<nav class="q-nav" aria-label="Main"><a href="#" data-to="W_library"${active==='lib'?' aria-current="page"':''}>Library</a><a href="#" data-to="W_account"${active==='acc'?' aria-current="page"':''}>Account</a></nav>` : '<span style="flex:1"></span>'}
-  ${sync==='ok' ? `<span class="q-sync" role="status">${I.check16}Synced just now</span>` : sync==='off' ? `<span class="q-sync off" role="status">${I.wifi14}Offline, changes won't save</span>` : ''}
-  ${active ? `<div class="q-menu"><button type="button" class="q-av" aria-label="Account menu" aria-haspopup="menu" aria-expanded="${menu?'true':'false'}" data-to="${menu?'W_library':'W_menu'}">T</button>${menu ? `<div class="q-pop-menu" role="menu"><div class="em">${MAIL}</div><button type="button" role="menuitem" data-to="W_signedout">Sign out of this computer</button></div>` : ''}</div>` : ''}</div>`;
+/* Signed out (sign-in pages): a plain bar with the logo. */
+const wh = () => `<div class="q-wh"><span class="q-word"><img src="${LOGO}" alt="">Quiescent</span></div>`;
+/* Signed in: the left sidebar (v1.2). Library · Most recent read · sync status · Account. No avatar menu. */
+const side = (active, sync) => `<nav class="q-side" aria-label="Main"><span class="q-word"><img src="${LOGO}" alt="">Quiescent</span>
+  <a class="q-sl" href="#" data-to="W_library"${active==='lib'?' aria-current="page"':''}>Library</a>
+  <a class="q-sl" href="#" data-to="X_reader">Most recent read</a>
+  ${sync==='off' ? `<span class="q-sync off" role="status">${I.wifi14}Offline, changes won't save</span>` : `<span class="q-sync" role="status">${I.check16}Synced just now</span>`}
+  <a class="q-sl" href="#" data-to="W_account"${active==='acc'?' aria-current="page"':''}>Account</a></nav>`;
+const app = (active, sync, inner) => `<div class="q-app">${side(active, sync)}<div class="q-main">${inner}</div></div>`;
 const page = inner => `<div class="q-page">${inner}</div>`;
-const libGhost = () => `<div class="q-ghost" style="max-width:none;min-height:180px"><strong>Library</strong>Reading · Read Later · Finished. Not in this handoff.</div>`;
+const libGhost = () => `<div class="q-ghost" style="max-width:none;min-height:180px"><strong>Library</strong>In progress · Read later · Finished. Not in this handoff.</div>`;
 const banner = () => `<div class="q-banner"><img src="${LOGO}" alt="" width="28" height="28"><span>Add Quiescent to Chrome to save articles in one click.</span>${btn('Add to Chrome','p','X_store')}</div>`;
 const signInCard = (top) => `<div class="q-card">${top||''}<h1 class="q-plate">Sign in to Quiescent</h1>${google('W_signing')}${or()}${email('w-em')}${btn('Send link','p','W_check')}<p class="q-meta">New here? Signing in creates your account.</p></div>`;
 
@@ -273,41 +293,35 @@ const P = 'prd', N = 'new', O = 'open';
 
 /* Extension: save */
 def('E_ready', { tab:'ext', grp:'Save', name:'Ready', when:'Signed in. The page is an article (150+ words) not saved before.',
-  render:()=>pop('Read Later · 3 of 10', `${art()}${hr()}${row(btn('Add to Quiescent','p','E_saving'))}`),
+  render:()=>pop('', `${art()}${hr()}${row(btn('Add to Quiescent','p','E_saving'))}`),
   copy:[['Add to Quiescent',P]],
-  acts:[['Add to Quiescent','E_saving'],['If Read Later has 10','E_full',1],['If the URL is already saved (on open)','E_already',1]],
+  acts:[['Add to Quiescent','E_saving'],['If the URL is already saved (on open)','E_already',1]],
   ev:['save_clicked'],
   rules:['Focus starts on "Add to Quiescent", so Enter saves.','Title from the page; no title → site name as headline.','Headline cuts at 3 lines with "…".'] });
 def('E_onlinepdf', { tab:'ext', grp:'Save', name:'Online PDF', when:'The page is a PDF link on the web (.pdf).',
-  render:()=>pop('Read Later · 3 of 10', `${art('Monetary Policy Report, July 2026','federalreserve.gov · PDF')}${hr()}${row(btn('Add to Quiescent','p','E_saving'))}`),
+  render:()=>pop('', `${art('Monetary Policy Report, July 2026','federalreserve.gov · PDF')}${hr()}${row(btn('Add to Quiescent','p','E_saving'))}`),
   copy:[['Add to Quiescent',P]], acts:[['Add to Quiescent','E_saving']], ev:['save_clicked'],
   rules:['Same as Ready.','Text is read in the browser first; if that fails, the server fetches the PDF from its link.'] });
 def('E_saving', { tab:'ext', grp:'Save', name:'Saving', when:'After "Add to Quiescent", waiting for the server.',
-  render:()=>pop('Read Later · 3 of 10', `${kick('Saving…','spin')}${art()}${lede()}`),
+  render:()=>pop('', `${kick('Saving…','spin')}${art()}${lede()}`),
   copy:[['Saving…',P]],
   acts:[['Server confirms (target under 3 s)','E_saved',1],['Under 300 words saved','E_partial',1],['No reply in 10 s, or server error','E_fail',1],['Device offline','E_offline',1]],
   rules:['No buttons. Same height as Saved, so nothing jumps.','Never show "Saved" before the server confirms.','Spinner stops for reduced motion; the word stays.'] });
-def('E_saved', { tab:'ext', grp:'Save', name:'Saved to Read Later', when:'Server confirmed the save.',
-  render:()=>pop('Read Later · 4 of 10', `${kick('Saved to Read Later','ok')}${art()}${lede()}${hr()}${row(btn('Read now','p','X_reader'))}`),
-  copy:[['Saved to Read Later',N],['Read now',P]],
-  acts:[['Read now','X_reader'],['Reader closes the popup','(stays in Read Later)',2]],
-  ev:['save_confirmed','save_shown','read_now_clicked {from: popup}'],
-  rules:['The article goes to the top of Read Later automatically. No "Later" button.','"Read now" moves it to Reading and opens the Focused Reader full screen, at the furthest point read.'] });
+def('E_saved', { tab:'ext', grp:'Save', name:'Saved to Read later', when:'Server confirmed the save.',
+  render:()=>pop('', `${kick('Saved to Read later','ok')}${art()}${lede()}${hr()}${row(btn('Read now','p','X_reader'))}${folders()}`),
+  copy:[['Saved to Read later',N],['Read now',P],['Add to a folder (optional)',N],['{folder name} (one checkbox per folder)',N]],
+  acts:[['Read now','X_reader'],['Tick a folder','(added to that folder at once)',2],['Reader closes the popup','(stays in Read later)',2]],
+  ev:['save_confirmed','save_shown','read_now_clicked {from: popup}','folder_items_changed {via: popup}','save_popup_dismissed (closed without Read now)'],
+  rules:['The article goes to the top of Read later automatically. No "Later" button.','"Read now" moves it to In progress and opens the Focused Reader full screen, at the last position read.','"Add to a folder" is optional: the reader\'s existing folders, several or none. Hidden when they have no folders. No "create folder" here (folders are made in the library).','The save is already done; ticking a folder never delays it. Focus still starts on "Read now".'] });
 def('E_partial', { tab:'ext', grp:'Save', name:'Saved, partial', when:'Saved, but under 300 words (paywall preview).',
-  render:()=>pop('Read Later · 4 of 10', `${kick("Saved what's visible",'ok')}${art('Why productivity growth stalled','medium.com')}${hr()}${row(btn('Read now','p','X_reader'))}`),
-  copy:[["Saved what's visible",P],['Read now',P]], acts:[['Read now','X_reader']],
-  ev:['save_confirmed {partial: yes}','save_shown'], rules:['Still a success: Sage, not Soft light.','Goes to Read Later like a full save.'] });
+  render:()=>pop('', `${kick("Saved what's visible",'ok')}${art('Why productivity growth stalled','medium.com')}${hr()}${row(btn('Read now','p','X_reader'))}${folders()}`),
+  copy:[["Saved what's visible",P],['Read now',P],['Add to a folder (optional)',N]], acts:[['Read now','X_reader'],['Tick a folder','(added to that folder at once)',2]],
+  ev:['save_confirmed {partial: yes}','save_shown','folder_items_changed {via: popup}'], rules:['Still a success: Sage, not Soft light.','Goes to Read later like a full save, with the same optional folder picker.'] });
 def('E_already', { tab:'ext', grp:'Save', name:'Already saved', when:'The popup opens on a URL already in the library.',
-  render:()=>pop('Read Later · 4 of 10', `${kick('Already in your library','mark')}${art()}${hr()}${row(btn('Read now','p','X_reader'),btn('Open library','s','W_library'))}`),
+  render:()=>pop('', `${kick('Already in your library','mark')}${art()}${hr()}${row(btn('Read now','p','X_reader'),btn('Open library','s','W_library'))}`),
   copy:[['Already in your library',P],['Read now',P],['Open library',P]],
   acts:[['Read now','X_reader'],['Open library','W_library']], ev:['save_duplicate','read_now_clicked {from: duplicate}'],
   rules:['Match on canonical URL. Ignore utm_*, fbclid, gclid, ref, the # part, the trailing slash, and domain letter case.'] });
-def('E_full', { tab:'ext', grp:'Save', name:'Read Later full', when:'"Add to Quiescent" clicked while Read Later has 10.',
-  render:()=>pop('Read Later · 10 of 10 · Full', `<p class="q-kick" role="status" style="font-size:22px">Read Later is full (10 of 10)</p><p class="q-txt">Read this now, or open your library to make room.</p>${art()}${row(btn('Read now','p','X_reader'),btn('Open library','s','W_library'))}`),
-  copy:[['Read Later is full (10 of 10)',P],['Read this now, or open your library to make room.',P],['Read now',P],['Open library',P]],
-  acts:[['Read now','X_reader'],['Open library','W_library']], ev:['read_later_full_shown','read_now_clicked {from: full_state}'],
-  rules:['"Read now" saves straight to Reading and opens it. Nothing is blocked.','The timing is now right: since Add always means Read Later, checking at Add is correct.'] });
-
 /* Extension: sign in */
 def('E_signedout', { tab:'ext', grp:'Sign in', name:'Signed out', when:'No session: first save, signed out, session expired (30 days), or a held save expired (10 min).',
   render:()=>pop('', `<h1 class="q-h sm">Sign in to save this article</h1>${google('W_signing')}${or()}${email('e-em',MAIL)}${btn('Send link','p','E_check')}<p class="q-meta">New here? Signing in creates your account.</p>`),
@@ -323,11 +337,11 @@ def('E_check', { tab:'ext', grp:'Sign in', name:'Check email', when:'After "Send
 def('E_check60', { tab:'ext', grp:'Sign in', name:'Check email, resend ready', when:'60 s after the link was sent.',
   render:()=>pop('', `${kick('Check your email','mail')}<p class="q-mail">${MAIL}</p><p class="q-meta">Still nothing? Check your spam folder, or resend.</p>${btn('Resend','s','E_check')}${qb('Use a different email','E_signedout')}`),
   copy:[['Check your email',P],['Still nothing? Check your spam folder, or resend.',N],['Resend',P],['Use a different email',P]],
-  acts:[['Resend','E_check'],['Use a different email','E_signedout']], ev:['sign_in_started {provider: email}'] });
+  acts:[['Resend','E_check'],['Use a different email','E_signedout']], ev:['sign_in_link_resent {reason: resend}'] });
 def('E_waiting', { tab:'ext', grp:'Sign in', name:'Waiting for sign-in', when:'The reader reopens the popup during the 10-minute hold.',
   render:()=>pop('', `<div class="q-by">${A.t}</div><h1 class="q-h sm">Finish signing in to save this article</h1><p class="q-meta">We sent a link to ${MAIL}. Held for 10 minutes.</p>${btn('Resend','s','E_check')}${qb('Use a different email','E_signedout')}`),
   copy:[['Finish signing in to save this article',N],['We sent a link to {email}. Held for 10 minutes.',N],['Resend',P],['Use a different email',P]],
-  acts:[['Resend','E_check'],['Use a different email','E_signedout'],['Hold passes 10 min','E_signedout',1]],
+  acts:[['Resend','E_check'],['Use a different email','E_signedout'],['Hold passes 10 min','E_signedout',1]], ev:['sign_in_link_resent {reason: resend}','sign_in_failed {reason: abandoned} (hold passes 10 min)'],
   rules:['Stops readers from clicking Add twice while they wait for the email.'] });
 def('E_toomany', { tab:'ext', grp:'Sign in', name:'Too many requests', when:'A 6th link request for this email within one hour.',
   render:()=>pop('', `${note('Try again later','You can request a new link in an hour.',I.clock)}${google('W_signing')}`),
@@ -339,28 +353,28 @@ def('E_notif', { tab:'ext', grp:'Sign in', name:'Saved after sign-in', when:'Sig
     <div class="q q-badge"><span class="q-tb"><img src="${LOGO}" alt=""><b>${I.check}</b></span>If Chrome notifications are blocked: a check badge on the toolbar icon for 5 s.</div></div>`,
   copy:[['Saved to Quiescent',P],['{article title} (message)',P],['Read now',P]],
   acts:[['Read now','X_reader']], ev:['save_confirmed','save_shown','read_now_clicked {from: notification}'],
-  rules:['Chrome notification drawn by the OS: we set icon, title, message and one button. On macOS the button may sit under "Options"; test on Mac and Windows.','Notifications blocked → toolbar badge for 5 s.','Read Later full when the held save completes → save to Reading instead, same notification. (Open: confirm.)'] });
+  rules:['Chrome notification drawn by the OS: we set icon, title, message and one button. On macOS the button may sit under "Options"; test on Mac and Windows.','Notifications blocked → toolbar badge for 5 s.'] });
 
 /* Extension: can't save */
 def('E_cant', { tab:'ext', grp:"Can't save & errors", name:"Can't save", when:'Under 150 words: home page, feed, search results, YouTube.',
-  render:()=>pop('Read Later · 4 of 10', `${kick("Can't save this page",'page')}<p class="q-txt">Open an article, then click the Q.</p>${hr()}<div class="q-row">${btn('Library','s','W_library')}</div>`),
+  render:()=>pop('', `${kick("Can't save this page",'page')}<p class="q-txt">Open an article, then click the Q.</p>${hr()}<div class="q-row">${btn('Library','s','W_library')}</div>`),
   copy:[["Can't save this page",P],['Open an article, then click the Q.',N],['Library',P]],
   acts:[['Library','W_library']], ev:['save_failed {error_type: not_article}'], rules:['Nothing saved. Calm style: no Soft light, nothing failed.'] });
 def('E_blocked', { tab:'ext', grp:"Can't save & errors", name:'Blocked page', when:'chrome://, new tab, Chrome Web Store.',
   render:()=>pop('', `${kick('Open an article to save it','page')}`),
   copy:[['Open an article to save it',P]], ev:['save_failed {error_type: blocked_page}'],
-  rules:['No buttons; Esc closes.','Tech to confirm which of these pages open the popup at all.'] });
+  rules:['No action buttons; ✕ or Esc closes.','Tech to confirm which of these pages open the popup at all.'] });
 def('E_pdf', { tab:'ext', grp:"Can't save & errors", name:'PDF on computer', when:'A file:// PDF open in Chrome\'s viewer.',
-  render:()=>pop('Read Later · 4 of 10', `${kick('Upload PDFs in Quiescent','up')}<p class="q-meta" style="font-size:14px">PDFs saved on your computer can't be read from Chrome's viewer.</p>${hr()}${row(btn('Upload','p','X_upload'))}`),
+  render:()=>pop('', `${kick('Upload PDFs in Quiescent','up')}<p class="q-meta" style="font-size:14px">PDFs saved on your computer can't be read from Chrome's viewer.</p>${hr()}${row(btn('Upload','p','X_upload'))}`),
   copy:[['Upload PDFs in Quiescent',P],["PDFs saved on your computer can't be read from Chrome's viewer.",N],['Upload',P]],
-  acts:[['Upload','X_upload']], rules:['"Upload" opens Manual Upload on the website in a new tab.'] });
+  acts:[['Upload','X_upload']], ev:['save_failed {error_type: local_pdf}'], rules:['"Upload" opens Manual Upload on the website in a new tab.'] });
 def('E_fail', { tab:'ext', grp:"Can't save & errors", name:"Couldn't save", when:'No confirmation within 10 s, or a server error.',
-  render:()=>pop('Read Later · 3 of 10', `${note("Couldn't save",'Nothing was saved.')}${art()}${hr()}${row(btn('Retry','p','E_saving'))}`),
+  render:()=>pop('', `${note("Couldn't save",'Nothing was saved.')}${art()}${hr()}${row(btn('Retry','p','E_saving'))}`),
   copy:[["Couldn't save",P],['Nothing was saved.',N],['Retry',P]],
   acts:[['Retry','E_saving']], ev:['save_failed {error_type: timeout | server_error | extract_failed}'],
   rules:['Nothing stored on the device; any half-saved data on the server is removed.','Focus moves to Retry. Error is announced to screen readers.'] });
 def('E_offline', { tab:'ext', grp:"Can't save & errors", name:"Couldn't save, offline", when:'The device is offline when saving.',
-  render:()=>pop('Read Later · 3 of 10', `${note("Couldn't save, you're offline",'Nothing was saved.',I.wifi)}${art()}${hr()}${row(btn('Retry','p','E_saving'))}`),
+  render:()=>pop('', `${note("Couldn't save, you're offline",'Nothing was saved.',I.wifi)}${art()}${hr()}${row(btn('Retry','p','E_saving'))}`),
   copy:[["Couldn't save, you're offline",P],['Nothing was saved.',N],['Retry',P]],
   acts:[['Retry','E_saving']], ev:['save_failed {error_type: offline}'], rules:['Different icon from timeout, so the cause is clear without color.'] });
 
@@ -373,7 +387,7 @@ def('W_signin', { tab:'web', grp:'Sign in', name:'Sign in', when:'Website, no se
 def('W_check', { tab:'web', grp:'Sign in', name:'Check your email', when:'After "Send link" on the website.',
   render:()=>br('quiescent.app/sign-in', wh()+page(`<div class="q-card">${kick('Check your email','mail')}<p style="margin:0">We sent a sign-in link to <strong>${MAIL}</strong>.</p><p class="q-meta">The link should arrive within a minute. If not, check your spam folder.</p>${btn('Resend in 42 s','s',null,true)}${qb('Use a different email','W_signin')}</div>`)),
   copy:[['Check your email',P],['We sent a sign-in link to {email}.',N],['The link should arrive within a minute. If not, check your spam folder.',N],['Resend in {n} s → Resend',N],['Use a different email',P]],
-  acts:[['Reader opens the email','W_email',1],['Use a different email','W_signin'],['6th link in one hour','W_toomany',1]] });
+  acts:[['Reader opens the email','W_email',1],['Use a different email','W_signin'],['6th link in one hour','W_toomany',1]], ev:['sign_in_link_resent {reason: resend} (Resend)'] });
 def('W_email', { tab:'web', grp:'Sign in', name:'Sign-in email', when:'Sent by "Send link" from the website or the popup.',
   render:()=>`<div class="q q-mailbox"><div class="q-mailhead"><span><strong>Quiescent</strong> <span style="color:var(--q-ink70)">&lt;signin@quiescent.app&gt;</span></span><span style="font-weight:600">Your sign-in link for Quiescent</span></div>
     <div class="q-mailbody"><img src="${LOGO}" alt="Quiescent" width="44" height="44"><p class="q-plate" style="font-size:26px">Sign in to Quiescent</p><a href="#" data-to="W_signing">Sign in</a><p class="q-meta">This link works once and expires in 15 minutes. If you didn't ask for it, you can ignore this email.</p></div></div>`,
@@ -388,7 +402,7 @@ def('W_signing', { tab:'web', grp:'Sign in', name:'Signing in', when:'After the 
   rules:['First successful sign-in creates the account.','Same email via Google and via link = one account.','The extension on this computer is signed in too.'] });
 def('W_expired', { tab:'web', grp:'Sign in', name:'Link expired', when:'Link used twice, or older than 15 minutes.',
   render:()=>br('quiescent.app/sign-in', wh()+page(`<div class="q-card">${note('Link expired','',I.clock)}${btn('Send a new link','p','W_check')}</div>`)),
-  copy:[['Link expired',P],['Send a new link',P]], acts:[['Send a new link','W_check']], ev:['sign_in_failed {reason: link_expired}'],
+  copy:[['Link expired',P],['Send a new link',P]], acts:[['Send a new link','W_check']], ev:['sign_in_failed {reason: link_expired}','sign_in_link_resent {reason: expired}'],
   rules:['Sends to the same address. This screen lives on the website only (the popup is closed when the link opens).'] });
 def('W_toomany', { tab:'web', grp:'Sign in', name:'Too many requests', when:'A 6th link request for this email within one hour.',
   render:()=>br('quiescent.app/sign-in', wh()+page(`<div class="q-card">${note('Try again later','You can request a new link in an hour.',I.clock)}${google('W_signing')}</div>`)),
@@ -398,25 +412,22 @@ def('W_signedout', { tab:'web', grp:'Sign in', name:'Signed out', when:'After "S
   copy:[['Signed out on this computer. Your library is kept.',P]], acts:[['Continue with Google','W_signing'],['Send link','W_check']], ev:['signed_out {surface}'],
   rules:['The extension on this computer signs out too. Other computers stay signed in.'] });
 
-/* Website: header and banner */
-def('W_library', { tab:'web', grp:'Header & banner', name:'Header + install banner', when:'Signed in, extension not detected.',
-  render:()=>br('quiescent.app/library', wh('lib','ok')+page(banner()+libGhost())),
-  copy:[['Library · Account (nav)',P],['Synced {time}',P],['Add Quiescent to Chrome to save articles in one click.',P],['Add to Chrome',P]],
-  acts:[['Add to Chrome','X_store'],['Account','W_account'],['Avatar','W_menu'],['Connection lost','W_offline',1]],
-  rules:['Sync time: "just now" under 1 min, "{n} min ago" under 1 hour, then the clock time ("at 3:42 PM").','Banner hides once the extension is detected. Not dismissible in the MVP: it is the activation step.','At 375px the nav and sync move to a second row.'] });
-def('W_offline', { tab:'web', grp:'Header & banner', name:'Header offline', when:'The website loses connection.',
-  render:()=>br('quiescent.app/library', wh('lib','off')+page(libGhost())),
+/* Website: sidebar and banner */
+def('W_library', { tab:'web', grp:'Sidebar & banner', name:'Sidebar + install banner', when:'Signed in, extension not detected.',
+  render:()=>br('quiescent.app/library', app('lib','ok',page(banner()+libGhost()))),
+  copy:[['Library · Most recent read · Account (sidebar)',N],['Synced {time}',P],['Add Quiescent to Chrome to save articles in one click.',P],['Add to Chrome',P]],
+  acts:[['Add to Chrome','X_store'],['Most recent read','X_reader'],['Account','W_account'],['Connection lost','W_offline',1]],
+  ev:['extension_install_clicked {from: banner}','most_recent_read_clicked'],
+  rules:['Left sidebar instead of a top header: Library, Most recent read, then sync status and Account at the bottom. No avatar menu; "Sign out of this computer" is on the Account page.','"Most recent read" opens the last item opened (any status). Disabled until something has been opened: "Open something from your Library first".','The sidebar can collapse to icons; inside the reader it starts collapsed, and it hides in full screen.','Sync time: "just now" under 1 min, "{n} min ago" under 1 hour, then the clock time ("at 3:42 PM").','Banner hides once the extension is detected. Not dismissible in the MVP: it is the activation step.'] });
+def('W_offline', { tab:'web', grp:'Sidebar & banner', name:'Sidebar offline', when:'The website loses connection.',
+  render:()=>br('quiescent.app/library', app('lib','off',page(libGhost()))),
   copy:[["Offline, changes won't save",P]], acts:[['Back online','W_library',1]], ev:['sync_failed {object, reason}'],
-  rules:['Replaces the sync status in place. Announced once, not on every retry.'] });
-def('W_menu', { tab:'web', grp:'Header & banner', name:'Avatar menu', when:'Avatar clicked.',
-  render:()=>br('quiescent.app/library', wh('lib','ok',true)+page(`<div style="height:120px"></div>`+libGhost())),
-  copy:[['{email}',P],['Sign out of this computer',N]], acts:[['Sign out of this computer','W_signedout'],['Esc or click outside','W_library',1]],
-  rules:['One label everywhere: "Sign out of this computer" (PRD had "Sign out" here).','Arrow keys move in the menu; Esc closes and returns focus to the avatar.'] });
+  rules:['Replaces the sync status in place, in the sidebar. Announced once, not on every retry.'] });
 
 /* Website: account */
-const accountPage = (installed) => br('quiescent.app/account', wh('acc','ok')+page(`<div class="q-acc"><h1 class="q-plate">Account</h1>
+const accountPage = (installed) => br('quiescent.app/account', app('acc','ok',page(`<div class="q-acc"><h1 class="q-plate">Account</h1>
   <section class="q-sec" aria-labelledby="h-prof"><h2 id="h-prof">Profile</h2>
-    <div class="q-photo"><div class="q-ph" aria-hidden="true">T</div><div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;gap:8px;flex-wrap:wrap">${btn('Upload photo','s')}${qb('Remove')}</div><p class="q-meta">JPG or PNG, up to 5 MB. Google sign-in uses your Google photo until you upload one.</p></div></div>
+    <div class="q-photo"><div class="q-av-lg" aria-hidden="true">T</div><div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;gap:8px;flex-wrap:wrap">${btn('Upload photo','s')}${qb('Remove')}</div><p class="q-meta">JPG or PNG, up to 5 MB. Google sign-in uses your Google photo until you upload one.</p></div></div>
     <div class="q-field" style="max-width:380px"><label for="a-name">Name</label><input class="q-in" id="a-name" type="text" autocomplete="name" value="Tam Mai"></div>
     <div>${btn('Save changes','p')}</div></section>
   <section class="q-sec" aria-labelledby="h-sign"><h2 id="h-sign">Sign-in</h2><dl class="q-dl" style="border:none;padding:0">
@@ -428,21 +439,22 @@ const accountPage = (installed) => br('quiescent.app/account', wh('acc','ok')+pa
     <div class="q-kv"><dt>Computers signed in</dt><dd>${installed?2:1}</dd></div>
     <div class="q-kv"><dt>Items in library</dt><dd>${installed?14:0}</dd></div></dl></section>
   <section class="q-sec" aria-labelledby="h-out"><h2 id="h-out" class="sr">Sign out</h2><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><p style="margin:0">Your library is kept when you sign out.</p>${btn('Sign out of this computer','s','W_signedout')}</div>
-    <p class="q-meta">To delete your account and everything in it, email support@quiescent.app.</p></section></div>`));
+    <p class="q-meta">To delete your account and everything in it, email support@quiescent.app.</p></section></div>`)));
 def('W_account', { tab:'web', grp:'Account', name:'Account', when:'Signed in, extension installed on this computer.',
   render:()=>accountPage(true),
   copy:[['Account',P],['Profile · Sign-in · Sync (section labels)',N],['Upload photo · Remove · Name · Save changes',N],['JPG or PNG, up to 5 MB. Google sign-in uses your Google photo until you upload one.',N],["You stay signed in unless you don't use Quiescent for 30 days.",P],['Connected on this computer',P],['Items in library',P],['Your library is kept when you sign out.',N],['Sign out of this computer',P],['To delete your account and everything in it, email support@quiescent.app.',P],['Date of birth: not built',O]],
   acts:[['Sign out of this computer','W_signedout'],['Upload photo','(file picker)',2],['Save changes','(shows "Saved")',2]],
-  rules:['Photo states: "Uploading…", "Saved", "Couldn\'t upload. Use a JPG or PNG under 5 MB."','"Computers signed in" needs Neon Auth to list sessions per computer. (Open: Tech to confirm.)'] });
+  ev:['profile_photo_changed {action: uploaded | removed | rejected}','profile_name_saved','signed_out {surface}'],
+  rules:['Sign out lives here (no avatar menu). One label everywhere: "Sign out of this computer".','Photo states: "Uploading…", "Saved", "Couldn\'t upload. Use a JPG or PNG under 5 MB."','"Computers signed in" needs Neon Auth to list sessions per computer. (Open: Tech to confirm.)'] });
 def('W_account_new', { tab:'web', grp:'Account', name:'Account, no extension', when:'Signed in, extension not installed, empty library.',
   render:()=>accountPage(false),
   copy:[['Not installed',P],['Add to Chrome',P],['Items in library: 0',P]],
-  acts:[['Add to Chrome','X_store'],['Sign out of this computer','W_signedout']],
+  acts:[['Add to Chrome','X_store'],['Sign out of this computer','W_signedout']], ev:['extension_install_clicked {from: account}'],
   rules:['Same page as Account; the Sync section swaps in "Not installed" with "Add to Chrome".'] });
 
 /* Out-of-scope endpoints */
 def('X_reader', { tab:null, grp:'', name:'Focused Reader', when:'Destination of every "Read now".',
-  render:()=>`<div class="q q-ghost"><strong>Focused Reader, full screen</strong>Opens at the furthest point read. Not in this handoff.</div>`,
+  render:()=>`<div class="q q-ghost"><strong>Focused Reader, full screen</strong>Opens at the last position read. Not in this handoff.</div>`,
   rules:['Esc or "Exit full screen" returns to the library on that item\'s list.','If the browser blocks full screen: normal window + "Full screen not available".'] });
 def('X_store', { tab:null, grp:'', name:'Chrome Web Store', when:'Destination of "Add to Chrome".',
   render:()=>`<div class="q q-ghost"><strong>Chrome Web Store listing</strong>Google's page. Listing text and screenshots still need writing before review.</div>`,
@@ -469,27 +481,29 @@ const RULES = `<div class="doc">
 <tr><td><span class="sw" style="background:#D3DCD6"></span>Line</td><td class="mono">#D3DCD6</td><td>Card borders, disabled borders</td><td></td></tr>
 </tbody></table></div></section>
 <section><h2>Type</h2><div class="tbl"><table><thead><tr><th>Role</th><th>Font</th><th>Size / weight</th><th>Notes</th></tr></thead><tbody>
-<tr><td>Wordmark</td><td>Caladea</td><td>18 popup, 20 website / 700</td><td>"Quiescent" next to the logo.</td></tr>
-<tr><td>Status and headings</td><td>Caladea</td><td>24 popup status, 22 popup heading, 34 page title / 700</td><td>Our own copy only ("Saved to Read Later", "Account"). Sentence case.</td></tr>
-<tr><td>Article title</td><td>Source Serif 4</td><td>17 / 400, line 1.4</td><td>User content; cut at 3 lines. Caladea has no Vietnamese letters, so article titles never use it.</td></tr>
-<tr><td>UI and buttons</td><td>Source Sans 3</td><td>15 / 400 and 600</td><td></td></tr>
-<tr><td>Meta</td><td>Source Sans 3</td><td>13 / 400</td><td>Source name, helper lines</td></tr>
-</tbody></table></div><p style="margin-top:10px">Bundle the 4 font files inside the extension. Do not fetch fonts from Google in the popup: it slows "Saved" and fails offline.</p></section>
+<tr><td>Wordmark</td><td>Cormorant Garamond</td><td>18 popup, 20 website / 600</td><td>"Quiescent" next to the logo.</td></tr>
+<tr><td>Status and headings</td><td>Cormorant Garamond</td><td>24 popup status, 22 popup heading, 34 page title / 600</td><td>Our own copy only ("Saved to Read later", "Account"). Sentence case.</td></tr>
+<tr><td>Article title</td><td>Cormorant Garamond</td><td>17 / 600, line 1.4</td><td>User content; cut at 3 lines. Cormorant covers Vietnamese letters.</td></tr>
+<tr><td>UI and buttons</td><td>Open Sans</td><td>15 / 400 and 600</td><td></td></tr>
+<tr><td>Meta</td><td>Open Sans</td><td>13 / 400</td><td>Source name, helper lines</td></tr>
+</tbody></table></div><p style="margin-top:10px">Bundle the font files (Cormorant Garamond 600, Open Sans 400 and 600) inside the extension. Do not fetch fonts from Google in the popup: it slows "Saved" and fails offline.</p></section>
 <section><h2>Parts</h2><div class="tbl"><table><thead><tr><th>Part</th><th>Spec</th></tr></thead><tbody>
 <tr><td>Popup</td><td>360px wide, white, 1px Line border, 12px corners, soft shadow. Header 14/20 padding with a Sage tint bottom border; body 24/20/20, gap 16.</td></tr>
-<tr><td>Popup header</td><td>Logo 28px + "Quiescent", left aligned.</td></tr>
-<tr><td>Status line</td><td>28px circle + Caladea 24 text. Sage circle with check = success. Sage tint circle = neutral (already saved, can't save, PDF, email). Spinner = waiting. <code>role="status"</code>.</td></tr>
+<tr><td>Popup header</td><td>Logo 28px + "Quiescent", left aligned. Close ✕ on the right (32px, Ink 70, "Close popup" for screen readers); Esc and clicking away also close.</td></tr>
+<tr><td>Status line</td><td>28px circle + Cormorant Garamond 24 text. Sage circle with check = success. Sage tint circle = neutral (already saved, can't save, PDF, email). Spinner = waiting. <code>role="status"</code>.</td></tr>
 <tr><td>Article block</td><td>Sage tint rules above and below, faint ruled lines behind, title + source name.</td></tr>
-<tr><td>Notice</td><td>Soft light box, 8px corners, 20px icon, Caladea title, optional meta line. Errors only. <code>role="alert"</code>, focus moves to its button.</td></tr>
+<tr><td>Notice</td><td>Soft light box, 8px corners, 20px icon, Cormorant Garamond title, optional meta line. Errors only. <code>role="alert"</code>, focus moves to its button.</td></tr>
 <tr><td>Buttons</td><td>44px min height, 8px corners, 600 weight. Primary Ink fill; Secondary 1.5px Ink border; Quiet = underlined text. Max one primary per state. Disabled: Line border, Ink 70 text.</td></tr>
 <tr><td>Email field</td><td>Label "Email" above. 44px, 8px corners, 1.5px Ink 70 border. Error: message under the field, announced.</td></tr>
-<tr><td>Website header</td><td>64px, white, logo 32 + wordmark · Library · Account · sync status · avatar 40px. Wraps to two rows under 520px.</td></tr>
+<tr><td>Website sidebar</td><td>Signed in. 210px, white, Sage tint right border, padding 16/12. Logo 32 + wordmark, then Library · Most recent read; sync status and Account at the bottom. Items 40px tall, 8px corners; current page Sage tint fill, 600 weight. Collapsible to icons; collapsed in the reader, hidden in full screen. Becomes a row above the page under 520px.</td></tr>
+<tr><td>Website bar (signed out)</td><td>Sign-in pages only: 64px, white, logo 32 + wordmark.</td></tr>
+<tr><td>Folder picker</td><td>Popup, after a save. Label "Add to a folder" (600) + "(optional)" in Ink 70. Checklist in a 1px Line box, 8px corners, rows 40px, 18px checkboxes in Ink, scrolls after 3 to 4 rows.</td></tr>
 <tr><td>Website cards</td><td>White, 1px Line border, 12px corners, 24 to 32px padding, on a Mist page.</td></tr>
 </tbody></table></div></section>
 <section><h2>Timers and limits</h2><div class="tbl"><table><thead><tr><th>Rule</th><th>Value</th></tr></thead><tbody>
 <tr><td>Click to "Saved" (target)</td><td>under 3 s</td></tr><tr><td>Save timeout → "Couldn't save"</td><td>10 s</td></tr>
 <tr><td>Article detection</td><td>150+ words</td></tr><tr><td>Partial save → "Saved what's visible"</td><td>under 300 words</td></tr>
-<tr><td>Read Later cap</td><td>10, newest first</td></tr><tr><td>Reading time</td><td>words ÷ 230, rounded up</td></tr>
+<tr><td>Read later</td><td>no cap in the MVP, newest first</td></tr><tr><td>Reading time</td><td>words ÷ 230, rounded up</td></tr>
 <tr><td>Held save during sign-in</td><td>10 min</td></tr><tr><td>Email link</td><td>single use, 15 min</td></tr>
 <tr><td>Resend available</td><td>after 60 s</td></tr><tr><td>Links per email</td><td>5 per hour</td></tr>
 <tr><td>Session</td><td>30 days since last use</td></tr><tr><td>Sync to other surface</td><td>within 10 s (95%)</td></tr>
@@ -504,8 +518,12 @@ const RULES = `<div class="doc">
 </ul></section></div>`;
 
 const CH = [
- ['Saved state','"Saved" + Read now / Later','"Saved to Read Later" + Read now. Add always saves to Read Later.','One decision, not two. No item is left without a list.'],
- ['Read Later full','Shown at Add','Unchanged, and now correct','Add always means Read Later, so checking at Add is right.'],
+ ['Saved state','"Saved" + Read now / Later','"Saved to Read later" + Read now. Add always saves to Read later.','One decision, not two. No item is left without a list.'],
+ ['Read Later full (v1.2)','Shown at Add, cap of 10','Removed: no save limit in the MVP','Team decision, Oct 21 spec check.'],
+ ['Status names (v1.2)','Reading · Read Later · Finished','In progress · Read later · Finished, sentence case everywhere','Team decision, Oct 21 spec check.'],
+ ['Reading position (v1.2)','Furthest point read','Last position read: Read now and reopening go back to where the reader stopped','Team decision (meeting); the MVP tracks last position only.'],
+ ['Folder at save (v1.2)','P0 story "choose a shelf when I save"','Optional "Add to a folder" on the Saved screen: existing folders, several or none; hidden with no folders; no "create folder" in the popup','Folders are P0; the UI says "folder", never "shelf".'],
+ ['Navigation (v1.2)','Header: Library · Account · sync status · avatar menu','Left sidebar: Library · Most recent read · sync status · Account. No avatar menu; sign out on the Account page','Team decision, Oct 21 spec check.'],
  ['Waiting for sign-in','Missing','New popup state','Reopening the popup during the hold.'],
  ['Too many requests','Website only','Also in the popup','The popup sends links too.'],
  ['Link expired','Popup + website','Website only','The link opens in a tab; the popup is closed by then.'],
@@ -524,16 +542,16 @@ const CH = [
  ['Install banner','No dismiss rule','Not dismissible in the MVP','It is the activation step.'],
  ['Notifications blocked','Not covered','Check badge on the toolbar icon for 5 s','Otherwise the held save succeeds silently.'],
  ['Look','Not set','Direction A · Reading Room (v1.1 went back to it from Broadsheet)','Team decision, Oct 22.'],
- ['Article title font','Caladea','Source Serif 4 for article titles; Caladea stays for our own headings','Caladea has no Vietnamese letters.']
+ ['Fonts (v1.2)','Caladea, Source Serif 4, Source Sans 3','Cormorant Garamond (wordmark, headings, article titles) and Open Sans (UI), as in the prototype','One font family app-wide; Cormorant covers Vietnamese letters.'],
+ ['Popup close (v1.2)','Not covered','✕ in the popup header; Esc and clicking away also close','A visible way out, as in the prototype.'],
+ ['Events (v1.2)','Not covered','Adds save_popup_dismissed, sign_in_link_resent (Resend and Send a new link), save_failed {local_pdf}, extension_install_clicked, most_recent_read_clicked, profile_photo_changed, profile_name_saved','Matches the prototype\'s event dictionary.']
 ];
 const OPEN = [
  ['Date of birth on Account','PM','No MVP use; adds privacy and age-rule work. Not built until there is a reason.'],
- ['Held save completes while Read Later is full','PM','Proposed: save to Reading, same notification.'],
  ['"Computers signed in"','Tech','Can Neon Auth list sessions per computer? If not, drop the row.'],
- ['Blocked pages','Tech','Which of chrome://, new tab, Web Store open the popup at all?'],
- ['PRD P0 story "choose a shelf when I save"','PM','Contradicts "shelves are Phase 2". Remove or move to P1.']
+ ['Blocked pages','Tech','Which of chrome://, new tab, Web Store open the popup at all?']
 ];
-const CHANGES = `<div class="doc"><section><h2>Changes from the PRD</h2><p>All approved by Tam on Oct 18. Where this handoff and the PRD disagree, build from this handoff and update the PRD.</p>
+const CHANGES = `<div class="doc"><section><h2>Changes from the PRD</h2><p>All approved by Tam on Oct 18; rows marked v1.2 are team decisions from the Oct 21 spec check. Where this handoff and the PRD disagree, build from this handoff and update the PRD.</p>
 <div class="tbl" style="margin-top:12px"><table><thead><tr><th>Area</th><th>PRD v2</th><th>This handoff</th><th>Why</th></tr></thead><tbody>${CH.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div></section>
 <section><h2>Still open</h2><div class="tbl"><table><thead><tr><th>Question</th><th>Owner</th><th>Default until decided</th></tr></thead><tbody>${OPEN.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div></section></div>`;
 
