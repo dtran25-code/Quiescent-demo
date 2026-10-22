@@ -337,7 +337,8 @@ def('E_check', { tab:'ext', grp:'Sign in', name:'Check email', when:'After "Send
 def('E_check60', { tab:'ext', grp:'Sign in', name:'Check email, resend ready', when:'60 s after the link was sent.',
   render:()=>pop('', `${kick('Check your email','mail')}<p class="q-mail">${MAIL}</p><p class="q-meta">Still nothing? Check your spam folder, or resend.</p>${btn('Resend','s','E_check')}${qb('Use a different email','E_signedout')}`),
   copy:[['Check your email',P],['Still nothing? Check your spam folder, or resend.',N],['Resend',P],['Use a different email',P]],
-  acts:[['Resend','E_check'],['Use a different email','E_signedout']], ev:['sign_in_link_resent {reason: resend}'] });
+  acts:[['Resend','E_check'],['Use a different email','E_signedout']], ev:['sign_in_link_resent {reason: resend}'],
+  rules:['Resend logs sign_in_link_resent, never a second sign_in_started: one sign-in attempt = one sign_in_started, so the sign-in funnel counts people, not clicks.'] });
 def('E_waiting', { tab:'ext', grp:'Sign in', name:'Waiting for sign-in', when:'The reader reopens the popup during the 10-minute hold.',
   render:()=>pop('', `<div class="q-by">${A.t}</div><h1 class="q-h sm">Finish signing in to save this article</h1><p class="q-meta">We sent a link to ${MAIL}. Held for 10 minutes.</p>${btn('Resend','s','E_check')}${qb('Use a different email','E_signedout')}`),
   copy:[['Finish signing in to save this article',N],['We sent a link to {email}. Held for 10 minutes.',N],['Resend',P],['Use a different email',P]],
@@ -544,7 +545,7 @@ const CH = [
  ['Look','Not set','Direction A · Reading Room (v1.1 went back to it from Broadsheet)','Team decision, Oct 22.'],
  ['Fonts (v1.2)','Caladea, Source Serif 4, Source Sans 3','Cormorant Garamond (wordmark, headings, article titles) and Open Sans (UI), as in the prototype','One font family app-wide; Cormorant covers Vietnamese letters.'],
  ['Popup close (v1.2)','Not covered','✕ in the popup header; Esc and clicking away also close','A visible way out, as in the prototype.'],
- ['Events (v1.2)','Not covered','Adds save_popup_dismissed, sign_in_link_resent (Resend and Send a new link), save_failed {local_pdf}, extension_install_clicked, most_recent_read_clicked, profile_photo_changed, profile_name_saved','Matches the prototype\'s event dictionary.']
+ ['Events (v1.2)','Not covered','Adds save_popup_dismissed, sign_in_link_resent (Resend and Send a new link), save_failed {local_pdf}, extension_install_clicked, most_recent_read_clicked, profile_photo_changed, profile_name_saved. Resend logs sign_in_link_resent, not sign_in_started.','Matches the prototype\'s event dictionary. One sign-in attempt = one sign_in_started, so resends don\'t inflate the funnel; resends are counted on their own. Lock names before the Nov 15 testers.']
 ];
 const OPEN = [
  ['Date of birth on Account','PM','No MVP use; adds privacy and age-rule work. Not built until there is a reason.'],
