@@ -26,6 +26,7 @@ item 9, Q quick actions, is not confirmed and was skipped).
 | A8 | **"Read now" opens the reader full screen** from the popup, "Already in your library" and the Chrome notification, same as the reader's full screen button (`fullscreen_entered` with `from = extension`). If the browser refuses, the reader opens in the window. |
 | A10 | **Sentence case:** "Saved to Read later" (popup), "By status" / "By folder" (library view tabs, the folder breadcrumb, screen-reader labels), and the same names on /screens, in the event dictionary and in this changelog. |
 | A11 | **Docs brought up to date:** rating is P0 and built (A2); folders are P0, not "pending dev estimate" (conflict 3, open question 3, and the dev-note badges in the library, the create-folder dialog, /screens and the event dictionary; the "custom shelves as Phase 2" dev note is gone); README gives the MVP date, Nov 15, 2026 (the old "Oct 23" was in this changelog). |
+| B12 | **Leaving the reader returns to the item's own tab** (In progress, Read later or Finished), from the ✕ button or Esc, instead of always opening on In progress. |
 
 ---
 

@@ -84,6 +84,8 @@ function Reader({ item }: { item: Item }) {
   const restored = useRef(false)
   const location = useLocation()
   const status = useProto((s) => s.meta[item.id]?.status ?? 'read_later')
+  // Leaving the reader lands on the item's own status sub-view.
+  const libraryTab = `/library?status=${status}`
   // Q off: "Ask Q!" leaves the selection menu and the note box.
   const qOn = useAssistantSettings().enabled
   // "Finished?" asks once per reading session, the first time progress reaches 95%.
@@ -372,11 +374,11 @@ function Reader({ item }: { item: Item }) {
         window.getSelection()?.removeAllRanges()
         setToolbar(null)
       } else if (panelOpen) setPanelOpen(false)
-      else if (!document.fullscreenElement) navigate('/library')
+      else if (!document.fullscreenElement) navigate(libraryTab)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [note, toolbar, panelOpen, navigate])
+  }, [note, toolbar, panelOpen, navigate, libraryTab])
 
   const openNote = note ? highlights.find((h) => h.id === note.id) : undefined
   const closeNote = useCallback(() => setNote(null), [])
@@ -402,7 +404,7 @@ function Reader({ item }: { item: Item }) {
           atTop ? 'opacity-100' : 'opacity-0'
         }`}
       >
-        <Link to="/library" className="icon-btn" title="Exit reading (Esc)" aria-label="Exit reading">
+        <Link to={libraryTab} className="icon-btn" title="Exit reading (Esc)" aria-label="Exit reading">
           <X size={19} />
         </Link>
         <div className="min-w-0 flex-1 text-center">
