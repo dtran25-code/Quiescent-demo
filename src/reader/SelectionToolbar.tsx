@@ -13,7 +13,8 @@ export function SelectionToolbar({
   y: number
   onHighlight: () => void
   onHighlightNote: () => void
-  onAskQ: () => void
+  /** Left out while Q is off: the button disappears. */
+  onAskQ?: () => void
 }) {
   return (
     <div
@@ -26,17 +27,21 @@ export function SelectionToolbar({
     >
       <ToolButton onClick={onHighlight} icon={<Highlighter size={15} />} label="Highlight" />
       <ToolButton onClick={onHighlightNote} icon={<MessageSquarePlus size={15} />} label="Highlight + note" />
-      <div className="mx-0.5 h-5 w-px bg-paper/20" />
-      <ToolButton
-        onClick={onAskQ}
-        // The turtle sits on a light disc so its navy outline reads on the dark toolbar.
-        icon={
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-card">
-            <QTurtle size={16} />
-          </span>
-        }
-        label="Ask Q!"
-      />
+      {onAskQ && (
+        <>
+          <div className="mx-0.5 h-5 w-px bg-paper/20" />
+          <ToolButton
+            onClick={onAskQ}
+            // The turtle sits on a light disc so its navy outline reads on the dark toolbar.
+            icon={
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-card">
+                <QTurtle size={16} />
+              </span>
+            }
+            label="Ask Q!"
+          />
+        </>
+      )}
     </div>
   )
 }

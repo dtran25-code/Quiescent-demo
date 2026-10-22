@@ -13,6 +13,7 @@ import { SelectionToolbar } from './SelectionToolbar'
 import { NotePopover } from './NotePopover'
 import { HighlightsButton, HighlightsPanel, MarginMarkers, type Marker } from './HighlightsPanel'
 import { Assistant, AssistantToggle } from '../ai/Assistant'
+import { useAssistantSettings } from '../ai/settings'
 import type { Attachment } from '../ai/types'
 
 const NO_HIGHLIGHTS: Highlight[] = []
@@ -81,6 +82,8 @@ function Reader({ item }: { item: Item }) {
   const restored = useRef(false)
   const location = useLocation()
   const status = useProto((s) => s.meta[item.id]?.status ?? 'read_later')
+  // Q off: "Ask Q!" leaves the selection menu and the note box.
+  const qOn = useAssistantSettings().enabled
   // "Finished?" asks once per reading session, the first time progress reaches 95%.
   const [finishPrompt, setFinishPrompt] = useState(false)
   const prompted = useRef(false)
@@ -448,18 +451,22 @@ function Reader({ item }: { item: Item }) {
               x={note.x}
               y={note.y}
               onClose={closeNote}
-              onAskQ={(noteText) => {
-                // Same as the ✨ button on a Notes View card.
-                setAttachment({
-                  kind: 'note',
-                  text: openNote.quote,
-                  note: noteText,
-                  highlightId: openNote.id,
-                  chapterId: openNote.chapterId,
-                })
-                setAssistantSignal((n) => n + 1)
-                setNote(null)
-              }}
+              onAskQ={
+                qOn
+                  ? (noteText) => {
+                      // Same as the ✨ button on a Notes View card.
+                      setAttachment({
+                        kind: 'note',
+                        text: openNote.quote,
+                        note: noteText,
+                        highlightId: openNote.id,
+                        chapterId: openNote.chapterId,
+                      })
+                      setAssistantSignal((n) => n + 1)
+                      setNote(null)
+                    }
+                  : undefined
+              }
             />
           )}
         </div>
@@ -530,7 +537,7 @@ function Reader({ item }: { item: Item }) {
           y={toolbar.y}
           onHighlight={() => createHighlight(false)}
           onHighlightNote={() => createHighlight(true)}
-          onAskQ={askQ}
+          onAskQ={qOn ? askQ : undefined}
         />
       )}
 

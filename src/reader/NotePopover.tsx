@@ -22,8 +22,8 @@ export function NotePopover({
   x: number
   y: number
   onClose: () => void
-  /** Point the AI assistant at this highlight, with the note as currently typed. */
-  onAskQ: (note: string) => void
+  /** Point Q at this highlight, with the note as currently typed. Left out while Q is off. */
+  onAskQ?: (note: string) => void
 }) {
   const [text, setText] = useState(highlight.note)
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
@@ -109,13 +109,15 @@ export function NotePopover({
           <Trash2 size={13} /> Remove highlight
         </button>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => onAskQ(text)}
-            className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-accent hover:bg-accent-soft"
-            title="Ask Q about this highlight"
-          >
-            <QTurtle size={16} /> Ask Q!
-          </button>
+          {onAskQ && (
+            <button
+              onClick={() => onAskQ(text)}
+              className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-accent hover:bg-accent-soft"
+              title="Ask Q about this highlight"
+            >
+              <QTurtle size={16} /> Ask Q!
+            </button>
+          )}
           <span className="text-xs text-ink-faint" aria-live="polite">
             {status === 'saving' ? 'Saving…' : status === 'saved' ? (
               <span className="inline-flex items-center gap-1"><Check size={12} /> Saved</span>
