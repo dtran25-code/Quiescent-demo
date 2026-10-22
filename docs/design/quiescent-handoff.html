@@ -1,0 +1,599 @@
+<title>Quiescent Design Handoff</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caladea:wght@700&family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap">
+<style>
+/* Layout: a three-pane build tool. State list | the live screen | the spec card. Stacks on phones. */
+:root{
+  --bg:#EDF1EE; --panel:#FFFFFF; --fg:#1A2C4A; --muted:#4A5A72; --line:#D3DCD6;
+  --chip:#E3EDDA; --warn:#F2E6A7; --focus:#1A2C4A; --sel:#1A2C4A; --selfg:#FFFFFF;
+  /* Product colors: the product is light-only, so these never change with the theme */
+  --q-ink:#1A2C4A; --q-ink70:#4A5A72; --q-sage:#C9DDB8; --q-tint:#E3EDDA; --q-soft:#F2E6A7;
+  --q-mist:#F3F6F4; --q-white:#FFFFFF; --q-line:#D3DCD6; --q-chrome:#E2E7E4; --q-os:#ECECEC; --q-os-fg:#1F1F1F;
+  --f-word:Caladea, Cambria, Georgia, serif;
+  --f-serif:'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --f-sans:'Source Sans 3', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-mono:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E141D; --panel:#161F2C; --fg:#E4EAF1; --muted:#9FB0C4; --line:#2B3647;
+    --chip:#22352B; --warn:#4A421C; --focus:#C9DDB8; --sel:#C9DDB8; --selfg:#0E141D; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E141D; --panel:#161F2C; --fg:#E4EAF1; --muted:#9FB0C4; --line:#2B3647;
+  --chip:#22352B; --warn:#4A421C; --focus:#C9DDB8; --sel:#C9DDB8; --selfg:#0E141D; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-sans);font-size:15px;line-height:1.45}
+.wrap{max-width:1440px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:20px 48px}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- top ---------- */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.top h1{font-family:var(--f-serif);font-weight:700;font-size:28px;margin:0;line-height:1.1;text-wrap:balance}
+.top p{margin:4px 0 0;color:var(--muted);max-width:640px}
+.ver{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--chip);color:var(--fg);border-radius:4px;padding:3px 8px;vertical-align:middle;margin-left:8px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;margin:14px 0 18px}
+.tab{border:1px solid var(--line);background:var(--panel);color:var(--fg);font:600 14px var(--f-sans);padding:8px 14px;border-radius:999px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--sel);color:var(--selfg);border-color:var(--sel)}
+
+/* ---------- three panes ---------- */
+.grid{display:grid;grid-template-columns:250px minmax(0,1fr) 360px;gap:18px;align-items:start}
+@media (max-width:1180px){.grid{grid-template-columns:230px minmax(0,1fr)}.spec{grid-column:1 / -1}}
+@media (max-width:760px){.grid{grid-template-columns:minmax(0,1fr)}}
+.nav{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:14px}
+.nav h3{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.nav ol,.nav ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.nav button{width:100%;text-align:left;border:none;background:none;color:var(--fg);font:15px var(--f-sans);padding:7px 10px;border-radius:6px;cursor:pointer;display:flex;gap:8px;align-items:baseline}
+.nav button:hover{background:var(--chip)}
+.nav button[aria-current="true"]{background:var(--sel);color:var(--selfg);font-weight:600}
+.nav .n{font-variant-numeric:tabular-nums;color:inherit;opacity:.7;font-size:13px;min-width:16px}
+.nav .dotnew{width:7px;height:7px;border-radius:50%;background:#B79A1E;flex:none;align-self:center;margin-left:auto}
+
+.stagecol{display:flex;flex-direction:column;gap:10px;min-width:0}
+.flowbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px 8px 14px;font-size:14px}
+.flowbar b{font-weight:600}
+.flowbar .ctl{display:flex;gap:6px}
+.flowbar button{border:1px solid var(--line);background:var(--panel);color:var(--fg);font:600 14px var(--f-sans);padding:6px 12px;border-radius:6px;cursor:pointer;min-height:36px}
+.flowbar button:disabled{opacity:.4;cursor:default}
+.stage{background:var(--q-mist);border:1px solid var(--line);border-radius:12px;min-height:560px;padding:36px 24px;display:flex;align-items:flex-start;justify-content:center;overflow:hidden}
+@media (max-width:760px){.stage{padding:20px 12px;min-height:0}}
+.hint{font-size:13px;color:var(--muted);margin:0}
+
+.spec{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.spec .eyebrow{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.spec h2{font-family:var(--f-serif);font-weight:700;font-size:22px;margin:2px 0 0;line-height:1.2}
+.spec h4{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.spec p{margin:0}
+.copy{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.copy li{display:flex;gap:8px;align-items:flex-start;justify-content:space-between}
+.copy q{quotes:"\201C" "\201D";font-weight:600}
+.tag{flex:none;font-size:11px;font-weight:700;border-radius:4px;padding:1px 6px;white-space:nowrap}
+.t-prd{background:transparent;border:1px solid var(--line);color:var(--muted)}
+.t-new{background:var(--chip);color:var(--fg)}
+.t-open{background:var(--warn);color:var(--fg)}
+.acts{width:100%;border-collapse:collapse;font-size:14px}
+.acts td{border-top:1px solid var(--line);padding:6px 0;vertical-align:top}
+.acts td:first-child{padding-right:10px;font-weight:600;width:46%}
+.go{border:none;background:none;color:var(--fg);font:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:0;text-align:left}
+.sys{font-weight:400;color:var(--muted);font-style:italic}
+.ev{display:flex;flex-wrap:wrap;gap:6px}
+.ev code{font-family:var(--f-mono);font-size:12px;background:var(--chip);border-radius:4px;padding:2px 6px;color:var(--fg)}
+.rules{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+
+/* ---------- reference tabs ---------- */
+.doc{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:24px;display:flex;flex-direction:column;gap:28px}
+.doc h2{font-family:var(--f-serif);font-size:22px;margin:0 0 4px}
+.doc p{margin:0;max-width:72ch}
+.tbl{overflow-x:auto}
+.tbl table{border-collapse:collapse;width:100%;min-width:620px;font-size:14px}
+.tbl th{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:2px solid var(--line)}
+.tbl td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.sw{display:inline-block;width:18px;height:18px;border-radius:3px;border:1px solid var(--line);vertical-align:-4px;margin-right:8px}
+.mono{font-family:var(--f-mono);font-size:13px}
+
+/* ================= PRODUCT (Direction A · Reading Room) ================= */
+.q{color:var(--q-ink);font-family:var(--f-sans);font-size:15px;line-height:1.45}
+.q *{box-sizing:border-box}
+.q-pop{width:360px;max-width:100%;background:var(--q-white);border:1px solid var(--q-line);border-radius:12px;box-shadow:0 8px 24px rgba(26,44,74,.10);overflow:hidden}
+.q-ph{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--q-tint)}
+.q-word{display:inline-flex;align-items:center;gap:10px;font-family:var(--f-word);font-weight:700;font-size:18px}
+.q-word img{width:28px;height:28px;display:block}
+.q-body{padding:24px 20px 20px;display:flex;flex-direction:column;gap:16px}
+.q-kick{display:flex;align-items:center;gap:10px;margin:0;font-family:var(--f-word);font-weight:700;font-size:24px;line-height:1.2}
+.q-dot{width:28px;height:28px;border-radius:50%;background:var(--q-sage);display:inline-flex;align-items:center;justify-content:center;flex:none;color:var(--q-ink)}
+.q-dot.plain{background:var(--q-tint)}
+.q-dot svg{width:15px;height:15px}
+.q-spin{width:26px;height:26px;border-radius:50%;border:3px solid var(--q-tint);border-top-color:var(--q-ink);animation:spin 1s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.q-spin{animation:none}}
+.q-note{display:flex;gap:10px;align-items:flex-start;background:var(--q-soft);padding:10px 12px;border-radius:8px}
+.q-note svg{flex:none;margin-top:3px}
+.q-note b{font-family:var(--f-word);font-size:20px;font-weight:700;display:block;line-height:1.25}
+.q-note.ok{background:var(--q-tint)}
+.q-note.ok b{font-family:var(--f-sans);font-size:15px;font-weight:600}
+.q-art{border-top:1px solid var(--q-tint);border-bottom:1px solid var(--q-tint);padding:12px 0;background-image:repeating-linear-gradient(#FFFFFF 0 27px,#EEF3EA 27px 28px)}
+.q-at{font-family:var(--f-serif);font-size:17px;line-height:1.4;margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.q-by{font-size:13px;color:var(--q-ink70);margin-top:4px}
+.q-h{font-family:var(--f-word);font-weight:700;font-size:22px;line-height:1.25;margin:0;text-wrap:balance}
+.q-txt{font-size:15px;line-height:1.5;margin:0}
+.q-row{display:flex;gap:10px}
+.q-btn{flex:1;min-height:44px;padding:0 16px;border-radius:8px;font:600 15px var(--f-sans);cursor:pointer;border:1.5px solid var(--q-ink)}
+.q-p{background:var(--q-ink);color:var(--q-white)}
+.q-p:hover{background:#0F1B30}
+.q-s{background:var(--q-white);color:var(--q-ink)}
+.q-s:hover{background:var(--q-tint)}
+.q-full{flex:none;width:100%}
+.q-btn:disabled{border-color:var(--q-line);color:var(--q-ink70);background:var(--q-white);cursor:default}
+.q-qb{border:none;background:none;color:var(--q-ink);font:15px var(--f-sans);text-decoration:underline;text-underline-offset:3px;min-height:36px;padding:0 4px;cursor:pointer;align-self:flex-start}
+.q .q-btn:focus-visible,.q .q-qb:focus-visible,.q a:focus-visible,.q input:focus-visible,.q button:focus-visible{outline:2px solid var(--q-ink);outline-offset:3px}
+.q-field{display:flex;flex-direction:column;gap:6px}
+.q-field label{font-size:14px;font-weight:600}
+.q-in{height:44px;border:1.5px solid var(--q-ink70);border-radius:8px;padding:0 12px;font:15px var(--f-sans);color:var(--q-ink);background:var(--q-white);width:100%}
+.q-or{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--q-ink70)}
+.q-or span{flex:1;height:1px;background:var(--q-tint)}
+.q-g{width:20px;height:20px;border-radius:50%;border:1.5px dashed var(--q-ink70);font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;margin-right:8px;vertical-align:-4px}
+.q-meta{font-size:13px;color:var(--q-ink70);line-height:1.45;margin:0}
+.q-mail{font-weight:600;margin:0}
+
+/* website */
+.q-br{width:100%;max-width:820px;border:1px solid var(--q-line);border-radius:10px;overflow:hidden;background:var(--q-mist);box-shadow:0 10px 30px rgba(26,44,74,.10)}
+.q-bar{height:32px;background:var(--q-chrome);display:flex;align-items:center;gap:6px;padding:0 10px}
+.q-bar i{width:9px;height:9px;border-radius:50%;background:#C3C9C5;flex:none}
+.q-bar span{flex:1;margin-left:8px;height:20px;border-radius:10px;background:var(--q-white);font-size:12px;color:var(--q-ink70);display:flex;align-items:center;padding:0 10px;min-width:0;overflow:hidden;white-space:nowrap}
+.q-wh{background:var(--q-white);border-bottom:1px solid var(--q-tint);display:flex;align-items:center;flex-wrap:wrap;gap:8px 28px;padding:10px 24px;min-height:64px}
+.q-wh .q-word{font-size:20px}
+.q-wh .q-word img{width:32px;height:32px}
+.q-nav{display:flex;gap:24px;flex:1}
+.q-nav a{text-decoration:none;font-size:15px;padding:8px 0;border-bottom:2px solid transparent;cursor:pointer}
+.q-nav a[aria-current="page"]{font-weight:600;border-bottom-color:var(--q-ink)}
+.q-sync{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--q-ink70)}
+.q-sync.off{background:var(--q-soft);color:var(--q-ink);font-weight:600;padding:4px 10px;border-radius:6px}
+.q-av{width:40px;height:40px;border-radius:50%;border:none;background:var(--q-sage);color:var(--q-ink);font:700 15px var(--f-sans);cursor:pointer;flex:none}
+.q-page{padding:32px 24px 40px;display:flex;flex-direction:column;gap:20px}
+.q-card{background:var(--q-white);border:1px solid var(--q-line);border-radius:12px;padding:32px 28px;width:100%;max-width:400px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.q-plate{font-family:var(--f-word);font-weight:700;font-size:34px;line-height:1.15;margin:0;text-wrap:balance}
+.q-card .q-plate{font-size:28px}
+.q-banner{background:var(--q-tint);display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:14px 20px;border-radius:10px}
+.q-banner span{flex:1;min-width:200px}
+.q-banner .q-btn{flex:none}
+.q-ghost{border:2px dashed #B9C4BD;border-radius:12px;background:var(--q-white);color:var(--q-ink70);padding:28px 20px;text-align:center;font-size:14px;display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;width:100%;max-width:520px;min-height:220px}
+.q-ghost strong{color:var(--q-ink);font-size:16px}
+.q-menu{position:relative}
+.q-pop-menu{position:absolute;right:0;top:48px;width:250px;background:var(--q-white);border:1px solid var(--q-line);box-shadow:0 8px 24px rgba(26,44,74,.10);padding:8px;border-radius:10px;z-index:2}
+.q-pop-menu .em{padding:6px 12px;font-size:13px;color:var(--q-ink70)}
+.q-pop-menu button{width:100%;text-align:left;border:none;background:var(--q-tint);color:var(--q-ink);font:15px var(--f-sans);min-height:40px;padding:0 12px;border-radius:6px;cursor:pointer}
+.q-acc{max-width:680px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.q-sec{background:var(--q-white);border:1px solid var(--q-line);border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:14px}
+.q-sec h2{font-family:var(--f-word);font-weight:700;font-size:20px;margin:0}
+.q-dl{margin:0;display:flex;flex-direction:column}
+.q-kv{display:flex;justify-content:space-between;gap:4px 16px;flex-wrap:wrap;padding:10px 0;border-top:1px solid var(--q-tint)}
+.q-kv dt{color:var(--q-ink70)}
+.q-kv dd{margin:0;font-weight:600;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.q-photo{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.q-ph{width:72px;height:72px;border-radius:50%;background:var(--q-sage);display:flex;align-items:center;justify-content:center;font:700 28px var(--f-sans);flex:none}
+.q-mailbox{background:var(--q-white);border:1px solid var(--q-line);border-radius:10px;width:100%;max-width:520px;box-shadow:0 8px 24px rgba(26,44,74,.10);overflow:hidden}
+.q-mailhead{padding:12px 18px;border-bottom:1px solid var(--q-tint);font-size:13px;display:flex;flex-direction:column;gap:2px}
+.q-mailbody{padding:24px 22px 28px;display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+.q-mailbody a{display:inline-flex;align-items:center;min-height:44px;padding:0 22px;background:var(--q-ink);color:var(--q-white);text-decoration:none;font-weight:600;border-radius:8px}
+.q-notif{width:360px;max-width:100%;background:var(--q-os);color:var(--q-os-fg);border-radius:14px;padding:12px 14px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;display:flex;flex-direction:column;gap:8px;box-shadow:0 10px 30px rgba(0,0,0,.15)}
+.q-notif img{width:36px;height:36px;border-radius:8px;display:block}
+.q-notif button{border:none;border-top:1px solid #D0D0D0;background:none;padding:8px 0 2px;font:13px system-ui,-apple-system,sans-serif;color:var(--q-os-fg);cursor:pointer}
+.q-badge{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--q-ink70)}
+.q-tb{position:relative;width:32px;height:32px;border-radius:6px;background:var(--q-white);border:1px solid var(--q-line);display:flex;align-items:center;justify-content:center}
+.q-tb img{width:20px;height:20px}
+.q-tb b{position:absolute;right:-5px;bottom:-5px;width:16px;height:16px;border-radius:50%;background:var(--q-sage);display:flex;align-items:center;justify-content:center;border:1.5px solid var(--q-white)}
+.q-col{display:flex;flex-direction:column;gap:22px;align-items:center;width:100%}
+@media (max-width:520px){.q-plate{font-size:28px}.q-page{padding:20px 14px 28px}.q-sec{padding:18px}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Quiescent design handoff <span class="ver">v1.1 · Oct 22, 2026</span></h1>
+      <p>Chrome extension popup and Accounts &amp; sync. Every state, its exact copy, what each button does, and the event it fires. Click buttons inside a screen to move through the flow.</p>
+      <p><strong>v1.1:</strong> back to the original Reading Room look. Broadsheet and the Shell are removed. Flows, copy and events are unchanged.</p>
+    </div>
+    <div class="legend" aria-label="Copy tags">
+      <span><span class="tag t-prd">PRD</span> copy from the PRD</span>
+      <span><span class="tag t-new">Approved</span> approved change</span>
+      <span><span class="tag t-open">Open</span> needs a decision</span>
+    </div>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="Sections" id="tabs"></div>
+  <div id="view"></div>
+  <div class="sr" aria-live="polite" id="live"></div>
+</div>
+
+<script>
+(function(){
+const LOGO = 'logo.png';
+const A = { t:'How central banks decide interest rates', src:'example.substack.com', min:'12 min read',
+  lede:'Central banks rarely move on a single number. They read a dashboard of signals, then argue about it.' };
+const MAIL = 'tam@usf.edu';
+
+const I = {
+  check:'<svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  check16:'<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  mark:'<svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v16l-6-4-6 4z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></svg>',
+  alert:'<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7v6M12 16.5v.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
+  clock:'<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  wifi:'<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9a15 15 0 0 1 20 0M5.5 12.5a10 10 0 0 1 13 0M9 16a5 5 0 0 1 6 0M3 3l18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  wifi14:'<svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9a15 15 0 0 1 20 0M5.5 12.5a10 10 0 0 1 13 0M9 16a5 5 0 0 1 6 0M3 3l18 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+  page:'<svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h10l4 4v14H5z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></svg>',
+  up:'<svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17V5M7 10l5-5 5 5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  mail:'<svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="1" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M3.5 7l8.5 6 8.5-6" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>'
+};
+
+/* ---------- product building blocks ---------- */
+const mast = () => `<div class="q-ph"><span class="q-word"><img src="${LOGO}" alt="">Quiescent</span></div>`;
+const pop = (count, body) => `<div class="q q-pop">${mast()}<div class="q-body">${body}</div></div>`;
+const kick = (text, kind) => {
+  const icon = kind === 'ok' ? `<span class="q-dot">${I.check16}</span>`
+    : kind === 'spin' ? `<span class="q-spin" aria-hidden="true"></span>`
+    : kind === 'mark' ? `<span class="q-dot plain">${I.mark}</span>`
+    : kind === 'page' ? `<span class="q-dot plain">${I.page}</span>`
+    : kind === 'up' ? `<span class="q-dot plain">${I.up}</span>`
+    : kind === 'mail' ? `<span class="q-dot plain">${I.mail}</span>` : '';
+  return `<p class="q-kick" role="status">${icon}${text}</p>`;
+};
+const note = (title, sub, icon, role) => `<div class="q-note" role="${role||'alert'}">${icon||I.alert}<div><b>${title}</b>${sub ? `<p class="q-meta" style="margin-top:4px">${sub}</p>` : ''}</div></div>`;
+const art = (t, by) => `<div class="q-art"><p class="q-at">${t||A.t}</p><div class="q-by">${by||A.src}</div></div>`;
+const lede = () => '';
+const btn = (label, kind, to, dis) => `<button type="button" class="q-btn q-${kind}"${to?` data-to="${to}"`:''}${dis?' disabled':''}>${label}</button>`;
+const row = (...b) => `<div class="q-row">${b.join('')}</div>`;
+const qb = (label, to) => `<button type="button" class="q-qb"${to?` data-to="${to}"`:''}>${label}</button>`;
+const google = to => `<button type="button" class="q-btn q-s q-full" data-to="${to}"><span class="q-g" aria-hidden="true">G</span>Continue with Google</button>`;
+const or = () => `<div class="q-or"><span></span>or<span></span></div>`;
+const email = (id, val) => `<div class="q-field"><label for="${id}">Email</label><input class="q-in" id="${id}" type="email" autocomplete="email" placeholder="you@example.com" value="${val||''}"></div>`;
+const hr = () => '';
+
+
+const br = (url, inner) => `<div class="q q-br"><div class="q-bar"><i></i><i></i><i></i><span>${url}</span></div>${inner}</div>`;
+const wh = (active, sync, menu) => `<div class="q-wh"><span class="q-word"><img src="${LOGO}" alt="">Quiescent</span>
+  ${active ? `<nav class="q-nav" aria-label="Main"><a href="#" data-to="W_library"${active==='lib'?' aria-current="page"':''}>Library</a><a href="#" data-to="W_account"${active==='acc'?' aria-current="page"':''}>Account</a></nav>` : '<span style="flex:1"></span>'}
+  ${sync==='ok' ? `<span class="q-sync" role="status">${I.check16}Synced just now</span>` : sync==='off' ? `<span class="q-sync off" role="status">${I.wifi14}Offline, changes won't save</span>` : ''}
+  ${active ? `<div class="q-menu"><button type="button" class="q-av" aria-label="Account menu" aria-haspopup="menu" aria-expanded="${menu?'true':'false'}" data-to="${menu?'W_library':'W_menu'}">T</button>${menu ? `<div class="q-pop-menu" role="menu"><div class="em">${MAIL}</div><button type="button" role="menuitem" data-to="W_signedout">Sign out of this computer</button></div>` : ''}</div>` : ''}</div>`;
+const page = inner => `<div class="q-page">${inner}</div>`;
+const libGhost = () => `<div class="q-ghost" style="max-width:none;min-height:180px"><strong>Library</strong>Reading · Read Later · Finished. Not in this handoff.</div>`;
+const banner = () => `<div class="q-banner"><img src="${LOGO}" alt="" width="28" height="28"><span>Add Quiescent to Chrome to save articles in one click.</span>${btn('Add to Chrome','p','X_store')}</div>`;
+const signInCard = (top) => `<div class="q-card">${top||''}<h1 class="q-plate">Sign in to Quiescent</h1>${google('W_signing')}${or()}${email('w-em')}${btn('Send link','p','W_check')}<p class="q-meta">New here? Signing in creates your account.</p></div>`;
+
+/* ---------- states ---------- */
+const S = {};
+const def = (id, o) => { S[id] = Object.assign({ id, copy:[], acts:[], ev:[], rules:[] }, o); };
+const P = 'prd', N = 'new', O = 'open';
+
+/* Extension: save */
+def('E_ready', { tab:'ext', grp:'Save', name:'Ready', when:'Signed in. The page is an article (150+ words) not saved before.',
+  render:()=>pop('Read Later · 3 of 10', `${art()}${hr()}${row(btn('Add to Quiescent','p','E_saving'))}`),
+  copy:[['Add to Quiescent',P]],
+  acts:[['Add to Quiescent','E_saving'],['If Read Later has 10','E_full',1],['If the URL is already saved (on open)','E_already',1]],
+  ev:['save_clicked'],
+  rules:['Focus starts on "Add to Quiescent", so Enter saves.','Title from the page; no title → site name as headline.','Headline cuts at 3 lines with "…".'] });
+def('E_onlinepdf', { tab:'ext', grp:'Save', name:'Online PDF', when:'The page is a PDF link on the web (.pdf).',
+  render:()=>pop('Read Later · 3 of 10', `${art('Monetary Policy Report, July 2026','federalreserve.gov · PDF')}${hr()}${row(btn('Add to Quiescent','p','E_saving'))}`),
+  copy:[['Add to Quiescent',P]], acts:[['Add to Quiescent','E_saving']], ev:['save_clicked'],
+  rules:['Same as Ready.','Text is read in the browser first; if that fails, the server fetches the PDF from its link.'] });
+def('E_saving', { tab:'ext', grp:'Save', name:'Saving', when:'After "Add to Quiescent", waiting for the server.',
+  render:()=>pop('Read Later · 3 of 10', `${kick('Saving…','spin')}${art()}${lede()}`),
+  copy:[['Saving…',P]],
+  acts:[['Server confirms (target under 3 s)','E_saved',1],['Under 300 words saved','E_partial',1],['No reply in 10 s, or server error','E_fail',1],['Device offline','E_offline',1]],
+  rules:['No buttons. Same height as Saved, so nothing jumps.','Never show "Saved" before the server confirms.','Spinner stops for reduced motion; the word stays.'] });
+def('E_saved', { tab:'ext', grp:'Save', name:'Saved to Read Later', when:'Server confirmed the save.',
+  render:()=>pop('Read Later · 4 of 10', `${kick('Saved to Read Later','ok')}${art()}${lede()}${hr()}${row(btn('Read now','p','X_reader'))}`),
+  copy:[['Saved to Read Later',N],['Read now',P]],
+  acts:[['Read now','X_reader'],['Reader closes the popup','(stays in Read Later)',2]],
+  ev:['save_confirmed','save_shown','read_now_clicked {from: popup}'],
+  rules:['The article goes to the top of Read Later automatically. No "Later" button.','"Read now" moves it to Reading and opens the Focused Reader full screen, at the furthest point read.'] });
+def('E_partial', { tab:'ext', grp:'Save', name:'Saved, partial', when:'Saved, but under 300 words (paywall preview).',
+  render:()=>pop('Read Later · 4 of 10', `${kick("Saved what's visible",'ok')}${art('Why productivity growth stalled','medium.com')}${hr()}${row(btn('Read now','p','X_reader'))}`),
+  copy:[["Saved what's visible",P],['Read now',P]], acts:[['Read now','X_reader']],
+  ev:['save_confirmed {partial: yes}','save_shown'], rules:['Still a success: Sage, not Soft light.','Goes to Read Later like a full save.'] });
+def('E_already', { tab:'ext', grp:'Save', name:'Already saved', when:'The popup opens on a URL already in the library.',
+  render:()=>pop('Read Later · 4 of 10', `${kick('Already in your library','mark')}${art()}${hr()}${row(btn('Read now','p','X_reader'),btn('Open library','s','W_library'))}`),
+  copy:[['Already in your library',P],['Read now',P],['Open library',P]],
+  acts:[['Read now','X_reader'],['Open library','W_library']], ev:['save_duplicate','read_now_clicked {from: duplicate}'],
+  rules:['Match on canonical URL. Ignore utm_*, fbclid, gclid, ref, the # part, the trailing slash, and domain letter case.'] });
+def('E_full', { tab:'ext', grp:'Save', name:'Read Later full', when:'"Add to Quiescent" clicked while Read Later has 10.',
+  render:()=>pop('Read Later · 10 of 10 · Full', `<p class="q-kick" role="status" style="font-size:22px">Read Later is full (10 of 10)</p><p class="q-txt">Read this now, or open your library to make room.</p>${art()}${row(btn('Read now','p','X_reader'),btn('Open library','s','W_library'))}`),
+  copy:[['Read Later is full (10 of 10)',P],['Read this now, or open your library to make room.',P],['Read now',P],['Open library',P]],
+  acts:[['Read now','X_reader'],['Open library','W_library']], ev:['read_later_full_shown','read_now_clicked {from: full_state}'],
+  rules:['"Read now" saves straight to Reading and opens it. Nothing is blocked.','The timing is now right: since Add always means Read Later, checking at Add is correct.'] });
+
+/* Extension: sign in */
+def('E_signedout', { tab:'ext', grp:'Sign in', name:'Signed out', when:'No session: first save, signed out, session expired (30 days), or a held save expired (10 min).',
+  render:()=>pop('', `<h1 class="q-h sm">Sign in to save this article</h1>${google('W_signing')}${or()}${email('e-em',MAIL)}${btn('Send link','p','E_check')}<p class="q-meta">New here? Signing in creates your account.</p>`),
+  copy:[['Sign in to save this article',P],['Continue with Google',P],['Email (field label)',N],['Send link',P],['New here? Signing in creates your account.',P],['Enter a full email, like you@example.com. (invalid email)',N]],
+  acts:[['Continue with Google','W_signing'],['Send link','E_check'],['Popup reopened during the hold','E_waiting',1]],
+  ev:['sign_in_prompt_shown {trigger: first_save, surface: extension}','sign_in_started {provider}'],
+  rules:['The article is held as a pending save for 10 minutes.','Sign-in opens a tab; Chrome closes the popup when focus leaves.'] });
+def('E_check', { tab:'ext', grp:'Sign in', name:'Check email', when:'After "Send link".',
+  render:()=>pop('', `${kick('Check your email','mail')}<p class="q-mail">${MAIL}</p><p class="q-meta">The link should arrive within a minute. If not, check your spam folder.</p><p class="q-meta">You can close this popup. The article saves after you sign in.</p>${btn('Resend in 42 s','s',null,true)}${qb('Use a different email','E_signedout')}`),
+  copy:[['Check your email',P],['The link should arrive within a minute. If not, check your spam folder.',N],['You can close this popup. The article saves after you sign in.',N],['Resend in {n} s',N],['Use a different email',P]],
+  acts:[['After 60 s','E_check60',1],['Reader opens the email','W_email',1],['Use a different email','E_signedout'],['6th link in one hour','E_toomany',1]],
+  rules:['Countdown from 60 s, then "Resend" turns active.','Link works once and expires after 15 minutes. Max 5 links per email per hour.'] });
+def('E_check60', { tab:'ext', grp:'Sign in', name:'Check email, resend ready', when:'60 s after the link was sent.',
+  render:()=>pop('', `${kick('Check your email','mail')}<p class="q-mail">${MAIL}</p><p class="q-meta">Still nothing? Check your spam folder, or resend.</p>${btn('Resend','s','E_check')}${qb('Use a different email','E_signedout')}`),
+  copy:[['Check your email',P],['Still nothing? Check your spam folder, or resend.',N],['Resend',P],['Use a different email',P]],
+  acts:[['Resend','E_check'],['Use a different email','E_signedout']], ev:['sign_in_started {provider: email}'] });
+def('E_waiting', { tab:'ext', grp:'Sign in', name:'Waiting for sign-in', when:'The reader reopens the popup during the 10-minute hold.',
+  render:()=>pop('', `<div class="q-by">${A.t}</div><h1 class="q-h sm">Finish signing in to save this article</h1><p class="q-meta">We sent a link to ${MAIL}. Held for 10 minutes.</p>${btn('Resend','s','E_check')}${qb('Use a different email','E_signedout')}`),
+  copy:[['Finish signing in to save this article',N],['We sent a link to {email}. Held for 10 minutes.',N],['Resend',P],['Use a different email',P]],
+  acts:[['Resend','E_check'],['Use a different email','E_signedout'],['Hold passes 10 min','E_signedout',1]],
+  rules:['Stops readers from clicking Add twice while they wait for the email.'] });
+def('E_toomany', { tab:'ext', grp:'Sign in', name:'Too many requests', when:'A 6th link request for this email within one hour.',
+  render:()=>pop('', `${note('Try again later','You can request a new link in an hour.',I.clock)}${google('W_signing')}`),
+  copy:[['Try again later',P],['You can request a new link in an hour.',N],['Continue with Google',P]],
+  acts:[['Continue with Google','W_signing']], ev:['sign_in_failed {reason: rate_limited}'],
+  rules:['Google sign-in still works, so it stays as a way in.'] });
+def('E_notif', { tab:'ext', grp:'Sign in', name:'Saved after sign-in', when:'Sign-in finished and the held save was confirmed. The popup is closed by now.',
+  render:()=>`<div class="q-col"><div class="q-notif" role="status"><div style="display:flex;gap:10px;align-items:flex-start"><img src="${LOGO}" alt=""><div><div style="font-size:13px;font-weight:600">Saved to Quiescent</div><div style="font-size:13px;margin-top:2px;opacity:.85">${A.t}</div></div></div><button type="button" data-to="X_reader">Read now</button></div>
+    <div class="q q-badge"><span class="q-tb"><img src="${LOGO}" alt=""><b>${I.check}</b></span>If Chrome notifications are blocked: a check badge on the toolbar icon for 5 s.</div></div>`,
+  copy:[['Saved to Quiescent',P],['{article title} (message)',P],['Read now',P]],
+  acts:[['Read now','X_reader']], ev:['save_confirmed','save_shown','read_now_clicked {from: notification}'],
+  rules:['Chrome notification drawn by the OS: we set icon, title, message and one button. On macOS the button may sit under "Options"; test on Mac and Windows.','Notifications blocked → toolbar badge for 5 s.','Read Later full when the held save completes → save to Reading instead, same notification. (Open: confirm.)'] });
+
+/* Extension: can't save */
+def('E_cant', { tab:'ext', grp:"Can't save & errors", name:"Can't save", when:'Under 150 words: home page, feed, search results, YouTube.',
+  render:()=>pop('Read Later · 4 of 10', `${kick("Can't save this page",'page')}<p class="q-txt">Open an article, then click the Q.</p>${hr()}<div class="q-row">${btn('Library','s','W_library')}</div>`),
+  copy:[["Can't save this page",P],['Open an article, then click the Q.',N],['Library',P]],
+  acts:[['Library','W_library']], ev:['save_failed {error_type: not_article}'], rules:['Nothing saved. Calm style: no Soft light, nothing failed.'] });
+def('E_blocked', { tab:'ext', grp:"Can't save & errors", name:'Blocked page', when:'chrome://, new tab, Chrome Web Store.',
+  render:()=>pop('', `${kick('Open an article to save it','page')}`),
+  copy:[['Open an article to save it',P]], ev:['save_failed {error_type: blocked_page}'],
+  rules:['No buttons; Esc closes.','Tech to confirm which of these pages open the popup at all.'] });
+def('E_pdf', { tab:'ext', grp:"Can't save & errors", name:'PDF on computer', when:'A file:// PDF open in Chrome\'s viewer.',
+  render:()=>pop('Read Later · 4 of 10', `${kick('Upload PDFs in Quiescent','up')}<p class="q-meta" style="font-size:14px">PDFs saved on your computer can't be read from Chrome's viewer.</p>${hr()}${row(btn('Upload','p','X_upload'))}`),
+  copy:[['Upload PDFs in Quiescent',P],["PDFs saved on your computer can't be read from Chrome's viewer.",N],['Upload',P]],
+  acts:[['Upload','X_upload']], rules:['"Upload" opens Manual Upload on the website in a new tab.'] });
+def('E_fail', { tab:'ext', grp:"Can't save & errors", name:"Couldn't save", when:'No confirmation within 10 s, or a server error.',
+  render:()=>pop('Read Later · 3 of 10', `${note("Couldn't save",'Nothing was saved.')}${art()}${hr()}${row(btn('Retry','p','E_saving'))}`),
+  copy:[["Couldn't save",P],['Nothing was saved.',N],['Retry',P]],
+  acts:[['Retry','E_saving']], ev:['save_failed {error_type: timeout | server_error | extract_failed}'],
+  rules:['Nothing stored on the device; any half-saved data on the server is removed.','Focus moves to Retry. Error is announced to screen readers.'] });
+def('E_offline', { tab:'ext', grp:"Can't save & errors", name:"Couldn't save, offline", when:'The device is offline when saving.',
+  render:()=>pop('Read Later · 3 of 10', `${note("Couldn't save, you're offline",'Nothing was saved.',I.wifi)}${art()}${hr()}${row(btn('Retry','p','E_saving'))}`),
+  copy:[["Couldn't save, you're offline",P],['Nothing was saved.',N],['Retry',P]],
+  acts:[['Retry','E_saving']], ev:['save_failed {error_type: offline}'], rules:['Different icon from timeout, so the cause is clear without color.'] });
+
+/* Website: sign in */
+def('W_signin', { tab:'web', grp:'Sign in', name:'Sign in', when:'Website, no session.',
+  render:()=>br('quiescent.app/sign-in', wh()+page(signInCard())),
+  copy:[['Sign in to Quiescent (page heading)',N],['Continue with Google',P],['Email (field label)',N],['Send link',P],['New here? Signing in creates your account.',P]],
+  acts:[['Continue with Google','W_signing'],['Send link','W_check']], ev:['sign_in_prompt_shown {trigger: website}','sign_in_started {provider, surface: web}'],
+  rules:['Invalid email: "Enter a full email, like you@example.com." under the field, announced to screen readers.'] });
+def('W_check', { tab:'web', grp:'Sign in', name:'Check your email', when:'After "Send link" on the website.',
+  render:()=>br('quiescent.app/sign-in', wh()+page(`<div class="q-card">${kick('Check your email','mail')}<p style="margin:0">We sent a sign-in link to <strong>${MAIL}</strong>.</p><p class="q-meta">The link should arrive within a minute. If not, check your spam folder.</p>${btn('Resend in 42 s','s',null,true)}${qb('Use a different email','W_signin')}</div>`)),
+  copy:[['Check your email',P],['We sent a sign-in link to {email}.',N],['The link should arrive within a minute. If not, check your spam folder.',N],['Resend in {n} s → Resend',N],['Use a different email',P]],
+  acts:[['Reader opens the email','W_email',1],['Use a different email','W_signin'],['6th link in one hour','W_toomany',1]] });
+def('W_email', { tab:'web', grp:'Sign in', name:'Sign-in email', when:'Sent by "Send link" from the website or the popup.',
+  render:()=>`<div class="q q-mailbox"><div class="q-mailhead"><span><strong>Quiescent</strong> <span style="color:var(--q-ink70)">&lt;signin@quiescent.app&gt;</span></span><span style="font-weight:600">Your sign-in link for Quiescent</span></div>
+    <div class="q-mailbody"><img src="${LOGO}" alt="Quiescent" width="44" height="44"><p class="q-plate" style="font-size:26px">Sign in to Quiescent</p><a href="#" data-to="W_signing">Sign in</a><p class="q-meta">This link works once and expires in 15 minutes. If you didn't ask for it, you can ignore this email.</p></div></div>`,
+  copy:[['Your sign-in link for Quiescent (subject)',N],['Sign in to Quiescent',N],['Sign in (button)',N],["This link works once and expires in 15 minutes. If you didn't ask for it, you can ignore this email.",N]],
+  acts:[['Sign in','W_signing'],['Link used or older than 15 min','W_expired',1]],
+  rules:['Sender and subject decide spam filtering; test Gmail, Outlook and .edu inboxes before testers.','Plain HTML email, one button, works without images.'] });
+def('W_signing', { tab:'web', grp:'Sign in', name:'Signing in', when:'After the email link or Google.',
+  render:()=>br('quiescent.app/sign-in', wh()+page(`<div class="q-card" style="align-items:center;text-align:center;padding:48px 24px">${kick('Signing you in…','spin')}</div>`)),
+  copy:[['Signing you in…',P]],
+  acts:[['Done (website first)','W_library',1],['Done (held save from popup)','E_notif',1]],
+  ev:['sign_in_completed {provider, account: new | returning, surface}','new_device_sign_in'],
+  rules:['First successful sign-in creates the account.','Same email via Google and via link = one account.','The extension on this computer is signed in too.'] });
+def('W_expired', { tab:'web', grp:'Sign in', name:'Link expired', when:'Link used twice, or older than 15 minutes.',
+  render:()=>br('quiescent.app/sign-in', wh()+page(`<div class="q-card">${note('Link expired','',I.clock)}${btn('Send a new link','p','W_check')}</div>`)),
+  copy:[['Link expired',P],['Send a new link',P]], acts:[['Send a new link','W_check']], ev:['sign_in_failed {reason: link_expired}'],
+  rules:['Sends to the same address. This screen lives on the website only (the popup is closed when the link opens).'] });
+def('W_toomany', { tab:'web', grp:'Sign in', name:'Too many requests', when:'A 6th link request for this email within one hour.',
+  render:()=>br('quiescent.app/sign-in', wh()+page(`<div class="q-card">${note('Try again later','You can request a new link in an hour.',I.clock)}${google('W_signing')}</div>`)),
+  copy:[['Try again later',P],['You can request a new link in an hour.',N]], acts:[['Continue with Google','W_signing']], ev:['sign_in_failed {reason: rate_limited}'] });
+def('W_signedout', { tab:'web', grp:'Sign in', name:'Signed out', when:'After "Sign out of this computer".',
+  render:()=>br('quiescent.app/sign-in', wh()+page(signInCard(`<div class="q-note ok" role="status"><span class="q-dot">${I.check}</span><div><b>Signed out on this computer. Your library is kept.</b></div></div>`))),
+  copy:[['Signed out on this computer. Your library is kept.',P]], acts:[['Continue with Google','W_signing'],['Send link','W_check']], ev:['signed_out {surface}'],
+  rules:['The extension on this computer signs out too. Other computers stay signed in.'] });
+
+/* Website: header and banner */
+def('W_library', { tab:'web', grp:'Header & banner', name:'Header + install banner', when:'Signed in, extension not detected.',
+  render:()=>br('quiescent.app/library', wh('lib','ok')+page(banner()+libGhost())),
+  copy:[['Library · Account (nav)',P],['Synced {time}',P],['Add Quiescent to Chrome to save articles in one click.',P],['Add to Chrome',P]],
+  acts:[['Add to Chrome','X_store'],['Account','W_account'],['Avatar','W_menu'],['Connection lost','W_offline',1]],
+  rules:['Sync time: "just now" under 1 min, "{n} min ago" under 1 hour, then the clock time ("at 3:42 PM").','Banner hides once the extension is detected. Not dismissible in the MVP: it is the activation step.','At 375px the nav and sync move to a second row.'] });
+def('W_offline', { tab:'web', grp:'Header & banner', name:'Header offline', when:'The website loses connection.',
+  render:()=>br('quiescent.app/library', wh('lib','off')+page(libGhost())),
+  copy:[["Offline, changes won't save",P]], acts:[['Back online','W_library',1]], ev:['sync_failed {object, reason}'],
+  rules:['Replaces the sync status in place. Announced once, not on every retry.'] });
+def('W_menu', { tab:'web', grp:'Header & banner', name:'Avatar menu', when:'Avatar clicked.',
+  render:()=>br('quiescent.app/library', wh('lib','ok',true)+page(`<div style="height:120px"></div>`+libGhost())),
+  copy:[['{email}',P],['Sign out of this computer',N]], acts:[['Sign out of this computer','W_signedout'],['Esc or click outside','W_library',1]],
+  rules:['One label everywhere: "Sign out of this computer" (PRD had "Sign out" here).','Arrow keys move in the menu; Esc closes and returns focus to the avatar.'] });
+
+/* Website: account */
+const accountPage = (installed) => br('quiescent.app/account', wh('acc','ok')+page(`<div class="q-acc"><h1 class="q-plate">Account</h1>
+  <section class="q-sec" aria-labelledby="h-prof"><h2 id="h-prof">Profile</h2>
+    <div class="q-photo"><div class="q-ph" aria-hidden="true">T</div><div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;gap:8px;flex-wrap:wrap">${btn('Upload photo','s')}${qb('Remove')}</div><p class="q-meta">JPG or PNG, up to 5 MB. Google sign-in uses your Google photo until you upload one.</p></div></div>
+    <div class="q-field" style="max-width:380px"><label for="a-name">Name</label><input class="q-in" id="a-name" type="text" autocomplete="name" value="Tam Mai"></div>
+    <div>${btn('Save changes','p')}</div></section>
+  <section class="q-sec" aria-labelledby="h-sign"><h2 id="h-sign">Sign-in</h2><dl class="q-dl" style="border:none;padding:0">
+    <div class="q-kv"><dt>Email</dt><dd>${MAIL}</dd></div><div class="q-kv"><dt>Sign-in method</dt><dd>Google</dd></div></dl>
+    <p class="q-meta">You stay signed in unless you don't use Quiescent for 30 days.</p></section>
+  <section class="q-sec" aria-labelledby="h-sync"><h2 id="h-sync">Sync</h2><dl class="q-dl" style="border:none;padding:0">
+    <div class="q-kv"><dt>Status</dt><dd>Synced 2 min ago</dd></div>
+    <div class="q-kv"><dt>Chrome extension</dt><dd>${installed ? 'Connected on this computer' : `Not installed ${btn('Add to Chrome','p','X_store')}`}</dd></div>
+    <div class="q-kv"><dt>Computers signed in</dt><dd>${installed?2:1}</dd></div>
+    <div class="q-kv"><dt>Items in library</dt><dd>${installed?14:0}</dd></div></dl></section>
+  <section class="q-sec" aria-labelledby="h-out"><h2 id="h-out" class="sr">Sign out</h2><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><p style="margin:0">Your library is kept when you sign out.</p>${btn('Sign out of this computer','s','W_signedout')}</div>
+    <p class="q-meta">To delete your account and everything in it, email support@quiescent.app.</p></section></div>`));
+def('W_account', { tab:'web', grp:'Account', name:'Account', when:'Signed in, extension installed on this computer.',
+  render:()=>accountPage(true),
+  copy:[['Account',P],['Profile · Sign-in · Sync (section labels)',N],['Upload photo · Remove · Name · Save changes',N],['JPG or PNG, up to 5 MB. Google sign-in uses your Google photo until you upload one.',N],["You stay signed in unless you don't use Quiescent for 30 days.",P],['Connected on this computer',P],['Items in library',P],['Your library is kept when you sign out.',N],['Sign out of this computer',P],['To delete your account and everything in it, email support@quiescent.app.',P],['Date of birth: not built',O]],
+  acts:[['Sign out of this computer','W_signedout'],['Upload photo','(file picker)',2],['Save changes','(shows "Saved")',2]],
+  rules:['Photo states: "Uploading…", "Saved", "Couldn\'t upload. Use a JPG or PNG under 5 MB."','"Computers signed in" needs Neon Auth to list sessions per computer. (Open: Tech to confirm.)'] });
+def('W_account_new', { tab:'web', grp:'Account', name:'Account, no extension', when:'Signed in, extension not installed, empty library.',
+  render:()=>accountPage(false),
+  copy:[['Not installed',P],['Add to Chrome',P],['Items in library: 0',P]],
+  acts:[['Add to Chrome','X_store'],['Sign out of this computer','W_signedout']],
+  rules:['Same page as Account; the Sync section swaps in "Not installed" with "Add to Chrome".'] });
+
+/* Out-of-scope endpoints */
+def('X_reader', { tab:null, grp:'', name:'Focused Reader', when:'Destination of every "Read now".',
+  render:()=>`<div class="q q-ghost"><strong>Focused Reader, full screen</strong>Opens at the furthest point read. Not in this handoff.</div>`,
+  rules:['Esc or "Exit full screen" returns to the library on that item\'s list.','If the browser blocks full screen: normal window + "Full screen not available".'] });
+def('X_store', { tab:null, grp:'', name:'Chrome Web Store', when:'Destination of "Add to Chrome".',
+  render:()=>`<div class="q q-ghost"><strong>Chrome Web Store listing</strong>Google's page. Listing text and screenshots still need writing before review.</div>`,
+  acts:[['Installed; reader clicks Q on an article','E_ready',1]], rules:['After install the extension is already signed in (shared session). No second sign-in.'] });
+def('X_upload', { tab:null, grp:'', name:'Manual Upload', when:'Destination of "Upload".',
+  render:()=>`<div class="q q-ghost"><strong>Manual Upload</strong>Website, separate PRD. Not in this handoff.</div>` });
+
+const FLOWS = [
+  { id:'f1', name:'Returning reader saves an article', sub:'Signed in. 3 clicks or fewer, "Saved" in under 3 s.', steps:['E_ready','E_saving','E_saved','X_reader'] },
+  { id:'f2', name:'First save, no account yet', sub:'Article held 10 min while they sign in. Google skips steps 2 and 3.', steps:['E_signedout','E_check','W_email','W_signing','E_notif','X_reader'] },
+  { id:'f3', name:'Signs up on the website first', sub:'Then installs the extension. No second sign-in.', steps:['W_signin','W_signing','W_library','X_store','E_ready'] }
+];
+
+/* ---------- reference tabs ---------- */
+const RULES = `<div class="doc">
+<section><h2>Colors</h2><p>The product is light-only for the MVP. Every color has one job.</p><div class="tbl"><table><thead><tr><th>Token</th><th>Hex</th><th>Use for</th><th>Never for</th></tr></thead><tbody>
+<tr><td><span class="sw" style="background:#1A2C4A"></span>Ink</td><td class="mono">#1A2C4A</td><td>All text, primary button, rules, focus ring</td><td></td></tr>
+<tr><td><span class="sw" style="background:#4A5A72"></span>Ink 70</td><td class="mono">#4A5A72</td><td>Source names, meta text (7:1 on white)</td><td>Body text</td></tr>
+<tr><td><span class="sw" style="background:#C9DDB8"></span>Sage</td><td class="mono">#C9DDB8</td><td>Success circle, avatar</td><td>Text, borders that must be seen</td></tr>
+<tr><td><span class="sw" style="background:#E3EDDA"></span>Sage tint</td><td class="mono">#E3EDDA</td><td>Hover, install banner, neutral icon dots</td><td>Errors</td></tr>
+<tr><td><span class="sw" style="background:#F2E6A7"></span>Soft light</td><td class="mono">#F2E6A7</td><td>Errors and notices, always with an icon and words</td><td>Success</td></tr>
+<tr><td><span class="sw" style="background:#F3F6F4"></span>Mist</td><td class="mono">#F3F6F4</td><td>Website page ground</td><td>Popup</td></tr>
+<tr><td><span class="sw" style="background:#FFFFFF"></span>White</td><td class="mono">#FFFFFF</td><td>Popup, cards, inputs</td><td></td></tr>
+<tr><td><span class="sw" style="background:#D3DCD6"></span>Line</td><td class="mono">#D3DCD6</td><td>Card borders, disabled borders</td><td></td></tr>
+</tbody></table></div></section>
+<section><h2>Type</h2><div class="tbl"><table><thead><tr><th>Role</th><th>Font</th><th>Size / weight</th><th>Notes</th></tr></thead><tbody>
+<tr><td>Wordmark</td><td>Caladea</td><td>18 popup, 20 website / 700</td><td>"Quiescent" next to the logo.</td></tr>
+<tr><td>Status and headings</td><td>Caladea</td><td>24 popup status, 22 popup heading, 34 page title / 700</td><td>Our own copy only ("Saved to Read Later", "Account"). Sentence case.</td></tr>
+<tr><td>Article title</td><td>Source Serif 4</td><td>17 / 400, line 1.4</td><td>User content; cut at 3 lines. Caladea has no Vietnamese letters, so article titles never use it.</td></tr>
+<tr><td>UI and buttons</td><td>Source Sans 3</td><td>15 / 400 and 600</td><td></td></tr>
+<tr><td>Meta</td><td>Source Sans 3</td><td>13 / 400</td><td>Source name, helper lines</td></tr>
+</tbody></table></div><p style="margin-top:10px">Bundle the 4 font files inside the extension. Do not fetch fonts from Google in the popup: it slows "Saved" and fails offline.</p></section>
+<section><h2>Parts</h2><div class="tbl"><table><thead><tr><th>Part</th><th>Spec</th></tr></thead><tbody>
+<tr><td>Popup</td><td>360px wide, white, 1px Line border, 12px corners, soft shadow. Header 14/20 padding with a Sage tint bottom border; body 24/20/20, gap 16.</td></tr>
+<tr><td>Popup header</td><td>Logo 28px + "Quiescent", left aligned.</td></tr>
+<tr><td>Status line</td><td>28px circle + Caladea 24 text. Sage circle with check = success. Sage tint circle = neutral (already saved, can't save, PDF, email). Spinner = waiting. <code>role="status"</code>.</td></tr>
+<tr><td>Article block</td><td>Sage tint rules above and below, faint ruled lines behind, title + source name.</td></tr>
+<tr><td>Notice</td><td>Soft light box, 8px corners, 20px icon, Caladea title, optional meta line. Errors only. <code>role="alert"</code>, focus moves to its button.</td></tr>
+<tr><td>Buttons</td><td>44px min height, 8px corners, 600 weight. Primary Ink fill; Secondary 1.5px Ink border; Quiet = underlined text. Max one primary per state. Disabled: Line border, Ink 70 text.</td></tr>
+<tr><td>Email field</td><td>Label "Email" above. 44px, 8px corners, 1.5px Ink 70 border. Error: message under the field, announced.</td></tr>
+<tr><td>Website header</td><td>64px, white, logo 32 + wordmark · Library · Account · sync status · avatar 40px. Wraps to two rows under 520px.</td></tr>
+<tr><td>Website cards</td><td>White, 1px Line border, 12px corners, 24 to 32px padding, on a Mist page.</td></tr>
+</tbody></table></div></section>
+<section><h2>Timers and limits</h2><div class="tbl"><table><thead><tr><th>Rule</th><th>Value</th></tr></thead><tbody>
+<tr><td>Click to "Saved" (target)</td><td>under 3 s</td></tr><tr><td>Save timeout → "Couldn't save"</td><td>10 s</td></tr>
+<tr><td>Article detection</td><td>150+ words</td></tr><tr><td>Partial save → "Saved what's visible"</td><td>under 300 words</td></tr>
+<tr><td>Read Later cap</td><td>10, newest first</td></tr><tr><td>Reading time</td><td>words ÷ 230, rounded up</td></tr>
+<tr><td>Held save during sign-in</td><td>10 min</td></tr><tr><td>Email link</td><td>single use, 15 min</td></tr>
+<tr><td>Resend available</td><td>after 60 s</td></tr><tr><td>Links per email</td><td>5 per hour</td></tr>
+<tr><td>Session</td><td>30 days since last use</td></tr><tr><td>Sync to other surface</td><td>within 10 s (95%)</td></tr>
+<tr><td>Toolbar badge (notifications blocked)</td><td>5 s</td></tr>
+</tbody></table></div></section>
+<section><h2>Accessibility</h2><ul class="rules">
+<li>Every action works by keyboard: Tab, Enter, Esc closes the popup and menus.</li>
+<li>Visible focus: 2px Ink outline, 3px offset, on every control.</li>
+<li>Status changes (Saving, Saved) use <code>role="status"</code>; errors use <code>role="alert"</code>.</li>
+<li>Color never carries meaning alone: every state has a word and an icon.</li>
+<li>Reduced motion: no spinner rotation.</li>
+</ul></section></div>`;
+
+const CH = [
+ ['Saved state','"Saved" + Read now / Later','"Saved to Read Later" + Read now. Add always saves to Read Later.','One decision, not two. No item is left without a list.'],
+ ['Read Later full','Shown at Add','Unchanged, and now correct','Add always means Read Later, so checking at Add is right.'],
+ ['Waiting for sign-in','Missing','New popup state','Reopening the popup during the hold.'],
+ ['Too many requests','Website only','Also in the popup','The popup sends links too.'],
+ ['Link expired','Popup + website','Website only','The link opens in a tab; the popup is closed by then.'],
+ ["Couldn't save","Title only",'+ "Nothing was saved."','Zero false saves is a guardrail; say it.'],
+ ["Can't save",'Title only','+ "Open an article, then click the Q."','Tells the reader what to do next.'],
+ ['PDF on computer','Title only',"+ \"PDFs saved on your computer can't be read from Chrome's viewer.\"",'Explains why.'],
+ ['Check email','Address only','+ arrival line, + "You can close this popup…"','Fewer double clicks, fewer "where is it" moments.'],
+ ['Resend','"Resend (after 60 s)"','"Resend in {n} s" → "Resend"','The wait is visible.'],
+ ['Too many requests copy','"Try again later"','+ "You can request a new link in an hour."','Says when.'],
+ ['Email field','No label, no error copy','Label "Email"; error "Enter a full email, like you@example.com."','Screen readers; most common mistake.'],
+ ['Sign-in page','No heading','"Sign in to Quiescent"',''],
+ ['Sign-in email','No copy','Subject, heading, button, footer line','Missing screen found by the happy path.'],
+ ['Sync time','"Synced {time}"','just now → {n} min ago → at {clock time}',''],
+ ['Sign out','"Sign out" and "Sign out of this computer"','"Sign out of this computer" everywhere','Same action, one label.'],
+ ['Account page','Content list','Section labels, Profile (photo, name), "Your library is kept when you sign out."','Profile requested by Tam; data comes from Google.'],
+ ['Install banner','No dismiss rule','Not dismissible in the MVP','It is the activation step.'],
+ ['Notifications blocked','Not covered','Check badge on the toolbar icon for 5 s','Otherwise the held save succeeds silently.'],
+ ['Look','Not set','Direction A · Reading Room (v1.1 went back to it from Broadsheet)','Team decision, Oct 22.'],
+ ['Article title font','Caladea','Source Serif 4 for article titles; Caladea stays for our own headings','Caladea has no Vietnamese letters.']
+];
+const OPEN = [
+ ['Date of birth on Account','PM','No MVP use; adds privacy and age-rule work. Not built until there is a reason.'],
+ ['Held save completes while Read Later is full','PM','Proposed: save to Reading, same notification.'],
+ ['"Computers signed in"','Tech','Can Neon Auth list sessions per computer? If not, drop the row.'],
+ ['Blocked pages','Tech','Which of chrome://, new tab, Web Store open the popup at all?'],
+ ['PRD P0 story "choose a shelf when I save"','PM','Contradicts "shelves are Phase 2". Remove or move to P1.']
+];
+const CHANGES = `<div class="doc"><section><h2>Changes from the PRD</h2><p>All approved by Tam on Oct 18. Where this handoff and the PRD disagree, build from this handoff and update the PRD.</p>
+<div class="tbl" style="margin-top:12px"><table><thead><tr><th>Area</th><th>PRD v2</th><th>This handoff</th><th>Why</th></tr></thead><tbody>${CH.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div></section>
+<section><h2>Still open</h2><div class="tbl"><table><thead><tr><th>Question</th><th>Owner</th><th>Default until decided</th></tr></thead><tbody>${OPEN.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div></section></div>`;
+
+/* ---------- app ---------- */
+const TABS = [['flows','Happy paths'],['ext','Extension popup'],['web','Accounts & sync'],['rules','Rules & tokens'],['changes','Changes from PRD']];
+let tab = 'flows', cur = 'E_ready', flow = 'f1';
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const isNew = st => st.copy.some(c => c[1] === N);
+
+function navHTML(){
+  if (tab === 'flows') return FLOWS.map(f => `<div><h3>${f.name}</h3><ol>${f.steps.map((s,i)=>`<li><button type="button" data-go="${s}" data-flow="${f.id}" aria-current="${flow===f.id&&cur===s}"><span class="n">${i+1}</span>${S[s].name}</button></li>`).join('')}</ol></div>`).join('');
+  const groups = {}; Object.values(S).filter(s => s.tab === tab).forEach(s => (groups[s.grp] = groups[s.grp] || []).push(s));
+  return Object.entries(groups).map(([g, list]) => `<div><h3>${g}</h3><ul>${list.map(s=>`<li><button type="button" data-go="${s.id}" aria-current="${!flow&&cur===s.id}">${s.name}${isNew(s)?'<span class="dotnew" title="Has approved changes"></span>':''}</button></li>`).join('')}</ul></div>`).join('');
+}
+function specHTML(st){
+  const where = st.tab === 'ext' ? 'Extension popup' : st.tab === 'web' ? 'Accounts & sync' : 'Out of scope';
+  const copy = st.copy.length ? `<div><h4>Copy (exact)</h4><ul class="copy">${st.copy.map(c=>`<li><q>${esc(c[0])}</q><span class="tag t-${c[1]}">${c[1]==='prd'?'PRD':c[1]==='new'?'Approved':'Open'}</span></li>`).join('')}</ul></div>` : '';
+  const acts = st.acts.length ? `<div><h4>What happens next</h4><table class="acts"><tbody>${st.acts.map(a=>{
+      const label = a[2]===1||a[2]===2 ? `<span class="sys">${esc(a[0])}</span>` : esc(a[0]);
+      const to = S[a[1]] ? `<button type="button" class="go" data-go="${a[1]}">${S[a[1]].name}</button>` : `<span class="sys">${esc(a[1])}</span>`;
+      return `<tr><td>${label}</td><td>→ ${to}</td></tr>`; }).join('')}</tbody></table></div>` : '';
+  const ev = st.ev.length ? `<div><h4>Events</h4><div class="ev">${st.ev.map(e=>`<code>${esc(e)}</code>`).join('')}</div></div>` : '';
+  const rules = st.rules.length ? `<div><h4>Rules</h4><ul class="rules">${st.rules.map(r=>`<li>${esc(r)}</li>`).join('')}</ul></div>` : '';
+  return `<div><div class="eyebrow">${where}${st.grp?' · '+esc(st.grp):''}</div><h2>${esc(st.name)}</h2></div><div><h4>When</h4><p>${esc(st.when)}</p></div>${copy}${acts}${ev}${rules}`;
+}
+function render(){
+  $('#tabs').innerHTML = TABS.map(t=>`<button type="button" class="tab" role="tab" aria-selected="${tab===t[0]}" data-tab="${t[0]}">${t[1]}</button>`).join('');
+  if (tab === 'rules'){ $('#view').innerHTML = RULES; return; }
+  if (tab === 'changes'){ $('#view').innerHTML = CHANGES; return; }
+  const st = S[cur]; const f = FLOWS.find(x => x.id === flow); const idx = f ? f.steps.indexOf(cur) : -1;
+  const bar = f ? `<div class="flowbar"><span><b>${f.name}</b> · step ${idx+1} of ${f.steps.length}<br><span style="color:var(--muted)">${f.sub}</span></span><span class="ctl"><button type="button" data-step="-1"${idx<=0?' disabled':''}>← Back</button><button type="button" data-step="1"${idx>=f.steps.length-1?' disabled':''}>Next →</button></span></div>` : '';
+  $('#view').innerHTML = `<div class="grid"><nav class="nav" aria-label="States">${navHTML()}</nav>
+    <div class="stagecol">${bar}<div class="stage" id="stage">${st.render()}</div><p class="hint">Buttons inside the screen are live: click them to follow the flow.</p></div>
+    <aside class="spec" aria-label="Spec for this state">${specHTML(st)}</aside></div>`;
+}
+function go(id, fromFlow){
+  if (!S[id]) return;
+  if (fromFlow !== undefined) flow = fromFlow;
+  else if (flow){ const f = FLOWS.find(x=>x.id===flow); if (!f || !f.steps.includes(id)) flow = null; }
+  cur = id;
+  if (!flow && S[id].tab) tab = S[id].tab;
+  render();
+  $('#live').textContent = 'Showing ' + S[id].name;
+  try { history.replaceState(null, '', '#' + id); } catch(e){}
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-tab]'); if (t){ tab = t.dataset.tab;
+    if (tab==='flows'){ flow='f1'; cur='E_ready'; } else if (tab==='ext'){ flow=null; cur='E_saved'; } else if (tab==='web'){ flow=null; cur='W_signin'; }
+    render(); return; }
+  const g = e.target.closest('[data-go]'); if (g){ go(g.dataset.go, g.dataset.flow); return; }
+  const s = e.target.closest('[data-step]'); if (s){ const f = FLOWS.find(x=>x.id===flow); const i = f.steps.indexOf(cur)+Number(s.dataset.step); if (f.steps[i]) go(f.steps[i], flow); return; }
+  const d = e.target.closest('[data-to]'); if (d){ e.preventDefault(); const to = d.dataset.to;
+    if (flow){ const f = FLOWS.find(x=>x.id===flow); if (f.steps.includes(to)) { go(to, flow); return; } }
+    go(to, null); }
+});
+document.addEventListener('submit', e => e.preventDefault());
+let start = '';
+try { start = (location.hash || '').slice(1); } catch(e){}
+if (S[start]) { flow = null; cur = start; tab = S[start].tab || 'flows'; if (!S[start].tab) flow = 'f1'; }
+render();
+})();
+</script>
