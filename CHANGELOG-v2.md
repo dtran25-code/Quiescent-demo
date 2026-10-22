@@ -22,6 +22,7 @@ item 9, Q quick actions, is not confirmed and was skipped).
 | A4 | **Q off hides "Ask Q!"** in the selection menu and the note box (it used to stay and do nothing). Turning Q back on brings it back. |
 | A5 | **Progress bar in the reader:** a thin accent bar along the top of the page shows how far through the item you are, from the same scroll position the reader resumes at. Visible while reading and in full screen; narrows with the highlights panel. The Section / Page pill adds the % ("Section 2 / 6 · 42%"). |
 | A6 | **Optional folder picker in the popup:** under Read now on the Saved screen (and "Saved what's visible"), "Add to a folder (optional)" lists the reader's existing folders as a checklist, several or none. Hidden when there are no folders; no "create folder" in the popup. The save is already done, so each tick applies at once (`folder_items_changed` with `via = popup`). `/screens` has a "Saved, with the optional folder picker" link. |
+| A7 | **Sort and filter in the library** (team meeting). Sort: Newest first (default) · Oldest first · Title A to Z; "newest" means **date saved**, everywhere, which replaces the old fixed order (In progress by last opened, Finished by last finished). Filter: type (Article, PDF) and source (site, or "Uploaded PDF"). They apply inside the current status sub-view or folder, live in the URL (`?sort=&type=&site=`) so they survive switching sub-views, and the sub-view counts follow the filter. No matches: "No items match these filters." with Clear filters. Proposed events `library_sorted` and `library_filtered`. Manual reordering stays out (moved to P1). |
 
 ---
 
@@ -40,7 +41,7 @@ item 9, Q quick actions, is not confirmed and was skipped).
 ### Removed
 - **Notes page** (`/notes/:id`), its TipTap editor, and every link to it (library row, highlights panel, note popover).
   Old `/notes/:id` links redirect to the reader. The reader's side panel listing highlights and notes is kept.
-- **Library sort and filter.** v1 had none in the UI; v2 adds none. Order is fixed (see DEFAULTs).
+- **Library sort and filter.** v1 had none in the UI; v2 first added none. Spec alignment (A7) adds them back as decided in the team meeting.
 - **Landing page** ("Upload your reading" before sign-in). `/` now goes to Library when signed in, `/signin` otherwise,
   matching the PRD's website-first flow.
 - **Article-link import tab** in the add dialog (link import is P1 in the PRD). The Netlify function
@@ -76,7 +77,7 @@ All brief DEFAULTs were **kept as written**:
 |---|---|
 | Sidebar starts collapsed to icons inside the reader | `src/shell/AppShell.tsx` |
 | By Status opens on the In progress sub-view (my default; the brief doesn't say which) | `src/library/LibraryPage.tsx` |
-| Order: In progress by last opened · Read later by last saved · Finished by last finished; no user-facing sort | `src/library/useLibrary.ts` |
+| Order: newest first by date saved in every status sub-view and folder; the reader can switch to oldest first or title A to Z (spec alignment, A7; replaced "In progress by last opened · Read later by last saved · Finished by last finished") | `src/library/useLibrary.ts` |
 | New saves → Read later (In progress if saved with "Read now"); opening a Read later item → In progress; Finished set by hand | `src/proto/actions.ts` |
 | An item can be in several folders or none; folders independent of status; removing from a folder never deletes the item | `src/proto/actions.ts` |
 | Upload: PDF only, ≤ 25 MB | `src/library/UploadDialog.tsx` |
@@ -129,7 +130,7 @@ is dropped and flagged red in the Event log, so article, highlight, note and Q t
 3. **Folders:** PRD calls custom shelves Phase 2; brief makes them P0. Tagged "P0 pending dev estimate" in dev notes.
 4. **Saved popup:** PRD "Read now" + "Later"; brief adopts "Saved to Read Later" with one Read now.
 5. **Upload:** PRD PDF + EPUB up to 100 MB / 1,000 pages; brief DEFAULT PDF only, 25 MB.
-6. **Library sort/filter:** PRD Library goals mention them; brief removes them.
+6. **Library sort/filter:** PRD Library goals mention them; brief removes them. Later reversed by the team meeting: sort and filter added in spec alignment (A7).
 
 Brief inconsistencies I resolved:
 - Branch named both `prototype-v2` and `prototype-mvp`: used **`prototype-v2`** (the deploy target).

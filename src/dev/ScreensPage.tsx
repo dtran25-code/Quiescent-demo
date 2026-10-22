@@ -42,6 +42,7 @@ const GROUPS: { title: string; brief: string; screens: Screen[] }[] = [
       { name: 'By Status → In progress sub-view (default; no folders, so no By Folder tab)', to: go('existing', '/library'), state: 'existing' },
       { name: 'By Status → Read later sub-view', to: go('existing', '/library?status=read_later'), state: 'existing' },
       { name: 'By Status → Finished sub-view', to: go('existing', '/library?status=finished'), state: 'existing' },
+      { name: 'Sort and filter set (Read later, title A to Z, articles only)', to: go('existing', '/library?status=read_later&sort=title&type=article'), state: 'existing' },
       { name: 'Card ⋯ menu → Add to folder (multi-select + New folder…)', to: go('existing_folders', '/library?addto=seed-hashing'), state: 'existing_folders' },
       { name: 'Card ⋯ menu → Remove from library (confirm)', to: go('existing', '/library?remove=seed-dull-tools'), state: 'existing' },
       { name: 'Create new folder modal (name + searchable checklist)', to: go('existing', '/library?create=1'), state: 'existing', note: 'Create one to see By Folder appear.' },
@@ -155,8 +156,8 @@ export default function ScreensPage() {
         </div>
         <p className="mt-2 max-w-2xl text-ink-soft">
           Every screen and state in the v2 prototype. Links marked with a user state switch to it first, which resets the demo
-          data. Current state: <b>{USER_STATE_LABEL[userState]}</b>. The removed v1 Notes page and Sort/Filter controls are not
-          listed because they no longer exist; the extension's "Read Later is full" state was deleted with the queue cap.
+          data. Current state: <b>{USER_STATE_LABEL[userState]}</b>. The removed v1 Notes page is not
+          listed because it no longer exists; the extension's "Read Later is full" state was deleted with the queue cap.
         </p>
 
         <div className="mt-8 grid gap-6 md:grid-cols-2">
