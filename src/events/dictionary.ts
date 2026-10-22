@@ -511,7 +511,7 @@ export const EVENTS: EventDef[] = [
     area: 'reader',
     source: 'client',
     surface: 'web',
-    trigger: 'Full screen button',
+    trigger: 'Full screen button in the reader, or Read now in the extension (opens the reader full screen)',
     props: { item_id: id, from: e(['focus_button', 'extension']) },
     feeds: 'Reader focus usage',
     origin: 'prd',

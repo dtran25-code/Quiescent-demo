@@ -181,9 +181,19 @@ export default function DemoBrowser() {
     }
   }
 
+  // "Read now" opens the reader full screen, like the reader's full screen button.
+  // Browsers only allow full screen straight from a click, so it's requested before
+  // anything else; if it's refused, the reader just opens in the window.
   async function readNow(itemId: string, from: 'popup' | 'duplicate' | 'notification') {
+    document.documentElement
+      .requestFullscreen?.()
+      .then(() => track('fullscreen_entered', { item_id: itemId, from: 'extension' }))
+      .catch(() => {})
     track('read_now_clicked', { item_id: itemId, from }, 'extension')
-    if (!(await getItem(itemId))) return navigate('/library')
+    if (!(await getItem(itemId))) {
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {})
+      return navigate('/library')
+    }
     if (metaOf(itemId).status === 'read_later') setStatus(itemId, 'in_progress', 'read_now')
     navigate(`/read/${itemId}`, { state: { entry: from === 'notification' ? 'notification' : 'read_now' } })
   }
