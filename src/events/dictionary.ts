@@ -568,7 +568,7 @@ export const EVENTS: EventDef[] = [
     area: 'q',
     source: 'client',
     surface: 'web',
-    trigger: '👍 / 👎 on an answer — NOT BUILT (rating UI is P1 in the Q PRD)',
+    trigger: '👍 / 👎 on an answer (P0; the reason field is P1)',
     props: { item_id: id, helpful: bool },
     feeds: 'Q guardrail (unhelpful < 20%)',
     origin: 'prd',

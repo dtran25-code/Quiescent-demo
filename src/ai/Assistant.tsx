@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
-import { ArrowUp, EyeOff, FileText, Lightbulb, Minus, PenLine, RotateCcw, WandSparkles, X } from 'lucide-react'
-import { appendChat, clearChat, newId, useChat } from '../storage/db'
+import { ArrowUp, EyeOff, FileText, Lightbulb, Minus, PenLine, RotateCcw, ThumbsDown, ThumbsUp, WandSparkles, X } from 'lucide-react'
+import { appendChat, clearChat, newId, rateChat, useChat } from '../storage/db'
 import type { Highlight, Item } from '../types'
 import { ask, AI_MODE } from './aiClient'
 import { buildContext } from './context'
@@ -263,6 +263,7 @@ function ChatPanel({
         role: 'assistant',
         text: `Sorry, something went wrong: ${(err as Error).message}`,
         createdAt: Date.now(),
+        error: true,
       })
     } finally {
       setThinking(false)
@@ -339,6 +340,15 @@ function ChatPanel({
               </span>
               <div className="min-w-0 flex-1">
                 <RichText text={m.text} />
+                {!m.error && !m.text.startsWith('Sorry, something went wrong') && (
+                  <Rating
+                    value={m.rating}
+                    onRate={(rating) => {
+                      if (rating) track('answer_rated', { item_id: item.id, helpful: rating === 'up' })
+                      rateChat(item.id, m.id, rating)
+                    }}
+                  />
+                )}
               </div>
             </div>
           ),
@@ -445,7 +455,30 @@ function Chip(props: { icon: React.ReactNode; label: string; onClick: () => void
   )
 }
 
-function HeaderButton(props: { label: string; onClick: () => void; disabled?: boolean; children: React.ReactNode }) {
+/** 👍 / 👎 under an answer. Clicking the chosen one again clears it. No reason field (P1). */
+function Rating({ value, onRate }: { value?: 'up' | 'down'; onRate: (rating: 'up' | 'down' | undefined) => void }) {
+  const button = (rating: 'up' | 'down', label: string, icon: React.ReactNode) => (
+    <button
+      onClick={() => onRate(value === rating ? undefined : rating)}
+      aria-pressed={value === rating}
+      aria-label={label}
+      title={label}
+      className={`rounded-md p-1 transition-colors ${
+        value === rating ? 'bg-accent-soft text-accent' : 'text-ink-faint hover:bg-paper-deep hover:text-ink'
+      }`}
+    >
+      {icon}
+    </button>
+  )
+  return (
+    <div className="mt-1.5 flex gap-0.5">
+      {button('up', 'Helpful', <ThumbsUp size={14} />)}
+      {button('down', 'Not helpful', <ThumbsDown size={14} />)}
+    </div>
+  )
+}
+
+function HeaderButton(props:{ label: string; onClick: () => void; disabled?: boolean; children: React.ReactNode }) {
   return (
     <button
       onClick={props.onClick}

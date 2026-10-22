@@ -17,6 +17,7 @@ item 9, Q quick actions, is not confirmed and was skipped).
 | Item | What changed |
 |---|---|
 | A1 | Reader asks **"Finished?"** with **Mark as finished** / **Not yet** when progress reaches 95%, once per reading session (only when the session started below 95%, so reopening a nearly finished item doesn't ask straight away; not shown if already Finished). The header's manual Mark as finished stays. `item_completed` now fires at 95% (was 90%). |
+| A2 | **👍 / 👎** under every Q answer (not under the "couldn't answer" error). The choice is saved with the chat; clicking it again clears it. Fires `answer_rated` (`helpful` = true/false). No reason field (P1). |
 
 ---
 
@@ -110,7 +111,7 @@ Proposed events (marked "proposed — not in PRD" in the Event log and on /event
 `profile_name_saved`, `library_view_switched`, `item_status_changed`, `item_removed`, `most_recent_read_clicked`,
 `library_status_switched`, `folder_created`, `folder_renamed`, `folder_deleted`, `folder_items_changed`, `folder_opened`, `upload_started`.
 
-`answer_rated` is in the dictionary but not fired: the rating UI is P1 in the Q PRD.
+`answer_rated` fires from the 👍 / 👎 under each Q answer (P0; added in spec alignment, A2).
 
 Privacy: `track()` only accepts ids, bare domains, declared enum values, non-negative numbers and booleans. Anything else
 is dropped and flagged red in the Event log, so article, highlight, note and Q text can't be logged.

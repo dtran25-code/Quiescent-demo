@@ -183,6 +183,10 @@ export interface ChatMessage {
   role: 'user' | 'assistant'
   text: string
   createdAt: number
+  /** Q's "couldn't answer" message: not an answer, so it can't be rated. */
+  error?: boolean
+  /** 👍 / 👎 on an answer. */
+  rating?: 'up' | 'down'
 }
 
 export async function getChat(itemId: string): Promise<ChatMessage[]> {
@@ -192,6 +196,17 @@ export async function getChat(itemId: string): Promise<ChatMessage[]> {
 export const appendChat = (itemId: string, message: ChatMessage) =>
   serial(async () => {
     await set(`chat:${itemId}`, [...(await getChat(itemId)), message])
+    notify()
+  })
+
+/** Set (or clear) the 👍 / 👎 on one answer. */
+export const rateChat = (itemId: string, messageId: string, rating: ChatMessage['rating']) =>
+  serial(async () => {
+    const chat = await getChat(itemId)
+    await set(
+      `chat:${itemId}`,
+      chat.map((m) => (m.id === messageId ? { ...m, rating } : m)),
+    )
     notify()
   })
 
