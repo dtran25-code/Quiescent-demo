@@ -119,8 +119,8 @@ export function setFolderItems(folderId: string, itemIds: string[], via: 'folder
   syncCheck('folder')
 }
 
-/** Set exactly which folders one item is in (card menu → Add to folder). */
-export function setItemFolders(itemId: string, folderIds: string[]) {
+/** Set exactly which folders one item is in (card menu → Add to folder, or the popup after a save). */
+export function setItemFolders(itemId: string, folderIds: string[], via: 'card_menu' | 'popup' = 'card_menu') {
   const before = protoStore.get().folders
   protoStore.set((s) => ({
     ...s,
@@ -134,7 +134,7 @@ export function setItemFolders(itemId: string, folderIds: string[]) {
   for (const f of before) {
     const has = f.itemIds.includes(itemId)
     const want = folderIds.includes(f.id)
-    if (has !== want) track('folder_items_changed', { folder_id: f.id, added: want ? 1 : 0, removed: want ? 0 : 1, via: 'card_menu' })
+    if (has !== want) track('folder_items_changed', { folder_id: f.id, added: want ? 1 : 0, removed: want ? 0 : 1, via })
   }
   syncCheck('folder')
 }

@@ -121,6 +121,7 @@ const GROUPS: { title: string; brief: string; screens: Screen[] }[] = [
       { name: 'Online PDF — Ready', to: ext('online-pdf', 'ready') },
       { name: 'Saving…', to: ext('article', 'saving') },
       { name: 'Saved to Read Later (adopted proposal: one "Read now")', to: ext('article', 'saved') },
+      { name: 'Saved, with the optional folder picker', to: go('existing_folders', ext('article', 'saved')), state: 'existing_folders', note: 'Ticks only change the checkboxes here: the demo item is not in the library. Save a real article to file it.' },
       { name: "Saved what's visible (partial)", to: ext('paywalled', 'saved-partial') },
       { name: 'Already in your library', to: ext('article', 'already') },
       { name: "Can't save this page", to: ext('non-article', 'cant-save') },

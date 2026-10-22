@@ -354,7 +354,7 @@ export const EVENTS: EventDef[] = [
     source: 'server',
     surface: 'web',
     trigger: 'Items added to or removed from a folder',
-    props: { folder_id: id, added: count, removed: count, via: e(['card_menu', 'folder_detail', 'create_modal']) },
+    props: { folder_id: id, added: count, removed: count, via: e(['card_menu', 'folder_detail', 'create_modal', 'popup']) },
     feeds: 'Folder adoption',
     origin: 'proposed',
   },

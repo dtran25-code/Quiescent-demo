@@ -21,6 +21,7 @@ item 9, Q quick actions, is not confirmed and was skipped).
 | A3 | **"Ask AI" → "Ask Q!"** in the selection menu and the note box, with the Q turtle instead of the sparkle icon (on a light disc in the dark selection menu). Tooltips and the one canned Q reply that named "Ask AI" now say "Ask Q!". |
 | A4 | **Q off hides "Ask Q!"** in the selection menu and the note box (it used to stay and do nothing). Turning Q back on brings it back. |
 | A5 | **Progress bar in the reader:** a thin accent bar along the top of the page shows how far through the item you are, from the same scroll position the reader resumes at. Visible while reading and in full screen; narrows with the highlights panel. The Section / Page pill adds the % ("Section 2 / 6 · 42%"). |
+| A6 | **Optional folder picker in the popup:** under Read now on the Saved screen (and "Saved what's visible"), "Add to a folder (optional)" lists the reader's existing folders as a checklist, several or none. Hidden when there are no folders; no "create folder" in the popup. The save is already done, so each tick applies at once (`folder_items_changed` with `via = popup`). `/screens` has a "Saved, with the optional folder picker" link. |
 
 ---
 
