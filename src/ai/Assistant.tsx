@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
-import { ArrowUp, EyeOff, FileText, Lightbulb, Minus, PenLine, RotateCcw, WandSparkles, X } from 'lucide-react'
-import { appendChat, clearChat, newId, useChat } from '../storage/db'
+import { ArrowUp, EyeOff, FileText, Lightbulb, Minus, PenLine, RotateCcw, ThumbsDown, ThumbsUp, WandSparkles, X } from 'lucide-react'
+import { appendChat, clearChat, newId, rateChat, useChat } from '../storage/db'
 import type { Highlight, Item } from '../types'
 import { ask, AI_MODE } from './aiClient'
 import { buildContext } from './context'
@@ -37,7 +37,7 @@ export function Assistant({
   /** A passage or note the user pointed the assistant at. */
   attachment: Attachment | null
   onClearAttachment: () => void
-  /** Changes whenever the page wants the panel opened (e.g. "Ask AI" was clicked). */
+  /** Changes whenever the page wants the panel opened (e.g. "Ask Q!" was clicked). */
   openSignal: number
 }) {
   const settings = useAssistantSettings()
@@ -66,7 +66,7 @@ export function Assistant({
   const pos = dragPos ?? { x: settings.x, y: settings.y }
   const [viewport, setViewport] = useState({ w: window.innerWidth, h: window.innerHeight })
 
-  // Open when the page asks (e.g. "Ask AI" clicked).
+  // Open when the page asks (e.g. "Ask Q!" clicked).
   const [seenSignal, setSeenSignal] = useState(openSignal)
   if (openSignal !== seenSignal) {
     setSeenSignal(openSignal)
@@ -263,6 +263,7 @@ function ChatPanel({
         role: 'assistant',
         text: `Sorry, something went wrong: ${(err as Error).message}`,
         createdAt: Date.now(),
+        error: true,
       })
     } finally {
       setThinking(false)
@@ -339,6 +340,15 @@ function ChatPanel({
               </span>
               <div className="min-w-0 flex-1">
                 <RichText text={m.text} />
+                {!m.error && !m.text.startsWith('Sorry, something went wrong') && (
+                  <Rating
+                    value={m.rating}
+                    onRate={(rating) => {
+                      if (rating) track('answer_rated', { item_id: item.id, helpful: rating === 'up' })
+                      rateChat(item.id, m.id, rating)
+                    }}
+                  />
+                )}
               </div>
             </div>
           ),
@@ -374,7 +384,7 @@ function ChatPanel({
             label="Explain this"
             onClick={() => run('explain')}
             disabled={thinking || !attachment}
-            title={attachment ? 'Explain the selected passage' : 'Select a passage (or use Ask AI on a note) first'}
+            title={attachment ? 'Explain the selected passage' : 'Select a passage (or use Ask Q! on a note) first'}
           />
           <Chip icon={<FileText size={13} />} label="Summarize this section" onClick={() => run('summarize')} disabled={thinking} />
           <Chip icon={<PenLine size={13} />} label="Polish my notes" onClick={() => run('polish')} disabled={thinking} />
@@ -445,7 +455,30 @@ function Chip(props: { icon: React.ReactNode; label: string; onClick: () => void
   )
 }
 
-function HeaderButton(props: { label: string; onClick: () => void; disabled?: boolean; children: React.ReactNode }) {
+/** 👍 / 👎 under an answer. Clicking the chosen one again clears it. No reason field (P1). */
+function Rating({ value, onRate }: { value?: 'up' | 'down'; onRate: (rating: 'up' | 'down' | undefined) => void }) {
+  const button = (rating: 'up' | 'down', label: string, icon: React.ReactNode) => (
+    <button
+      onClick={() => onRate(value === rating ? undefined : rating)}
+      aria-pressed={value === rating}
+      aria-label={label}
+      title={label}
+      className={`rounded-md p-1 transition-colors ${
+        value === rating ? 'bg-accent-soft text-accent' : 'text-ink-faint hover:bg-paper-deep hover:text-ink'
+      }`}
+    >
+      {icon}
+    </button>
+  )
+  return (
+    <div className="mt-1.5 flex gap-0.5">
+      {button('up', 'Helpful', <ThumbsUp size={14} />)}
+      {button('down', 'Not helpful', <ThumbsDown size={14} />)}
+    </div>
+  )
+}
+
+function HeaderButton(props:{ label: string; onClick: () => void; disabled?: boolean; children: React.ReactNode }) {
   return (
     <button
       onClick={props.onClick}

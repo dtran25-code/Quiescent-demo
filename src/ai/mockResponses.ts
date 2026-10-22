@@ -30,7 +30,7 @@ export function mockReply({ action, message, context }: AIRequest): string {
 function explain(ctx: AIContext, script?: SampleScript) {
   const passage = ctx.attachment?.text
   if (!passage) {
-    return 'Select a passage in the text (or click **Ask AI** on a note) and I\'ll explain it.'
+    return 'Select a passage in the text (or click **Ask Q!** on a note) and I\'ll explain it.'
   }
   if (script) {
     const best = bestMatch(passage, script.explain)

@@ -15,7 +15,7 @@ export function DevNote({ children, className = '', always = false }: { children
   )
 }
 
-export type BadgeKind = 'proposed' | 'needs decision' | 'P0 pending dev estimate' | 'proposed — not in PRD' | 'new' | 'not built'
+export type BadgeKind = 'proposed' | 'needs decision' | 'proposed — not in PRD' | 'new' | 'not built'
 
 /** Small annotation badge ("proposed", "needs decision", …). Dev notes only. */
 export function Badge({ kind, always = false }: { kind: BadgeKind; always?: boolean }) {

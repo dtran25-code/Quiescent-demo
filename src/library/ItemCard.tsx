@@ -3,7 +3,7 @@ import { FileText, FolderMinus, FolderPlus, MoreHorizontal, Newspaper, Trash2 } 
 import { Menu, type MenuEntry } from '../components/Menu'
 import { STATUSES, STATUS_LABEL, type Status } from '../proto/store'
 import { setStatus } from '../proto/actions'
-import { shortDate, sourceLabel, type Entry } from './useLibrary'
+import { previewText, readingMinutes, shortDate, sourceLabel, type Entry } from './useLibrary'
 
 export interface CardActions {
   onAddToFolder: (entry: Entry) => void
@@ -14,7 +14,8 @@ export interface CardActions {
 
 /**
  * Library card: title, source domain, type, date saved, progress % (In progress
- * only), optional status badge (folder detail). The whole card opens the reader;
+ * only), reading time and opening lines (Read later only), optional status badge
+ * (folder detail). The whole card opens the reader;
  * the ⋯ menu changes status, files it in folders, or removes it.
  */
 export function ItemCard({
@@ -31,6 +32,10 @@ export function ItemCard({
   const { item, meta } = entry
   const TypeIcon = item.type === 'pdf' ? FileText : Newspaper
   const progress = Math.round(item.progress)
+  // Read later cards preview the reading: time to read, and an article's first two lines.
+  const later = meta.status === 'read_later'
+  const minutes = later ? readingMinutes(item, meta) : null
+  const preview = later ? previewText(item) : null
 
   const entries: MenuEntry[] = [
     { kind: 'heading', label: 'Change status' },
@@ -60,6 +65,7 @@ export function ItemCard({
           >
             {item.title}
           </Link>
+          {preview && <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-ink-faint">{preview}</p>}
         </div>
       </div>
 
@@ -72,6 +78,12 @@ export function ItemCard({
           </span>
           <span aria-hidden="true">·</span>
           <span>Saved {shortDate(meta.savedAt)}</span>
+          {minutes && (
+            <>
+              <span aria-hidden="true">·</span>
+              <span>{minutes} min read</span>
+            </>
+          )}
           {showStatus && <StatusBadge status={meta.status} />}
         </p>
         {meta.status === 'in_progress' && (

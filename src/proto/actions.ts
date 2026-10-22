@@ -7,10 +7,10 @@
 // DEFAULT membership: an item can be in several folders or none; folders are
 // independent of status; removing from a folder never deletes the item.
 
-import { deleteItem, getHighlights, newId } from '../storage/db'
+import { deleteItem, getChat, getFile, getHighlights, getItem, newId, restoreItem, type ChatMessage } from '../storage/db'
 import { track } from '../events/track'
-import { devStore, metaOf, patchMeta, protoStore, type Folder, type SaveVia, type Status } from './store'
-import type { Item } from '../types'
+import { devStore, metaOf, patchMeta, protoStore, type Folder, type ItemMeta, type SaveVia, type Status } from './store'
+import type { Highlight, Item } from '../types'
 
 export const FOLDER_NAME_MAX = 40
 
@@ -21,7 +21,7 @@ function syncCheck(object: 'reading' | 'highlight' | 'note' | 'folder') {
 
 // --- statuses -------------------------------------------------------------------
 
-export function setStatus(itemId: string, to: Status, via: 'card_menu' | 'reader' | 'opened' | 'read_now') {
+export function setStatus(itemId: string, to: Status, via: 'card_menu' | 'reader' | 'finished_prompt' | 'opened' | 'read_now') {
   const from = metaOf(itemId).status
   if (from === to) return
   patchMeta(itemId, { status: to, finishedAt: to === 'finished' ? Date.now() : undefined })
@@ -53,10 +53,22 @@ export function registerSave(item: Item, via: SaveVia, opts: { canonical?: strin
   })
 }
 
-/** Remove from library (after the confirm dialog). Also leaves every folder. */
+/** The last removed item, kept so "Undo" can put everything back. */
+let lastRemoved: {
+  item: Item
+  file?: Blob
+  highlights: Highlight[]
+  chat: ChatMessage[]
+  meta?: ItemMeta
+  folderIds: string[]
+} | null = null
+
+/** Remove from library (after the confirm dialog). Also leaves every folder. Undo with undoRemove(). */
 export async function removeItem(itemId: string) {
-  const highlights = await getHighlights(itemId)
-  const folderCount = protoStore.get().folders.filter((f) => f.itemIds.includes(itemId)).length
+  const [item, file, highlights, chat] = await Promise.all([getItem(itemId), getFile(itemId), getHighlights(itemId), getChat(itemId)])
+  const folderIds = protoStore.get().folders.filter((f) => f.itemIds.includes(itemId)).map((f) => f.id)
+  const folderCount = folderIds.length
+  lastRemoved = item ? { item, file, highlights, chat, meta: protoStore.get().meta[itemId], folderIds } : null
   await deleteItem(itemId)
   protoStore.set((s) => {
     const meta = { ...s.meta }
@@ -64,6 +76,22 @@ export async function removeItem(itemId: string) {
     return { ...s, meta, folders: s.folders.map((f) => ({ ...f, itemIds: f.itemIds.filter((i) => i !== itemId) })) }
   })
   track('item_removed', { item_id: itemId, highlight_count: highlights.length, folder_count: folderCount })
+  syncCheck('reading')
+}
+
+/** Undo the last "Remove from library": the item, its file, highlights, Q chat, status and folders come back. */
+export async function undoRemove(itemId: string) {
+  const r = lastRemoved
+  if (!r || r.item.id !== itemId) return
+  lastRemoved = null
+  await restoreItem(r.item, r)
+  protoStore.set((s) => ({
+    ...s,
+    meta: r.meta ? { ...s.meta, [itemId]: r.meta } : s.meta,
+    // Folders deleted in the meantime stay deleted.
+    folders: s.folders.map((f) => (r.folderIds.includes(f.id) && !f.itemIds.includes(itemId) ? { ...f, itemIds: [...f.itemIds, itemId] } : f)),
+  }))
+  track('item_restored', { item_id: itemId, highlight_count: r.highlights.length, folder_count: r.folderIds.length })
   syncCheck('reading')
 }
 
@@ -119,8 +147,8 @@ export function setFolderItems(folderId: string, itemIds: string[], via: 'folder
   syncCheck('folder')
 }
 
-/** Set exactly which folders one item is in (card menu → Add to folder). */
-export function setItemFolders(itemId: string, folderIds: string[]) {
+/** Set exactly which folders one item is in (card menu → Add to folder, or the popup after a save). */
+export function setItemFolders(itemId: string, folderIds: string[], via: 'card_menu' | 'popup' = 'card_menu') {
   const before = protoStore.get().folders
   protoStore.set((s) => ({
     ...s,
@@ -134,7 +162,7 @@ export function setItemFolders(itemId: string, folderIds: string[]) {
   for (const f of before) {
     const has = f.itemIds.includes(itemId)
     const want = folderIds.includes(f.id)
-    if (has !== want) track('folder_items_changed', { folder_id: f.id, added: want ? 1 : 0, removed: want ? 0 : 1, via: 'card_menu' })
+    if (has !== want) track('folder_items_changed', { folder_id: f.id, added: want ? 1 : 0, removed: want ? 0 : 1, via })
   }
   syncCheck('folder')
 }

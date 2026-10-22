@@ -13,6 +13,7 @@ import { SelectionToolbar } from './SelectionToolbar'
 import { NotePopover } from './NotePopover'
 import { HighlightsButton, HighlightsPanel, MarginMarkers, type Marker } from './HighlightsPanel'
 import { Assistant, AssistantToggle } from '../ai/Assistant'
+import { useAssistantSettings } from '../ai/settings'
 import type { Attachment } from '../ai/types'
 
 const NO_HIGHLIGHTS: Highlight[] = []
@@ -67,6 +68,8 @@ function Reader({ item }: { item: Item }) {
     chapterId: null,
   })
   const [atTop, setAtTop] = useState(true)
+  // How far through the item (0–1): the same scroll position the reader resumes at.
+  const [ratio, setRatio] = useState(item.lastScroll ?? 0)
   const [toolbar, setToolbar] = useState<ToolbarState | null>(null)
   const [note, setNote] = useState<{ id: string; x: number; y: number } | null>(null)
   // /screens deep link: ?panel=1 opens the highlights panel (e.g. its empty state).
@@ -81,6 +84,14 @@ function Reader({ item }: { item: Item }) {
   const restored = useRef(false)
   const location = useLocation()
   const status = useProto((s) => s.meta[item.id]?.status ?? 'read_later')
+  // Leaving the reader lands on the item's own status sub-view.
+  const libraryTab = `/library?status=${status}`
+  // Q off: "Ask Q!" leaves the selection menu and the note box.
+  const qOn = useAssistantSettings().enabled
+  // "Finished?" asks once per reading session, the first time progress reaches 95%.
+  const [finishPrompt, setFinishPrompt] = useState(false)
+  const prompted = useRef(false)
+  const belowFinish = useRef((item.lastScroll ?? 0) < FINISH_AT)
 
   // --- v2: open / session events and the status rule ------------------------------
   // Opening a Read later item moves it to In progress (DEFAULT). One item_opened per
@@ -157,6 +168,11 @@ function Reader({ item }: { item: Item }) {
     let timer: number | undefined
     const updatePosition = () => {
       setAtTop(scroller.scrollTop < 40)
+      // Before the saved position is restored (PDF pages still sizing), keep showing it.
+      if (restored.current) {
+        const max = scroller.scrollHeight - scroller.clientHeight
+        setRatio(max > 0 ? Math.min(1, scroller.scrollTop / max) : 1)
+      }
       if (item.type === 'article') setPosition(articlePosition(scroller, chaptersRef.current))
     }
     const onScroll = () => {
@@ -168,9 +184,14 @@ function Reader({ item }: { item: Item }) {
         const max = scroller.scrollHeight - scroller.clientHeight
         const ratio = max > 0 ? Math.min(1, scroller.scrollTop / max) : 1
         updateItem(item.id, { progress: Math.round(ratio * 100), lastScroll: ratio })
-        if (ratio >= 0.9 && !metaOf(item.id).completedAt) {
+        if (ratio >= FINISH_AT && !metaOf(item.id).completedAt) {
           patchMeta(item.id, { completedAt: Date.now() })
           track('item_completed', { item_id: item.id, progress: Math.round(ratio * 100) })
+        }
+        if (ratio < FINISH_AT) belowFinish.current = true
+        else if (belowFinish.current && !prompted.current && metaOf(item.id).status !== 'finished') {
+          prompted.current = true
+          setFinishPrompt(true)
         }
       }, 400)
     }
@@ -280,7 +301,7 @@ function Reader({ item }: { item: Item }) {
 
   // --- AI assistant ---------------------------------------------------------------
 
-  function askAI() {
+  function askQ() {
     if (!toolbar) return
     setAttachment({ kind: 'selection', text: toolbar.anchor.quote, chapterId: chapterOf(toolbar.anchor) })
     setAssistantSignal((n) => n + 1)
@@ -353,24 +374,37 @@ function Reader({ item }: { item: Item }) {
         window.getSelection()?.removeAllRanges()
         setToolbar(null)
       } else if (panelOpen) setPanelOpen(false)
-      else if (!document.fullscreenElement) navigate('/library')
+      else if (!document.fullscreenElement) navigate(libraryTab)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [note, toolbar, panelOpen, navigate])
+  }, [note, toolbar, panelOpen, navigate, libraryTab])
 
   const openNote = note ? highlights.find((h) => h.id === note.id) : undefined
   const closeNote = useCallback(() => setNote(null), [])
 
   return (
     <div className="absolute inset-0 bg-paper">
+      {/* Progress through the item: stays visible while reading and in full screen. */}
+      <div
+        className="absolute left-0 top-0 z-30 h-[3px] bg-rule/60"
+        style={{ right: panelOpen ? PANEL_WIDTH : 0 }}
+        role="progressbar"
+        aria-label="Reading progress"
+        aria-valuenow={Math.round(ratio * 100)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+      >
+        <div className="h-full bg-accent transition-[width] duration-150" style={{ width: `${ratio * 100}%` }} />
+      </div>
+
       {/* Slim top bar: hidden while reading, returns when you hover near the top. */}
       <header
         className={`absolute inset-x-0 top-0 z-20 flex items-center gap-4 bg-gradient-to-b from-paper via-paper/95 to-paper/0 px-5 pb-6 pt-3 transition-opacity duration-300 hover:opacity-100 ${
           atTop ? 'opacity-100' : 'opacity-0'
         }`}
       >
-        <Link to="/library" className="icon-btn" title="Exit reading (Esc)" aria-label="Exit reading">
+        <Link to={libraryTab} className="icon-btn" title="Exit reading (Esc)" aria-label="Exit reading">
           <X size={19} />
         </Link>
         <div className="min-w-0 flex-1 text-center">
@@ -439,18 +473,22 @@ function Reader({ item }: { item: Item }) {
               x={note.x}
               y={note.y}
               onClose={closeNote}
-              onAskAI={(noteText) => {
-                // Same as the ✨ button on a Notes View card.
-                setAttachment({
-                  kind: 'note',
-                  text: openNote.quote,
-                  note: noteText,
-                  highlightId: openNote.id,
-                  chapterId: openNote.chapterId,
-                })
-                setAssistantSignal((n) => n + 1)
-                setNote(null)
-              }}
+              onAskQ={
+                qOn
+                  ? (noteText) => {
+                      // Same as the ✨ button on a Notes View card.
+                      setAttachment({
+                        kind: 'note',
+                        text: openNote.quote,
+                        note: noteText,
+                        highlightId: openNote.id,
+                        chapterId: openNote.chapterId,
+                      })
+                      setAssistantSignal((n) => n + 1)
+                      setNote(null)
+                    }
+                  : undefined
+              }
             />
           )}
         </div>
@@ -464,7 +502,31 @@ function Reader({ item }: { item: Item }) {
           title={item.type === 'pdf' ? 'Page' : 'Section'}
         >
           {item.type === 'pdf' ? 'Page ' : 'Section '}
-          {position.label}
+          {position.label} · {Math.round(ratio * 100)}%
+        </div>
+      )}
+
+      {/* "Finished?" at 95%: once per reading session. */}
+      {finishPrompt && status !== 'finished' && (
+        <div
+          role="region"
+          aria-label="Finished?"
+          className="absolute bottom-14 z-30 flex -translate-x-1/2 items-center gap-3 rounded-xl bg-card px-4 py-3 shadow-lg ring-1 ring-rule"
+          style={{ left: panelOpen ? `calc((100% - ${PANEL_WIDTH}px) / 2)` : '50%' }}
+        >
+          <p className="font-serif text-lg font-semibold">Finished?</p>
+          <button
+            className="btn-primary"
+            onClick={() => {
+              setStatus(item.id, 'finished', 'finished_prompt')
+              setFinishPrompt(false)
+            }}
+          >
+            Mark as finished
+          </button>
+          <button className="btn-ghost" onClick={() => setFinishPrompt(false)}>
+            Not yet
+          </button>
         </div>
       )}
 
@@ -497,7 +559,7 @@ function Reader({ item }: { item: Item }) {
           y={toolbar.y}
           onHighlight={() => createHighlight(false)}
           onHighlightNote={() => createHighlight(true)}
-          onAskAI={askAI}
+          onAskQ={qOn ? askQ : undefined}
         />
       )}
 
@@ -532,6 +594,8 @@ function waitFor<T>(get: () => T | null, timeout: number): Promise<T | null> {
   })
 }
 
+/** Progress at which an item counts as completed and the reader asks "Finished?". */
+const FINISH_AT = 0.95
 const NOTE_WIDTH = 352
 const PANEL_WIDTH = 352 // matches w-[22rem] in HighlightsPanel
 

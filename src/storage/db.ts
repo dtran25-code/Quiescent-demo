@@ -111,6 +111,17 @@ export const deleteItem = (id: string) =>
     notify()
   })
 
+/** Undo "Remove from library": put back an item with its file, highlights and Q chat. */
+export const restoreItem = (item: Item, data: { file?: Blob; highlights: Highlight[]; chat: ChatMessage[] }) =>
+  serial(async () => {
+    if (data.file) await set(`file:${item.id}`, data.file)
+    if (data.highlights.length) await set(`highlights:${item.id}`, data.highlights)
+    if (data.chat.length) await set(`chat:${item.id}`, data.chat)
+    const items = await getItems()
+    if (!items.some((i) => i.id === item.id)) await set('items', [item, ...items])
+    notify()
+  })
+
 export async function getFile(id: string): Promise<Blob | undefined> {
   return get<Blob>(`file:${id}`)
 }
@@ -183,6 +194,10 @@ export interface ChatMessage {
   role: 'user' | 'assistant'
   text: string
   createdAt: number
+  /** Q's "couldn't answer" message: not an answer, so it can't be rated. */
+  error?: boolean
+  /** 👍 / 👎 on an answer. */
+  rating?: 'up' | 'down'
 }
 
 export async function getChat(itemId: string): Promise<ChatMessage[]> {
@@ -192,6 +207,17 @@ export async function getChat(itemId: string): Promise<ChatMessage[]> {
 export const appendChat = (itemId: string, message: ChatMessage) =>
   serial(async () => {
     await set(`chat:${itemId}`, [...(await getChat(itemId)), message])
+    notify()
+  })
+
+/** Set (or clear) the 👍 / 👎 on one answer. */
+export const rateChat = (itemId: string, messageId: string, rating: ChatMessage['rating']) =>
+  serial(async () => {
+    const chat = await getChat(itemId)
+    await set(
+      `chat:${itemId}`,
+      chat.map((m) => (m.id === messageId ? { ...m, rating } : m)),
+    )
     notify()
   })
 

@@ -2,14 +2,17 @@
 // wireframes in Prototype docs/reference/extension-wireframes/*.png, rebuilt with
 // v2 tokens. Changes from the wireframes:
 //   - DELETED "Read Later is full (10 of 10)" (queue cap dropped in v2)
-//   - ADOPTED "Saved to Read Later": after a save, one primary "Read now";
+//   - ADOPTED "Saved to Read later": after a save, one primary "Read now";
 //     closing the popup without it files the item to Read later.
 
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { AlertCircle, BookmarkCheck, CheckCircle2, FileUp, FileX, Globe, Loader2, PanelTop, WifiOff, X } from 'lucide-react'
 import { LogoMark } from '../components/Logo'
 import { Badge, DevNote } from '../dev/DevNote'
 import { CheckEmail, LinkExpired, SignInOptions, TooManyRequests } from '../auth/SignInParts'
+import { SteleIcon } from '../icons/SteleIcon'
+import { setItemFolders } from '../proto/actions'
+import { useProto } from '../proto/store'
 
 export type PopupState =
   | { s: 'signed_out'; reason: 'first_save' | 'session_expired' | 'pending_expired'; email?: string }
@@ -175,12 +178,15 @@ function Body({ state, title, source, h }: { state: PopupState; title: string; s
     case 'saved':
       return (
         <>
-          <Heading icon={<CheckCircle2 size={20} className="text-ok" />}>{state.partial ? "Saved what's visible" : 'Saved to Read Later'}</Heading>
+          <Heading icon={<CheckCircle2 size={20} className="text-ok" />}>{state.partial ? "Saved what's visible" : 'Saved to Read later'}</Heading>
           <ItemLine title={title} source={source} />
           <button className="btn-primary mt-4 w-full py-2.5" onClick={() => h.onReadNow('popup')}>
             Read now
           </button>
+          <FolderPicker itemId={state.itemId} />
           <Note>
+            Optional "Add to a folder": existing folders only, several or none, hidden when the reader has no folders. The
+            save is already done; each tick applies at once. No "create folder" here (folders are made in the library).{' '}
             <Badge kind="proposed" /> ADOPTED in v2: one decision instead of two ("Read now" / "Later"). Closing the popup
             without clicking files the item to Read later.
             {state.partial && ' Under 300 words (paywall preview): still a success, so calm green, not yellow.'}
@@ -253,6 +259,46 @@ function Body({ state, title, source, h }: { state: PopupState; title: string; s
         </>
       )
   }
+}
+
+/**
+ * Optional "Add to a folder" after a save: the reader's existing folders, several
+ * or none. Hidden with no folders; no "create folder" in the popup. The item is
+ * already saved, so each tick applies straight away.
+ */
+function FolderPicker({ itemId }: { itemId: string }) {
+  const folders = useProto((s) => s.folders)
+  // /screens opens Saved with a demo item that isn't in the library: ticks stay local there.
+  const live = useProto((s) => !!s.meta[itemId])
+  const [checked, setChecked] = useState(() => new Set(folders.filter((f) => f.itemIds.includes(itemId)).map((f) => f.id)))
+  if (folders.length === 0) return null
+
+  function toggle(id: string) {
+    const next = new Set(checked)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    setChecked(next)
+    if (live) setItemFolders(itemId, [...next], 'popup')
+  }
+
+  return (
+    <div className="mt-4">
+      <p className="mb-1.5 text-sm font-medium">
+        Add to a folder <span className="text-ink-faint">(optional)</span>
+      </p>
+      <ul className="max-h-36 overflow-y-auto rounded-lg border border-rule py-1" aria-label="Folders">
+        {folders.map((f) => (
+          <li key={f.id}>
+            <label className="flex cursor-pointer items-center gap-3 px-3 py-1.5 hover:bg-paper-deep">
+              <input type="checkbox" checked={checked.has(f.id)} onChange={() => toggle(f.id)} className="h-4 w-4 accent-accent" />
+              <SteleIcon size={24} state={f.itemIds.length ? 'default' : 'empty'} />
+              <span className="flex-1 truncate text-sm">{f.name}</span>
+            </label>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
 }
 
 function Heading({ icon, children }: { icon: ReactNode; children: ReactNode }) {
