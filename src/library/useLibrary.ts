@@ -80,6 +80,17 @@ export function sourceLabel(item: Item) {
   return hostOf(item.sourceUrl) ?? 'Pasted text'
 }
 
+/** Reading time: word count ÷ 230, rounded up, in minutes. null when the word count isn't known (the demo doesn't count PDF words). */
+export function readingMinutes(item: Item, meta: ItemMeta): number | null {
+  const words = item.blocks ? item.blocks.reduce((n, b) => n + b.text.split(/\s+/).filter(Boolean).length, 0) : meta.wordCount
+  return words ? Math.ceil(words / 230) : null
+}
+
+/** An article's opening text, for the Read later preview. */
+export function previewText(item: Item): string | null {
+  return item.blocks?.find((b) => b.kind === 'p')?.text ?? null
+}
+
 export function shortDate(at: number) {
   const sameYear = new Date(at).getFullYear() === new Date().getFullYear()
   return new Date(at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', ...(sameYear ? {} : { year: 'numeric' }) })

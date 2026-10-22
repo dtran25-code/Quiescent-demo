@@ -28,6 +28,7 @@ item 9, Q quick actions, is not confirmed and was skipped).
 | A11 | **Docs brought up to date:** rating is P0 and built (A2); folders are P0, not "pending dev estimate" (conflict 3, open question 3, and the dev-note badges in the library, the create-folder dialog, /screens and the event dictionary; the "custom shelves as Phase 2" dev note is gone); README gives the MVP date, Nov 15, 2026 (the old "Oct 23" was in this changelog). |
 | B12 | **Leaving the reader returns to the item's own tab** (In progress, Read later or Finished), from the ✕ button or Esc, instead of always opening on In progress. |
 | B13 | **"Delete highlight and note?"** confirm when removing a highlight that has a note (Delete / Cancel). A highlight without a note still goes straight away. |
+| B14 | **Read later cards show reading time** ("4 min read": word count ÷ 230, rounded up) and, for articles, the **first two lines** of text in small grey type. PDFs show no reading time: the demo doesn't count the words in PDF text (the real build should). |
 
 ---
 
