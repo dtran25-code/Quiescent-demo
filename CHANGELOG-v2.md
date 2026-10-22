@@ -24,6 +24,7 @@ item 9, Q quick actions, is not confirmed and was skipped).
 | A6 | **Optional folder picker in the popup:** under Read now on the Saved screen (and "Saved what's visible"), "Add to a folder (optional)" lists the reader's existing folders as a checklist, several or none. Hidden when there are no folders; no "create folder" in the popup. The save is already done, so each tick applies at once (`folder_items_changed` with `via = popup`). `/screens` has a "Saved, with the optional folder picker" link. |
 | A7 | **Sort and filter in the library** (team meeting). Sort: Newest first (default) · Oldest first · Title A to Z; "newest" means **date saved**, everywhere, which replaces the old fixed order (In progress by last opened, Finished by last finished). Filter: type (Article, PDF) and source (site, or "Uploaded PDF"). They apply inside the current status sub-view or folder, live in the URL (`?sort=&type=&site=`) so they survive switching sub-views, and the sub-view counts follow the filter. No matches: "No items match these filters." with Clear filters. Proposed events `library_sorted` and `library_filtered`. Manual reordering stays out (moved to P1). |
 | A8 | **"Read now" opens the reader full screen** from the popup, "Already in your library" and the Chrome notification, same as the reader's full screen button (`fullscreen_entered` with `from = extension`). If the browser refuses, the reader opens in the window. |
+| A10 | **Sentence case:** "Saved to Read later" (popup), "By status" / "By folder" (library view tabs, the folder breadcrumb, screen-reader labels), and the same names on /screens, in the event dictionary and in this changelog. |
 
 ---
 
@@ -54,7 +55,7 @@ item 9, Q quick actions, is not confirmed and was skipped).
 | Area | What |
 |---|---|
 | Shell (A1) | Left sidebar: logo → Library → Most recent read → (sync status) → Account at the bottom. Collapsible to icons; active page highlighted; replaces all top-nav links. Hidden in browser full screen. |
-| Library (A2) | Notion-style view tabs **By Status** / **By Folder**, **+ Create new folder**, **Upload**. **By Status has three sub-views — In progress · Read later · Finished — shown one at a time** (segmented control with counts, ←/→ keys, `?status=` in the URL; DEFAULT opens on In progress). Cards with title, source domain, type, date saved, progress % (In progress only), ⋯ menu (Change status, Add to folder, Remove from library). |
+| Library (A2) | Notion-style view tabs **By status** / **By folder**, **+ Create new folder**, **Upload**. **By status has three sub-views — In progress · Read later · Finished — shown one at a time** (segmented control with counts, ←/→ keys, `?status=` in the URL; DEFAULT opens on In progress). Cards with title, source domain, type, date saved, progress % (In progress only), ⋯ menu (Change status, Add to folder, Remove from library). |
 | Folders (A2) | Create (name ≤ 40, unique, + searchable item checklist), grid of steles, folder detail (breadcrumb, status badges, Rename, Add items, Delete with "Items stay in your library"), card "Add to folder" multi-select + "New folder…". |
 | Upload (A2) | PDF only, ≤ 25 MB: picker, uploading (progress), success → Read later (+ Read now), errors for wrong type / too large / unreadable. |
 | Stele icon (A3) | `src/icons/SteleIcon.tsx`, original flat SVG in cool stone tones matched to the sage palette: arched slab with carved border and inscription lines on a hex-shelled tortoise, head forward and raised, feet tucked. 96 px and 24 px (24 drops inscription and shell detail). States: default, hover (lift), selected, empty (blank slab). |
@@ -77,7 +78,7 @@ All brief DEFAULTs were **kept as written**:
 | DEFAULT | Where |
 |---|---|
 | Sidebar starts collapsed to icons inside the reader | `src/shell/AppShell.tsx` |
-| By Status opens on the In progress sub-view (my default; the brief doesn't say which) | `src/library/LibraryPage.tsx` |
+| By status opens on the In progress sub-view (my default; the brief doesn't say which) | `src/library/LibraryPage.tsx` |
 | Order: newest first by date saved in every status sub-view and folder; the reader can switch to oldest first or title A to Z (spec alignment, A7; replaced "In progress by last opened · Read later by last saved · Finished by last finished") | `src/library/useLibrary.ts` |
 | New saves → Read later (In progress if saved with "Read now"); opening a Read later item → In progress; Finished set by hand | `src/proto/actions.ts` |
 | An item can be in several folders or none; folders independent of status; removing from a folder never deletes the item | `src/proto/actions.ts` |
@@ -97,8 +98,8 @@ Decisions I made where the brief was silent (please confirm):
 - Popup **Waiting for sign-in** (reopening the popup during the 10-minute hold) and **Pending save expired** — both
   from the wireframes' proposals.
 - Popup **Too many requests** (in the Accounts spec, missing from the popup table).
-- Popup **Saved to Read Later** replaces "Saved" + Read now/Later (adopted proposal).
-- Library: **Create folder / Rename / Add items / Add to folder / Delete folder** dialogs, folder detail, empty folder, By Folder grid.
+- Popup **Saved to Read later** replaces "Saved" + Read now/Later (adopted proposal).
+- Library: **Create folder / Rename / Add items / Add to folder / Delete folder** dialogs, folder detail, empty folder, By folder grid.
 - Upload: **wrong type** and **too large** use the v2 limits; **unreadable PDF** state.
 - Reader: **Mark as finished** control in the header, plus the PRD's "Finished?" prompt at 95% (added in spec alignment, A1).
 
@@ -129,7 +130,7 @@ is dropped and flagged red in the Event log, so article, highlight, note and Q t
 1. **List names:** PRD "Reading" → brief "In progress". Used "In progress" everywhere.
 2. **Read Later cap of 10:** PRD Save section has it; the PRD Library section says no limit; brief drops it. Dropped.
 3. **Folders:** PRD calls custom shelves Phase 2; brief makes them P0. Tagged "P0 pending dev estimate" in dev notes.
-4. **Saved popup:** PRD "Read now" + "Later"; brief adopts "Saved to Read Later" with one Read now.
+4. **Saved popup:** PRD "Read now" + "Later"; brief adopts "Saved to Read later" with one Read now.
 5. **Upload:** PRD PDF + EPUB up to 100 MB / 1,000 pages; brief DEFAULT PDF only, 25 MB.
 6. **Library sort/filter:** PRD Library goals mention them; brief removes them. Later reversed by the team meeting: sort and filter added in spec alignment (A7).
 

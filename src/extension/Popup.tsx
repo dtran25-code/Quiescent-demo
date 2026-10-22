@@ -2,7 +2,7 @@
 // wireframes in Prototype docs/reference/extension-wireframes/*.png, rebuilt with
 // v2 tokens. Changes from the wireframes:
 //   - DELETED "Read Later is full (10 of 10)" (queue cap dropped in v2)
-//   - ADOPTED "Saved to Read Later": after a save, one primary "Read now";
+//   - ADOPTED "Saved to Read later": after a save, one primary "Read now";
 //     closing the popup without it files the item to Read later.
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
@@ -178,7 +178,7 @@ function Body({ state, title, source, h }: { state: PopupState; title: string; s
     case 'saved':
       return (
         <>
-          <Heading icon={<CheckCircle2 size={20} className="text-ok" />}>{state.partial ? "Saved what's visible" : 'Saved to Read Later'}</Heading>
+          <Heading icon={<CheckCircle2 size={20} className="text-ok" />}>{state.partial ? "Saved what's visible" : 'Saved to Read later'}</Heading>
           <ItemLine title={title} source={source} />
           <button className="btn-primary mt-4 w-full py-2.5" onClick={() => h.onReadNow('popup')}>
             Read now

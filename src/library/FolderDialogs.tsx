@@ -119,7 +119,7 @@ export function CreateFolderDialog({ entries, onClose, onCreated }: { entries: E
           <ItemChecklist entries={entries} checked={checked} onToggle={toggle} />
         </div>
         <DevNote>
-          Name: required, ≤ 40 characters, unique (case-insensitive). On create → switch to By Folder and highlight the new
+          Name: required, ≤ 40 characters, unique (case-insensitive). On create → switch to By folder and highlight the new
           folder. Items can be in several folders. <Badge kind="P0 pending dev estimate" />
         </DevNote>
         <div className="flex justify-end gap-2">

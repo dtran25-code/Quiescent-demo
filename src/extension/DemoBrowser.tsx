@@ -114,7 +114,7 @@ export default function DemoBrowser() {
     setPopup(state)
   }
 
-  // Closing after "Saved to Read Later" without Read now files it to Read later.
+  // Closing after "Saved to Read later" without Read now files it to Read later.
   const closePopup = useCallback(() => {
     setPopup((p) => {
       if (p?.s === 'saved') track('save_popup_dismissed', { item_id: p.itemId }, 'extension')

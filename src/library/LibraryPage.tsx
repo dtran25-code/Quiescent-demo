@@ -1,7 +1,7 @@
 // Library v2: two Notion-style views on one page.
 //
-//   /library                     By Status (In progress · Read later · Finished)
-//   /library?view=folders        By Folder (grid of steles) — only once ≥ 1 folder exists
+//   /library                     By status (In progress · Read later · Finished)
+//   /library?view=folders        By folder (grid of steles) — only once ≥ 1 folder exists
 //   /library/folders/:folderId   Folder detail
 //
 // Sort and filter (in each status sub-view and folder) live in the URL:
@@ -66,7 +66,7 @@ export function LibraryPage() {
   const folder = folderId ? folders.find((f) => f.id === folderId) : undefined
   const view: 'status' | 'folders' = folderId || (params.get('view') === 'folders' && folders.length > 0) ? 'folders' : 'status'
 
-  // By Folder disappears with the last folder: fall back to By Status.
+  // By folder disappears with the last folder: fall back to By status.
   useEffect(() => {
     if (params.get('view') === 'folders' && folders.length === 0) navigate('/library', { replace: true })
     if (folderId && !folder) navigate(folders.length ? '/library?view=folders' : '/library', { replace: true })
@@ -100,11 +100,11 @@ export function LibraryPage() {
         <h1 className="pb-3 font-serif font-semibold text-3xl">Library</h1>
         <div role="tablist" aria-label="Library views" className="flex gap-1">
           <ViewTab active={view === 'status'} onClick={() => switchView('status')}>
-            By Status
+            By status
           </ViewTab>
           {folders.length > 0 && (
             <ViewTab active={view === 'folders'} onClick={() => switchView('folders')}>
-              By Folder
+              By folder
             </ViewTab>
           )}
         </div>
@@ -119,7 +119,7 @@ export function LibraryPage() {
       </header>
 
       <DevNote className="mt-4">
-        Two views, one page (Notion-style tabs). <b>By Folder</b> appears once ≥ 1 folder exists and disappears when the last
+        Two views, one page (Notion-style tabs). <b>By folder</b> appears once ≥ 1 folder exists and disappears when the last
         folder is deleted. Folders <Badge kind="P0 pending dev estimate" /> — the PRD has
         "custom shelves" as Phase 2. <Badge kind="proposed — not in PRD" />
       </DevNote>
@@ -132,7 +132,7 @@ export function LibraryPage() {
         <>
           {!extensionConnected && <InstallBanner />}
           {view === 'status' && (
-            <div role="tabpanel" aria-label="By Status">
+            <div role="tabpanel" aria-label="By status">
               <StatusView entries={entries} actions={actions} />
             </div>
           )}
@@ -200,7 +200,7 @@ function ViewTab({ active, onClick, children }: { active: boolean; onClick: () =
   )
 }
 
-// --- By Status ---------------------------------------------------------------------
+// --- By status ---------------------------------------------------------------------
 
 const EMPTY_LINE: Record<Status, string> = {
   in_progress: 'Nothing in progress. Open something from Read later to start.',
@@ -209,7 +209,7 @@ const EMPTY_LINE: Record<Status, string> = {
 }
 
 /**
- * By Status has three sub-views — In progress · Read later · Finished — shown one
+ * By status has three sub-views — In progress · Read later · Finished — shown one
  * at a time (?status=…). DEFAULT: opens on In progress.
  */
 function StatusView({ entries, actions }: { entries: Entry[]; actions: CardActions }) {
@@ -292,7 +292,7 @@ function StatusView({ entries, actions }: { entries: Entry[]; actions: CardActio
       </div>
 
       <DevNote className="mt-8">
-        By Status has three sub-views, one shown at a time (<code>?status=in_progress|read_later|finished</code>); DEFAULT opens
+        By status has three sub-views, one shown at a time (<code>?status=in_progress|read_later|finished</code>); DEFAULT opens
         on In progress. ←/→ move between them. Sort (newest first by date saved, the default · oldest first · title A to Z)
         and filter (type, source site) apply inside the current sub-view; counts follow the filter. DEFAULT status rules:
         new saves → Read later (In progress if saved with "Read now"); opening a Read later item → In progress; Finished is set by hand (reader button or ⋯ menu). Opening a
@@ -302,7 +302,7 @@ function StatusView({ entries, actions }: { entries: Entry[]; actions: CardActio
   )
 }
 
-// --- By Folder ------------------------------------------------------------------------
+// --- By folder ------------------------------------------------------------------------
 
 function FolderGrid({ folders, highlightId, onSeen }: { folders: Folder[]; highlightId: string | null; onSeen: () => void }) {
   const fresh = useRef<HTMLAnchorElement>(null)
@@ -316,7 +316,7 @@ function FolderGrid({ folders, highlightId, onSeen }: { folders: Folder[]; highl
   }, [highlightId])
 
   return (
-    <div className="mt-8" role="tabpanel" aria-label="By Folder">
+    <div className="mt-8" role="tabpanel" aria-label="By folder">
       <ul className="grid grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))] gap-x-4 gap-y-6">
         {folders.map((f) => {
           const isNew = f.id === highlightId
@@ -363,7 +363,7 @@ function FolderDetail({ folder, entries, actions }: { folder: Folder; entries: E
     <div className="mt-6" role="tabpanel" aria-label={`Folder ${folder.name}`}>
       <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-1.5 text-sm text-ink-soft">
         <Link to="/library?view=folders" className="rounded hover:text-ink hover:underline">
-          By Folder
+          By folder
         </Link>
         <ChevronRight size={14} aria-hidden="true" />
         <span className="flex items-center gap-1.5 font-medium text-ink" aria-current="page">
