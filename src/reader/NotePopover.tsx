@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Check, Trash2, X } from 'lucide-react'
 import { QTurtle } from '../icons/QTurtle'
+import { ConfirmDialog } from '../components/Modal'
 import { updateHighlights } from '../storage/db'
 import type { Highlight } from '../types'
 import { track } from '../events/track'
@@ -28,6 +30,7 @@ export function NotePopover({
   const [text, setText] = useState(highlight.note)
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
   const box = useRef<HTMLDivElement>(null)
+  const [confirming, setConfirming] = useState(false)
   const pending = useRef<string | null>(null)
   const timer = useRef<number | undefined>(undefined)
 
@@ -66,23 +69,27 @@ export function NotePopover({
     [],
   )
 
-  // Close when clicking anywhere else.
+  // Close when clicking anywhere else (but not while the delete confirm is open).
   useEffect(() => {
+    if (confirming) return
     const onDown = (e: MouseEvent) => {
       if (box.current && !box.current.contains(e.target as Node)) onClose()
     }
     document.addEventListener('mousedown', onDown)
     return () => document.removeEventListener('mousedown', onDown)
-  }, [onClose])
+  }, [onClose, confirming])
 
   function remove() {
     window.clearTimeout(timer.current)
     pending.current = null
     removed.current = true
     updateHighlights(highlight.itemId, (list) => list.filter((h) => h.id !== highlight.id))
-    track('highlight_deleted', { item_id: highlight.itemId, highlight_id: highlight.id, had_note: !!highlight.note.trim() })
+    track('highlight_deleted', { item_id: highlight.itemId, highlight_id: highlight.id, had_note: !!text.trim() })
     onClose()
   }
+
+  // A highlight with a note asks first; one without a note goes straight away.
+  const askRemove = () => (text.trim() ? setConfirming(true) : remove())
 
   return (
     <div
@@ -105,7 +112,7 @@ export function NotePopover({
         className="block w-full resize-none bg-transparent px-4 py-3 text-sm leading-relaxed text-ink outline-none placeholder:text-ink-faint"
       />
       <div className="flex items-center justify-between border-t border-rule px-2 py-1.5">
-        <button onClick={remove} className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-ink-soft hover:bg-accent-soft hover:text-accent">
+        <button onClick={askRemove} className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-ink-soft hover:bg-accent-soft hover:text-accent">
           <Trash2 size={13} /> Remove highlight
         </button>
         <div className="flex items-center gap-2">
@@ -128,6 +135,18 @@ export function NotePopover({
           </button>
         </div>
       </div>
+      {/* On the page body, so the highlights panel and Q can't sit on top of it. */}
+      {confirming &&
+        createPortal(
+          <ConfirmDialog
+            title="Delete highlight and note?"
+            message="The highlighted passage and your note on it will be removed."
+            confirmLabel="Delete"
+            onCancel={() => setConfirming(false)}
+            onConfirm={remove}
+          />,
+          document.body,
+        )}
     </div>
   )
 }
