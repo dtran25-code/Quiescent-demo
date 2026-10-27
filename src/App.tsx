@@ -9,6 +9,7 @@ import { DevMenu } from './dev/DevMenu'
 import { resetDemo, seedSamples } from './samples/seed'
 import { useSession } from './storage/db'
 import { protoStore, type UserState } from './proto/store'
+import { TESTER_BUILD } from './proto/build'
 
 // Developer pages load on demand.
 const ScreensPage = lazy(() => import('./dev/ScreensPage'))
@@ -38,17 +39,21 @@ export default function App() {
               <Route path="/account" element={<AccountPage />} />
             </Route>
           </Route>
-          <Route path="/screens" element={<ScreensPage />} />
-          <Route path="/events" element={<EventsPage />} />
-          <Route path="/demo-browser" element={<DemoBrowser />} />
-          <Route path="/dev/go" element={<DevGo />} />
+          {!TESTER_BUILD && (
+            <>
+              <Route path="/screens" element={<ScreensPage />} />
+              <Route path="/events" element={<EventsPage />} />
+              <Route path="/demo-browser" element={<DemoBrowser />} />
+              <Route path="/dev/go" element={<DevGo />} />
+            </>
+          )}
           {/* v1 addresses: the Notes page is gone; old links land on the reader. */}
           <Route path="/notes/:id" element={<NotesRedirect />} />
           <Route path="/login" element={<Navigate to="/signin" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
-      <DevMenu />
+      {!TESTER_BUILD && <DevMenu />}
     </BrowserRouter>
   )
 }

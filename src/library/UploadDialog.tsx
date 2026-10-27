@@ -1,16 +1,17 @@
-// Upload (MVP). DEFAULT: PDF only, up to 25 MB.
+// Upload (MVP). Two tabs: PDF (DEFAULT: PDF only, up to 25 MB) and Link (see LinkForm.tsx).
 // States: picker → uploading → success (item lands in Read later) | error (wrong type / too large / unreadable).
 // /screens can open any state directly with ?upload=picker|uploading|success|wrong-type|too-large.
 
 import { useEffect, useRef, useState, type DragEvent } from 'react'
 import { useNavigate } from 'react-router'
-import { AlertCircle, CheckCircle2, FileUp, Loader2 } from 'lucide-react'
+import { AlertCircle, CheckCircle2, FileUp, Link2, Loader2 } from 'lucide-react'
 import { Modal } from '../components/Modal'
 import { Badge, DevNote } from '../dev/DevNote'
 import { addItem, newId } from '../storage/db'
 import { readPdf } from '../ingest/pdf'
 import { registerSave, setStatus } from '../proto/actions'
 import { track } from '../events/track'
+import { LinkForm } from './LinkForm'
 import type { Item } from '../types'
 
 export const MAX_UPLOAD_MB = 25
@@ -32,6 +33,7 @@ export const DEMO_UPLOAD_STATES: Record<string, UploadState> = {
 
 export function UploadDialog({ onClose, initial }: { onClose: () => void; initial?: UploadState }) {
   const [state, setState] = useState<UploadState>(initial ?? { kind: 'picker' })
+  const [tab, setTab] = useState<'pdf' | 'link'>('pdf')
   const input = useRef<HTMLInputElement>(null)
   const [dragging, setDragging] = useState(false)
   const navigate = useNavigate()
@@ -96,8 +98,16 @@ export function UploadDialog({ onClose, initial }: { onClose: () => void; initia
   }
 
   return (
-    <Modal title="Upload a PDF" onClose={onClose} width="max-w-lg">
-      {state.kind === 'picker' || state.kind === 'error' ? (
+    <Modal title="Add to your library" onClose={onClose} width="max-w-lg">
+      {(state.kind === 'picker' || state.kind === 'error') && (
+        <div className="mb-5 flex gap-1 rounded-lg bg-paper-deep p-1 text-sm" role="tablist" aria-label="Add from">
+          <TabButton active={tab === 'pdf'} onClick={() => setTab('pdf')} icon={<FileUp size={15} />} label="PDF" />
+          <TabButton active={tab === 'link'} onClick={() => setTab('link')} icon={<Link2 size={15} />} label="Link" />
+        </div>
+      )}
+      {(state.kind === 'picker' || state.kind === 'error') && tab === 'link' ? (
+        <LinkForm onSaved={(item) => setState({ kind: 'success', item })} />
+      ) : state.kind === 'picker' || state.kind === 'error' ? (
         <>
           <button
             type="button"
@@ -149,7 +159,7 @@ export function UploadDialog({ onClose, initial }: { onClose: () => void; initia
             <div className="min-w-0">
               <p className="font-medium">Added to Read later</p>
               <p className="mt-1 line-clamp-2 font-serif font-semibold text-ink">{state.item.title}</p>
-              {state.item.pageCount ? <p className="text-xs text-ink-faint">PDF · {state.item.pageCount} pages</p> : null}
+              {state.item.pageCount ? <p className="text-xs text-ink-faint">PDF · {state.item.pageCount} pages</p> : <p className="text-xs text-ink-faint">Article</p>}
             </div>
           </div>
           <div className="mt-6 flex justify-end gap-2">
@@ -176,6 +186,22 @@ export function UploadDialog({ onClose, initial }: { onClose: () => void; initia
         upload starts. Success lands in Read later; "Read now" moves it to In progress. <Badge kind="needs decision" />
       </DevNote>
     </Modal>
+  )
+}
+
+function TabButton(props: { active: boolean; onClick: () => void; icon: React.ReactNode; label: string }) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={props.active}
+      onClick={props.onClick}
+      className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-1.5 font-medium transition-colors ${
+        props.active ? 'bg-paper text-ink shadow-sm' : 'text-ink-soft hover:text-ink'
+      }`}
+    >
+      {props.icon} {props.label}
+    </button>
   )
 }
 

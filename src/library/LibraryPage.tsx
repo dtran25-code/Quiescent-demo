@@ -18,6 +18,7 @@ import { ChevronRight, FolderPlus, Pencil, Plus, Puzzle, RotateCcw, Trash2, Uplo
 import { ConfirmDialog } from '../components/Modal'
 import { SteleIcon } from '../icons/SteleIcon'
 import { DevNote } from '../dev/DevNote'
+import { TESTER_BUILD } from '../proto/build'
 import { STATUSES, STATUS_LABEL, patchMeta, protoStore, useProto, type Folder, type Status } from '../proto/store'
 import { deleteFolder, removeFromFolder, removeItem, undoRemove } from '../proto/actions'
 import { track } from '../events/track'
@@ -131,7 +132,7 @@ export function LibraryPage() {
         <EmptyLibrary onUpload={() => setUploading({ kind: 'picker' })} />
       ) : (
         <>
-          {!extensionConnected && <InstallBanner />}
+          {!extensionConnected && !TESTER_BUILD && <InstallBanner />}
           {view === 'status' && (
             <div role="tabpanel" aria-label="By status">
               <StatusView entries={entries} actions={actions} />
@@ -599,8 +600,8 @@ function EmptyLibrary({ onUpload }: { onUpload: () => void }) {
       <SteleIcon size={96} state="empty" className="mx-auto" />
       <h2 className="mt-4 font-serif font-semibold text-2xl">Your library is empty</h2>
       <p className="mt-2 text-ink-soft">Save your first reading. Everything you add lands here, in Read later.</p>
-      <div className="mt-8 grid gap-4 text-left sm:grid-cols-2">
-        <div className="rounded-xl border border-rule bg-card p-5">
+      <div className={`mt-8 grid gap-4 text-left ${TESTER_BUILD ? 'mx-auto max-w-sm' : 'sm:grid-cols-2'}`}>
+        {!TESTER_BUILD && <div className="rounded-xl border border-rule bg-card p-5">
           <Puzzle size={22} className="text-accent" />
           <h3 className="mt-3 font-medium">Save articles from Chrome</h3>
           <p className="mt-1 text-sm text-ink-soft">Add Quiescent to Chrome to save articles in one click, paywalled ones included.</p>
@@ -611,13 +612,13 @@ function EmptyLibrary({ onUpload }: { onUpload: () => void }) {
           >
             Add to Chrome
           </Link>
-        </div>
+        </div>}
         <div className="rounded-xl border border-rule bg-card p-5">
           <Upload size={22} className="text-accent" />
-          <h3 className="mt-3 font-medium">Upload a PDF</h3>
-          <p className="mt-1 text-sm text-ink-soft">Course readers, papers, books. PDF only for now, up to 25 MB.</p>
+          <h3 className="mt-3 font-medium">Upload a PDF or add a link</h3>
+          <p className="mt-1 text-sm text-ink-soft">Course readers, papers, books (PDF up to 25 MB), or a link to an article.</p>
           <button className="btn-secondary mt-4" onClick={onUpload}>
-            Upload a PDF
+            Upload
           </button>
         </div>
       </div>
