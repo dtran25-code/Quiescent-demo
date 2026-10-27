@@ -15,7 +15,7 @@ export const STATUS_LABEL: Record<Status, string> = {
   finished: 'Finished',
 }
 
-export type SaveVia = 'extension' | 'upload' | 'seed'
+export type SaveVia = 'extension' | 'upload' | 'link' | 'seed'
 
 /** Per-item library facts. Keyed by item id. */
 export interface ItemMeta {

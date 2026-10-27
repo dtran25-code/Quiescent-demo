@@ -51,8 +51,10 @@ item 9, Q quick actions, is not confirmed and was skipped).
 - **Library sort and filter.** v1 had none in the UI; v2 first added none. Spec alignment (A7) adds them back as decided in the team meeting.
 - **Landing page** ("Upload your reading" before sign-in). `/` now goes to Library when signed in, `/signin` otherwise,
   matching the PRD's website-first flow.
-- **Article-link import tab** in the add dialog (link import is P1 in the PRD). The Netlify function
-  (`netlify/functions/extract.mts`) is still in the repo but nothing calls it.
+- ~~**Article-link import tab** in the add dialog (link import is P1 in the PRD).~~ Restored for user testing: Upload
+  dialog → **Link** tab fetches the article through `/api/extract` (`netlify/functions/extract.mts`), falls back to
+  pasting the text when a site blocks it, and spots links already in the library. Proposed events `link_added`,
+  `link_add_failed`, `link_duplicate`.
 - **Apple and Microsoft sign-in** (P2 in the PRD). Google + email link only.
 - Extension popup **"Read Later is full (10 of 10)"** state (queue cap dropped).
 

@@ -615,10 +615,10 @@ function EmptyLibrary({ onUpload }: { onUpload: () => void }) {
         </div>}
         <div className="rounded-xl border border-rule bg-card p-5">
           <Upload size={22} className="text-accent" />
-          <h3 className="mt-3 font-medium">Upload a PDF</h3>
-          <p className="mt-1 text-sm text-ink-soft">Course readers, papers, books. PDF only for now, up to 25 MB.</p>
+          <h3 className="mt-3 font-medium">Upload a PDF or add a link</h3>
+          <p className="mt-1 text-sm text-ink-soft">Course readers, papers, books (PDF up to 25 MB), or a link to an article.</p>
           <button className="btn-secondary mt-4" onClick={onUpload}>
-            Upload a PDF
+            Upload
           </button>
         </div>
       </div>
