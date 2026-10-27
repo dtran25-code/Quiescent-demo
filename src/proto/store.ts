@@ -3,6 +3,7 @@
 // Item content (text, PDF bytes, highlights) stays in IndexedDB (storage/db.ts).
 
 import { persistedStore, useStore } from './persist'
+import { TESTER_BUILD } from './build'
 
 // --- statuses -----------------------------------------------------------------
 
@@ -131,4 +132,4 @@ export const devStore = persistedStore<DevState>('quiescent.v2.dev', () => ({
 }))
 
 export const useDev = <S>(select: (s: DevState) => S) => useStore(devStore, select)
-export const useDevNotes = () => useDev((s) => s.devNotes)
+export const useDevNotes = () => useDev((s) => s.devNotes && !TESTER_BUILD)

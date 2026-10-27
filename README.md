@@ -56,3 +56,10 @@ Open http://localhost:5173 and sign in (simulated: Google signs in instantly).
 
 Netlify builds with `npm run build` and publishes `dist` (see `netlify.toml`). v2 deploys to its own Netlify site from
 the `prototype-v2` branch; the v1 site (readhub-demo.netlify.app) deploys from `main`.
+
+### Tester version
+
+A second Netlify site can serve the same app without the prototype tools (sidebar "Prototype tools", the Dev button and
+Event log, dev notes, `/screens`, `/events`, the simulated Chrome extension and its "Add to Chrome" buttons). Create a new
+Netlify site from this repo and add the environment variable `VITE_TESTER_BUILD` = `true` to it. The existing site is
+unchanged because it doesn't set that variable.

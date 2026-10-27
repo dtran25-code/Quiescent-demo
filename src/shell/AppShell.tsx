@@ -14,6 +14,7 @@ import { devStore, metaOf, mostRecentId, useDev, useProto } from '../proto/store
 import { track } from '../events/track'
 import { Tooltip } from './Tooltip'
 import { DevNote } from '../dev/DevNote'
+import { TESTER_BUILD } from '../proto/build'
 
 export function AppShell() {
   const location = useLocation()
@@ -130,7 +131,7 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
       <div className="flex-1" />
 
       {/* Prototype-only entry points: not part of the product's navigation. */}
-      <div className={`mb-3 border-t border-dashed border-rule pt-3 ${collapsed ? '' : 'px-1'}`}>
+      {!TESTER_BUILD && <div className={`mb-3 border-t border-dashed border-rule pt-3 ${collapsed ? '' : 'px-1'}`}>
         {!collapsed && <p className="eyebrow mb-1 px-2">Prototype tools</p>}
         <ul className="space-y-0.5">
           <ToolLink collapsed={collapsed} to="/demo-browser" icon={<Puzzle size={17} />} label="Chrome extension (demo)" itemClass={itemClass} />
@@ -150,7 +151,7 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
           <ToolLink collapsed={collapsed} to="/events" icon={<Table2 size={17} />} label="Event dictionary" itemClass={itemClass} />
           <ToolLink collapsed={collapsed} to="/screens" icon={<LayoutGrid size={17} />} label="All screens & states" itemClass={itemClass} />
         </ul>
-      </div>
+      </div>}
 
       <div
         role="status"

@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router'
 import { AlertCircle, Check, Loader2 } from 'lucide-react'
 import { Badge, DevNote, type BadgeKind } from '../dev/DevNote'
 import { protoStore, useDev, useProto } from '../proto/store'
+import { TESTER_BUILD } from '../proto/build'
 import { useItems } from '../storage/db'
 import { signOutHere } from '../auth/auth'
 import { track } from '../events/track'
@@ -48,6 +49,8 @@ export function AccountPage() {
           v={
             extensionConnected ? (
               'Connected on this computer'
+            ) : TESTER_BUILD ? (
+              'Not installed'
             ) : (
               <span className="flex items-center gap-3">
                 Not installed
