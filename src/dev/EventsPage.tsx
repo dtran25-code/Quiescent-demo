@@ -5,10 +5,10 @@ import { useMemo } from 'react'
 import { Link } from 'react-router'
 import { ArrowLeft } from 'lucide-react'
 import { LogoMark } from '../components/Logo'
-import { AREA_LABEL, EVENTS, FUNNEL, type Area, type PropSpec } from '../events/dictionary'
+import { AREA_LABEL, EVENTS, FUNNEL, LANDING_METRICS, type Area, type PropSpec } from '../events/dictionary'
 import { useEventLog } from '../events/track'
 
-const AREAS: Area[] = ['extension', 'account', 'library', 'upload', 'reader', 'q']
+const AREAS: Area[] = ['landing', 'extension', 'account', 'library', 'upload', 'reader', 'q']
 
 export default function EventsPage() {
   const log = useEventLog()
@@ -78,6 +78,19 @@ export default function EventsPage() {
               </li>
             ))}
           </ol>
+          <div className="mt-4 rounded-xl border border-rule bg-card p-5 text-sm">
+            <p>
+              <b>Landing page metrics</b> (signed-out visitors, counted by anonymous_id)
+            </p>
+            <ul className="mt-2 space-y-2">
+              {LANDING_METRICS.map((m) => (
+                <li key={m.metric}>
+                  <b className="text-ink">{m.metric}</b> <span className="text-ink-faint">· target: {m.target}</span>
+                  <p className="text-ink-soft">{m.rule}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
           <div className="mt-4 rounded-xl border border-rule bg-card p-5 text-sm">
             <p>
               <b>North Star: weekly recall</b> (readers coming back to and using what they read) —{' '}

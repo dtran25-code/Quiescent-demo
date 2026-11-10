@@ -7,21 +7,17 @@ import { useNavigate } from 'react-router'
 import { AlertCircle, CheckCircle2, FileUp, Link2, Loader2 } from 'lucide-react'
 import { Modal } from '../components/Modal'
 import { Badge, DevNote } from '../dev/DevNote'
-import { addItem, newId } from '../storage/db'
-import { readPdf } from '../ingest/pdf'
-import { registerSave, setStatus } from '../proto/actions'
+import { setStatus } from '../proto/actions'
+import { MAX_UPLOAD_MB, checkUpload, errorBody, errorTitle, fileType, formatMb, savePdfUpload, type UploadError } from './uploadRules'
 import { track } from '../events/track'
 import { LinkForm } from './LinkForm'
 import type { Item } from '../types'
-
-export const MAX_UPLOAD_MB = 25
-const MAX_BYTES = MAX_UPLOAD_MB * 1024 * 1024
 
 export type UploadState =
   | { kind: 'picker' }
   | { kind: 'uploading'; name: string; bytes: number; pct: number }
   | { kind: 'success'; item: Pick<Item, 'id' | 'title' | 'pageCount'> }
-  | { kind: 'error'; reason: 'wrong_type' | 'too_large' | 'read_error'; name: string; bytes: number }
+  | ({ kind: 'error' } & UploadError)
 
 export const DEMO_UPLOAD_STATES: Record<string, UploadState> = {
   picker: { kind: 'picker' },
@@ -43,11 +39,10 @@ export function UploadDialog({ onClose, initial }: { onClose: () => void; initia
   async function handle(file: File | undefined) {
     if (!file) return
     const type = fileType(file)
-    track('upload_started', { file_type: type, bytes: file.size })
-    if (type !== 'pdf') return fail('wrong_type', file, type)
-    if (file.size > MAX_BYTES) return fail('too_large', file, type)
+    track('upload_started', { file_type: type, bytes: file.size, from: 'library' })
+    const problem = checkUpload(file)
+    if (problem) return fail(problem, file, type)
 
-    const started = performance.now()
     setState({ kind: 'uploading', name: file.name, bytes: file.size, pct: 0 })
     // Simulated transfer progress while the PDF is actually read in the browser.
     let pct = 0
@@ -56,28 +51,7 @@ export function UploadDialog({ onClose, initial }: { onClose: () => void; initia
       if (alive.current) setState((s) => (s.kind === 'uploading' ? { ...s, pct } : s))
     }, 90)
     try {
-      const [pdf] = await Promise.all([readPdf(file, file.name), new Promise((r) => setTimeout(r, 900))])
-      const item: Item = {
-        id: newId(),
-        title: pdf.title,
-        type: 'pdf',
-        fileName: file.name,
-        addedAt: Date.now(),
-        progress: 0,
-        chapters: pdf.chapters,
-        pageCount: pdf.pageCount,
-      }
-      await addItem(item, file)
-      registerSave(item, 'upload')
-      track('upload_completed', {
-        item_id: item.id,
-        file_type: 'pdf',
-        bytes: file.size,
-        pages: pdf.pageCount,
-        text_extractable: true,
-        chapters_detected: pdf.chapters.length,
-        processing_ms: performance.now() - started,
-      })
+      const item = await savePdfUpload(file, 'library')
       if (alive.current) setState({ kind: 'success', item })
     } catch {
       fail('read_error', file, 'pdf')
@@ -87,7 +61,7 @@ export function UploadDialog({ onClose, initial }: { onClose: () => void; initia
   }
 
   function fail(reason: 'wrong_type' | 'too_large' | 'read_error', file: File, type: ReturnType<typeof fileType>) {
-    track('upload_failed', { file_type: type, error_type: reason })
+    track('upload_failed', { file_type: type, error_type: reason, from: 'library' })
     if (alive.current) setState({ kind: 'error', reason, name: file.name, bytes: file.size })
   }
 
@@ -203,26 +177,4 @@ function TabButton(props: { active: boolean; onClick: () => void; icon: React.Re
       {props.icon} {props.label}
     </button>
   )
-}
-
-function fileType(file: File): 'pdf' | 'epub' | 'docx' | 'other' {
-  const name = file.name.toLowerCase()
-  if (file.type === 'application/pdf' || name.endsWith('.pdf')) return 'pdf'
-  if (name.endsWith('.epub')) return 'epub'
-  if (name.endsWith('.docx') || name.endsWith('.doc')) return 'docx'
-  return 'other'
-}
-
-function formatMb(bytes: number) {
-  return `${(bytes / 1024 / 1024).toFixed(1)} MB`
-}
-
-function errorTitle(reason: 'wrong_type' | 'too_large' | 'read_error') {
-  return reason === 'wrong_type' ? 'PDF only for now' : reason === 'too_large' ? 'That file is too large' : "Couldn't read that PDF"
-}
-
-function errorBody(s: Extract<UploadState, { kind: 'error' }>) {
-  if (s.reason === 'wrong_type') return `“${s.name}” isn't a PDF. Choose a .pdf file.`
-  if (s.reason === 'too_large') return `“${s.name}” is ${formatMb(s.bytes)}. The limit is ${MAX_UPLOAD_MB} MB.`
-  return `“${s.name}” may be damaged or password-protected. Nothing was added.`
 }

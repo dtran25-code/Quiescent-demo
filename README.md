@@ -19,12 +19,14 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:5173 and sign in (simulated: Google signs in instantly).
+Open http://localhost:5173. Signed out, you land on the landing page; sign in (simulated: Google signs in instantly)
+and you go to the Library.
 
 ## Where to start
 
 | Page | What |
 |---|---|
+| `/` (signed out) | Landing page: intro, saving and progress, Library, Q, and the upload trial |
 | `/screens` | Links to every screen and state, plus the stele and turtle icon specimen |
 | `/events` | Event dictionary (event, trigger, surface, properties, metric) and the funnel |
 | `/demo-browser` | Fake Chrome window with the Quiescent extension popup; saves land in the Library |
@@ -35,6 +37,7 @@ Open http://localhost:5173 and sign in (simulated: Google signs in instantly).
 | Path | What |
 |---|---|
 | `src/styles/tokens.css` | The only place colors, fonts, spacing and radii are defined |
+| `src/landing/` | Landing page, upload trial, first-upload congrats and tip, web sign-in |
 | `src/shell/` | Sidebar app shell |
 | `src/library/` | Library views, cards, folder dialogs, upload |
 | `src/reader/` | Focused reader, highlights panel (unchanged from v1 apart from events and Mark as finished) |
