@@ -8,6 +8,7 @@
 //   ?sort=newest|oldest|title · ?type=article|pdf · ?site=<source>
 // Query params for /screens:
 //   ?upload=picker|uploading|success|wrong-type|too-large   open Upload in that state
+//   ?welcome=upload                                         landing upload trial: congrats, then the Add to Chrome tip
 //   ?new=<folderId>                                         highlight a just-created folder
 //   ?create=1 · ?addto=<itemId> · ?remove=<itemId>           open Create folder / Add to folder / Remove confirm
 //   (folder detail) ?rename=1 · ?add=1 · ?delete=1           open Rename / Add items / Delete confirm
@@ -25,6 +26,7 @@ import { track } from '../events/track'
 import { ItemCard, type CardActions } from './ItemCard'
 import { AddToFolderDialog, CreateFolderDialog, FolderItemsDialog, RenameFolderDialog } from './FolderDialogs'
 import { DEMO_UPLOAD_STATES, UploadDialog, type UploadState } from './UploadDialog'
+import { FirstUploadWelcome } from '../landing/FirstUploadWelcome'
 import {
   SORTS,
   SORT_LABEL,
@@ -186,6 +188,7 @@ export function LibraryPage() {
         />
       )}
       {undo && <UndoRemove key={undo.item.id} entry={undo} onDone={() => setUndo(null)} />}
+      <FirstUploadWelcome />
     </div>
   )
 }

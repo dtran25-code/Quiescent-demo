@@ -25,7 +25,7 @@ export type PropSpec =
   | { type: 'domain' } // hostname only, never a full URL
 
 export type Surface = 'extension' | 'web'
-export type Area = 'extension' | 'account' | 'library' | 'upload' | 'reader' | 'q'
+export type Area = 'landing' | 'extension' | 'account' | 'library' | 'upload' | 'reader' | 'q'
 
 export interface EventDef {
   name: string
@@ -49,6 +49,58 @@ const contentType = e(['article', 'pdf'])
 const status = e(['in_progress', 'read_later', 'finished'])
 
 export const EVENTS: EventDef[] = [
+  // --- Landing page (signed-out visitors) ------------------------------------------
+  {
+    name: 'landing_viewed',
+    area: 'landing',
+    source: 'client',
+    surface: 'web',
+    trigger: 'A signed-out visitor opens the landing page (/)',
+    props: {},
+    feeds: 'Landing sign-up rate, CTA click rate and scroll reach (denominator, by anonymous_id)',
+    origin: 'prd',
+    note: 'Landing PRD §7. A signed-in visitor goes straight to the Library and fires nothing here.',
+  },
+  {
+    name: 'landing_section_reached',
+    area: 'landing',
+    source: 'client',
+    surface: 'web',
+    trigger: 'A landing section is at least 40% on screen (once per section per page view)',
+    props: { section: e(['intro', 'save', 'library', 'q']) },
+    feeds: 'Scroll reach (learning only)',
+    origin: 'prd',
+  },
+  {
+    name: 'landing_cta_clicked',
+    area: 'landing',
+    source: 'client',
+    surface: 'web',
+    trigger: '"Add to Chrome", "Upload a PDF or EPUB" or "Sign in" clicked on the landing page',
+    props: { cta: e(['add_to_chrome', 'upload', 'sign_in']), placement: e(['nav', 'hero', 'save_section', 'footer']) },
+    feeds: 'CTA click rate per button (each visitor counted once per cta); upload trial completion (denominator, cta = upload)',
+    origin: 'prd',
+  },
+  {
+    name: 'first_upload_celebrated',
+    area: 'landing',
+    source: 'client',
+    surface: 'web',
+    trigger: '"First successful upload! Congrats!" shown in the Library after the landing trial',
+    props: { item_id: id },
+    feeds: 'Upload trial completion (numerator check)',
+    origin: 'proposed',
+  },
+  {
+    name: 'install_tip_answered',
+    area: 'landing',
+    source: 'client',
+    surface: 'web',
+    trigger: 'One-time tip after the first upload: "Add to Chrome" or "Not now"',
+    props: { choice: e(['add_to_chrome', 'not_now']) },
+    feeds: 'Install conversion after the upload trial',
+    origin: 'proposed',
+  },
   // --- Extension & saving ----------------------------------------------------------
   {
     name: 'extension_installed',
@@ -161,7 +213,7 @@ export const EVENTS: EventDef[] = [
     source: 'client',
     surface: 'both',
     trigger: 'A sign-in screen appears (web or popup)',
-    props: { trigger: e(['first_save', 'website', 'session_expired']) },
+    props: { trigger: e(['first_save', 'website', 'session_expired', 'landing_upload']) },
     feeds: 'Sign-in completion rate (denominator)',
     origin: 'prd',
   },
@@ -241,8 +293,8 @@ export const EVENTS: EventDef[] = [
     area: 'account',
     source: 'client',
     surface: 'web',
-    trigger: '"Add to Chrome" clicked (empty library, Account page)',
-    props: { from: e(['empty_library', 'banner', 'account']) },
+    trigger: '"Add to Chrome" clicked (landing page, first-upload tip, empty library, Account page)',
+    props: { from: e(['landing', 'first_upload_tip', 'empty_library', 'banner', 'account']) },
     feeds: 'Install conversion from the website',
     origin: 'proposed',
   },
@@ -406,8 +458,8 @@ export const EVENTS: EventDef[] = [
     area: 'upload',
     source: 'client',
     surface: 'web',
-    trigger: 'A file is chosen or dropped in the Upload dialog',
-    props: { file_type: e(['pdf', 'epub', 'docx', 'other']), bytes: { type: 'bytes' } },
+    trigger: 'A file is chosen or dropped in the Upload dialog, or picked in the landing page trial',
+    props: { file_type: e(['pdf', 'epub', 'docx', 'other']), bytes: { type: 'bytes' }, from: e(['library', 'landing_trial']) },
     feeds: 'Upload attempts; requested file types',
     origin: 'proposed',
   },
@@ -425,8 +477,9 @@ export const EVENTS: EventDef[] = [
       text_extractable: bool,
       chapters_detected: count,
       processing_ms: { type: 'ms' },
+      from: e(['library', 'landing_trial']),
     },
-    feeds: 'Upload readable rate; secondary "new uploads per week"; funnel step 1',
+    feeds: 'Upload readable rate; secondary "new uploads per week"; funnel step 1; landing upload trial completion (from = landing_trial)',
     origin: 'prd',
   },
   {
@@ -435,7 +488,11 @@ export const EVENTS: EventDef[] = [
     source: 'server',
     surface: 'web',
     trigger: 'Upload rejected or processing failed',
-    props: { file_type: e(['pdf', 'epub', 'docx', 'other']), error_type: e(['wrong_type', 'too_large', 'read_error']) },
+    props: {
+      file_type: e(['pdf', 'epub', 'docx', 'other']),
+      error_type: e(['wrong_type', 'too_large', 'read_error']),
+      from: e(['library', 'landing_trial']),
+    },
     feeds: 'Upload guardrail (<5% errors)',
     origin: 'prd',
   },
@@ -641,6 +698,7 @@ export const EVENTS: EventDef[] = [
 export const EVENT_BY_NAME = new Map(EVENTS.map((d) => [d.name, d]))
 
 export const AREA_LABEL: Record<Area, string> = {
+  landing: 'Landing page',
   extension: 'Extension & saving',
   account: 'Accounts & sync',
   library: 'Library',
@@ -659,5 +717,29 @@ export const FUNNEL = [
     step: 'Return within 7 days',
     events: ['item_opened'],
     rule: 'item_opened with open = reopen and days_since_last_open ≤ 7',
+  },
+] as const
+
+/** Landing page metrics (landing PRD §7), shown on /events. Visitors are counted by anonymous_id. */
+export const LANDING_METRICS = [
+  {
+    metric: 'Primary: landing sign-up rate',
+    rule: 'Visitors with landing_viewed who then have sign_in_completed with account = new (same anonymous_id) ÷ visitors with landing_viewed',
+    target: 'TBD',
+  },
+  {
+    metric: 'Upload trial completion',
+    rule: 'Visitors with landing_cta_clicked (cta = upload) who then have upload_completed (from = landing_trial) ÷ visitors who clicked Upload',
+    target: 'TBD',
+  },
+  {
+    metric: 'CTA click rate',
+    rule: 'Per cta (add_to_chrome, upload, sign_in): visitors with at least one landing_cta_clicked for it ÷ visitors with landing_viewed. Each visitor counts once per button.',
+    target: 'Learning only',
+  },
+  {
+    metric: 'Scroll reach',
+    rule: 'Per section (intro, save, library, q): visitors with landing_section_reached for it ÷ visitors with landing_viewed',
+    target: 'Learning only',
   },
 ] as const

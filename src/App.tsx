@@ -2,12 +2,13 @@ import { lazy, Suspense, useEffect, useState } from 'react'
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useNavigate, useSearchParams } from 'react-router'
 import { LibraryPage } from './library/LibraryPage'
 import { LoginPage } from './landing/LoginPage'
+import { LandingPage, PrivacyPage } from './landing/LandingPage'
 import { ReaderPage } from './reader/ReaderPage'
 import { AccountPage } from './account/AccountPage'
 import { AppShell } from './shell/AppShell'
 import { DevMenu } from './dev/DevMenu'
 import { resetDemo, seedSamples } from './samples/seed'
-import { useSession } from './storage/db'
+import { signOut, useSession } from './storage/db'
 import { protoStore, type UserState } from './proto/store'
 import { TESTER_BUILD } from './proto/build'
 
@@ -31,6 +32,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/signin" element={<LoginPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
           <Route element={<SignedInOnly />}>
             <Route element={<AppShell />}>
               <Route path="/library" element={<LibraryPage />} />
@@ -44,6 +46,8 @@ export default function App() {
               <Route path="/screens" element={<ScreensPage />} />
               <Route path="/events" element={<EventsPage />} />
               <Route path="/demo-browser" element={<DemoBrowser />} />
+              {/* Dev preview: the landing page even when signed in. */}
+              <Route path="/landing" element={<LandingPage />} />
               <Route path="/dev/go" element={<DevGo />} />
             </>
           )}
@@ -58,11 +62,16 @@ export default function App() {
   )
 }
 
-/** Signed in → Library (the landing page after sign-in). Signed out → sign-in. */
+/** Signed in → Library. Signed out (new or returning visitor) → the landing page. */
 function Home() {
   const session = useSession()
+  // Once the landing page is showing, keep it while the upload trial signs the visitor in:
+  // the trial saves the file first, then goes to the Library itself.
+  const [landing, setLanding] = useState(false)
   if (session === undefined) return null
-  return <Navigate to={session ? '/library' : '/signin'} replace />
+  if (session && !landing) return <Navigate to="/library" replace />
+  if (!landing) setLanding(true)
+  return <LandingPage />
 }
 
 function SignedInOnly() {
@@ -77,7 +86,7 @@ function NotesRedirect() {
 }
 
 /**
- * /dev/go?state=<user state>&to=<path>: used by /screens for screens that need a
+ * /dev/go?state=<user state>&to=<path>[&signout=1]: used by /screens for screens that need a
  * particular user state. Switches (resetting demo data) only if needed.
  */
 function DevGo() {
@@ -88,6 +97,8 @@ function DevGo() {
     const to = params.get('to') ?? '/library'
     ;(async () => {
       if (state && (state !== protoStore.get().userState || params.get('fresh') === '1')) await resetDemo(state)
+      // signout=1: see a signed-out screen (the landing page) with this user state's data.
+      if (params.get('signout') === '1') await signOut()
       navigate(to, { replace: true })
     })()
   }, [params, navigate])

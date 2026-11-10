@@ -9,6 +9,42 @@ extension), and the **Dev** button (bottom-right of every page).
 
 ---
 
+## Landing page (landing PRD)
+
+New and signed-out visitors now land on a one-scroll landing page at `/`. A signed-in visitor who opens `/` still goes
+straight to the Library. Code: `src/landing/LandingPage.tsx`, `src/landing/FirstUploadWelcome.tsx`.
+
+| PRD item | What's built |
+|---|---|
+| Page order | One scroll: Intro (`#top`) · Save + progress tracking (`#save`) · Library (`#library`) · Q (`#ask-q`) · closing call to action · footer. |
+| Navigation bar | Sticky on scroll. Save, Library, Ask Q! jump to their sections; Sign in and Add to Chrome on the right; the logo goes back to the top. On phones the logo shows as the mark only and Add to Chrome moves out of the bar (it stays in the page). |
+| Page 1 | Logo and wordmark, "Read deeply in a noisy world", "For intentional readers", one line on what Quiescent is and who it's for, **Add to Chrome** (primary) and **Upload a PDF or EPUB**. All above the fold at 1280 × 720. |
+| Page 2 | The two saving cases (extension, manual upload), each with its button; "Track your reading progress!" (why it helps, how: % from the latest scroll position); an instruction video placeholder. |
+| Page 3 | Statuses (In progress, Read later, Finished) and folders (steles), including saving to a folder from the extension. |
+| Page 4 | Q: highlight and ask Q! to explain an idea or define a word without leaving the page; highlights and notes stay with the reading; Q can be switched off. Nothing the MVP doesn't do. |
+| Footer | Privacy Policy (placeholder page at `/privacy`) and quiescent.support@gmail.com. |
+| Add to Chrome | Opens the Chrome Web Store in a new tab. **Placeholder URL** (a store search for "Quiescent") until the listing exists: `src/landing/chromeStore.ts`. |
+| Sign in | Opens the website sign-in screen (`/signin`). The sign-in page logo now links back to `/`. |
+| Upload trial (story A) | Type and size are checked first; a wrong type or a file over 25 MB shows the error on the page and sign-in never appears. A good file opens **"Sign in to save this file"** (Google or email link). After sign-in the same file is added (no second pick), then the Library shows **"First successful upload! Congrats!"** (or "Added to Read later" if the library already had readings) and then, once per browser, the tip **"Add Quiescent to Chrome to save articles in one click."** with **Add to Chrome** / **Not now** (skipped when the extension is connected). |
+
+Decisions and open questions:
+- **PDF or EPUB.** The PRD button says "Upload a PDF or EPUB", but uploads are PDF only (DEFAULT, conflict with the upload PRD's PDF + EPUB). The button keeps the PRD copy; an EPUB gets "EPUB is coming soon. Choose a PDF for now." Needs a decision: support EPUB, or change the button to "Upload a PDF".
+- **Q origin line** is draft copy (the PRD text stops at "Q comes from Viet Nam…").
+- **Instruction video** and **Privacy Policy** are placeholders.
+- **Chrome Web Store URL** is a placeholder.
+
+Events (all on `/events`, area "Landing page"): `landing_viewed`, `landing_section_reached` (intro, save, library, q),
+`landing_cta_clicked` (cta = add_to_chrome, upload, sign_in; placement = nav, hero, save_section, footer),
+`first_upload_celebrated`, `install_tip_answered`. Existing events gained values: `sign_in_prompt_shown` trigger
+`landing_upload`; `upload_started` / `upload_completed` / `upload_failed` `from` = library or landing_trial;
+`extension_install_clicked` from = landing or first_upload_tip. `/events` lists the four landing metrics (sign-up rate,
+upload trial completion, CTA click rate, scroll reach) and how each is computed. Targets are TBD in the PRD.
+
+`/screens` has a "Landing page" group: the page as a new signed-out visitor, a signed-in preview at `/landing` (dev only),
+and the congrats + tip state.
+
+---
+
 ## Spec alignment (branch `spec-alignment`)
 
 Edits after the Oct 21, 2026 check against `quiescent-spec.md` (items from `prototype-edits.md`, sections A and B;
@@ -49,8 +85,8 @@ item 9, Q quick actions, is not confirmed and was skipped).
 - **Notes page** (`/notes/:id`), its TipTap editor, and every link to it (library row, highlights panel, note popover).
   Old `/notes/:id` links redirect to the reader. The reader's side panel listing highlights and notes is kept.
 - **Library sort and filter.** v1 had none in the UI; v2 first added none. Spec alignment (A7) adds them back as decided in the team meeting.
-- **Landing page** ("Upload your reading" before sign-in). `/` now goes to Library when signed in, `/signin` otherwise,
-  matching the PRD's website-first flow.
+- ~~**Landing page** ("Upload your reading" before sign-in). `/` now goes to Library when signed in, `/signin` otherwise,
+  matching the PRD's website-first flow.~~ Replaced by the new landing page from the landing PRD (see "Landing page" above).
 - ~~**Article-link import tab** in the add dialog (link import is P1 in the PRD).~~ Restored for user testing: Upload
   dialog → **Link** tab fetches the article through `/api/extract` (`netlify/functions/extract.mts`), falls back to
   pasting the text when a site blocks it, and spots links already in the library. Proposed events `link_added`,

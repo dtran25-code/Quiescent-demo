@@ -8,7 +8,7 @@
 // MOCKUP ONLY: every path "signs in" instantly. No account or identity provider exists.
 
 import { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 import { Logo } from '../components/Logo'
 import { CheckEmail, LinkExpired, SignInOptions, SigningIn, TooManyRequests } from '../auth/SignInParts'
 import { completeSignIn } from '../auth/auth'
@@ -55,7 +55,9 @@ export function LoginPage() {
 
   return (
     <div className="flex min-h-full flex-col items-center justify-center bg-paper px-8 py-16">
-      <Logo />
+      <Link to="/" aria-label="Quiescent home" className="rounded-lg">
+        <Logo />
+      </Link>
       <div className="mt-10 w-full max-w-sm rounded-2xl border border-rule bg-card p-7 shadow-sm">
         {state === 'signed-out' && (
           <p role="status" className="mb-5 rounded-lg bg-ok-soft px-3.5 py-2.5 text-sm text-ink">
