@@ -26,7 +26,7 @@ and you go to the Library.
 
 | Page | What |
 |---|---|
-| `/` (signed out) | Landing page: intro, saving and progress, Library, Coming next |
+| `/` (signed out) | Landing page: intro, Save, Read (reader view and progress), Library, Coming next |
 | `/screens` | Links to every screen and state, plus the stele and turtle icon specimen |
 | `/events` | Event dictionary (event, trigger, surface, properties, metric) and the funnel |
 | `/demo-browser` | Fake Chrome window with the Quiescent extension popup; saves land in the Library |
