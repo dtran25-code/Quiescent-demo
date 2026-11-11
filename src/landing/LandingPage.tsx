@@ -1,9 +1,10 @@
 // Landing page (landing PRD, updated Nov 10, 2026). New and signed-out visitors only:
 // App sends a signed-in visitor at / straight to the Library.
 //
-// One scroll, with a sticky nav (Save · Library · Sign in · Add to Chrome):
+// One scroll, with a sticky nav (Save · Read · Library · Sign in · Add to Chrome):
 //   #top          Intro: logo, "Read deeply in a noisy world.", who it's for, Get started + Add to Chrome
-//   #save         Save from Chrome, track progress, instruction video
+//   #save         Save from Chrome, instruction video
+//   #read         Reader view (before/after), highlights and notes, track progress
 //   #library      Library: statuses and folders
 //   coming next   Upload PDFs and EPUBs, Ask Q! (two lines, no buttons or links, not in the nav)
 //   footer        Privacy Policy, contact email
@@ -26,10 +27,11 @@ import { openChromeStore } from './chromeStore'
 export const SUPPORT_EMAIL = 'quiescent.support@gmail.com'
 
 type Placement = 'nav' | 'hero' | 'closing'
-type Section = 'intro' | 'save' | 'library' | 'coming_next'
+type Section = 'intro' | 'save' | 'read' | 'library' | 'coming_next'
 
 const NAV: { id: string; label: string }[] = [
   { id: 'save', label: 'Save' },
+  { id: 'read', label: 'Read' },
   { id: 'library', label: 'Library' },
 ]
 
@@ -82,7 +84,7 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* --- Page 2: Save + progress ------------------------------------------------- */}
+        {/* --- Page 2: Save --------------------------------------------------------------- */}
         <Band id="save" section="save" tone="card">
           <SectionHeading
             eyebrow="Save"
@@ -90,20 +92,6 @@ export function LandingPage() {
             solution="Click the Q in Chrome and it's saved to your library."
           />
           <SaveMock />
-
-          <div className="mt-16 grid items-center gap-10 lg:grid-cols-2 [&>*]:min-w-0">
-            <div>
-              <h3 className="font-serif text-3xl font-semibold">Track your reading progress!</h3>
-              <p className="mt-3 text-[17px] leading-relaxed text-ink-soft">Lost your place, or forgot how far you got?</p>
-              <p className="mt-1 text-[17px] leading-relaxed text-ink">
-                Every reading shows your progress as a %, so you stay in control of what you read.
-              </p>
-              <DevNote className="mt-4">
-                How the saved point is chosen: copy to confirm with Tech before writing it (PRD). <Badge kind="needs decision" />
-              </DevNote>
-            </div>
-            <ProgressMock />
-          </div>
 
           <div className="mt-16">
             <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-2xl border border-rule bg-paper-deep">
@@ -119,8 +107,33 @@ export function LandingPage() {
           </div>
         </Band>
 
-        {/* --- Page 3: Library ------------------------------------------------------- */}
-        <Band id="library" section="library">
+        {/* --- Page 3: Read (reader view + progress) ------------------------------------- */}
+        <Band id="read" section="read">
+          <SectionHeading
+            eyebrow="Read"
+            problem="Hard to focus when the article is buried in ads and pop-ups?"
+            solution="Reader view shows just the text, so you can read, highlight and take notes in one calm place."
+          />
+          <BeforeAfterMock />
+
+          <div className="mt-16 grid items-center gap-10 lg:grid-cols-2 [&>*]:min-w-0">
+            <div>
+              <h3 className="font-serif text-3xl font-semibold">Track your reading progress!</h3>
+              <p className="mt-3 text-[17px] leading-relaxed text-ink-soft">Lost your place, or forgot how far you got?</p>
+              <p className="mt-1 text-[17px] leading-relaxed text-ink">
+                Every reading shows your progress as a %, so you stay in control of what you read.
+              </p>
+              <DevNote className="mt-4">
+                How the saved point is chosen: copy to confirm with Tech before writing it (PRD). <Badge kind="needs decision" />
+              </DevNote>
+            </div>
+            <ProgressMock />
+          </div>
+
+        </Band>
+
+        {/* --- Page 4: Library ------------------------------------------------------- */}
+        <Band id="library" section="library" tone="card">
           <SectionHeading
             eyebrow="Library"
             problem="Lost track of what you're reading, and what's next?"
@@ -399,6 +412,61 @@ function SaveMock() {
           <div className="mt-4 rounded-lg bg-accent px-3 py-2 text-center text-sm font-medium text-on-accent">Read now</div>
         </div>
       </div>
+    </div>
+  )
+}
+
+/** The same article before (ads, pop-up, sidebar) and in reader view (text, a highlight, a note). */
+function BeforeAfterMock() {
+  const lines = (widths: number[]) =>
+    widths.map((w, i) => <div key={i} className="h-2 rounded-full bg-rule" style={{ width: `${w}%` }} />)
+  return (
+    <div aria-hidden="true" className="mt-10 grid gap-5 md:grid-cols-2">
+      <figure className="flex flex-col">
+        <figcaption className="eyebrow mb-2">Before</figcaption>
+        <div className="relative flex-1 overflow-hidden rounded-2xl border border-rule bg-card p-4">
+          <div className="mb-3 flex h-10 items-center justify-center rounded-md bg-danger-soft text-[11px] font-semibold uppercase tracking-wider text-danger">
+            Ad
+          </div>
+          <div className="grid grid-cols-[1fr_5rem] gap-3">
+            <div className="space-y-2.5">
+              <p className="font-serif text-lg font-semibold leading-tight">Why slow reading still matters</p>
+              {lines([96, 88, 100, 72])}
+              <div className="flex h-14 items-center justify-center rounded-md bg-danger-soft text-[11px] font-semibold uppercase tracking-wider text-danger">
+                Ad
+              </div>
+              {lines([92, 80])}
+            </div>
+            <div className="space-y-2">
+              <div className="h-20 rounded-md bg-warn-soft" />
+              <div className="h-12 rounded-md bg-stone-100" />
+              <div className="h-16 rounded-md bg-danger-soft" />
+            </div>
+          </div>
+          <div className="absolute inset-x-6 bottom-4 rounded-lg border border-rule bg-card px-3 py-2 text-xs text-ink-soft shadow-lg">
+            Subscribe to our newsletter! <span className="float-right">✕</span>
+          </div>
+        </div>
+      </figure>
+      <figure className="flex flex-col">
+        <figcaption className="eyebrow mb-2">In reader view</figcaption>
+        <div className="flex-1 overflow-hidden rounded-2xl border border-rule bg-card">
+          <div className="h-1 bg-rule">
+            <div className="h-full w-[42%] bg-accent" />
+          </div>
+          <div className="px-6 pb-6 pt-5">
+            <p className="font-serif text-2xl font-semibold leading-tight">Why slow reading still matters</p>
+            <p className="mt-3 text-sm leading-relaxed text-ink-soft">
+              Attention is not a fixed supply we spend, but a habit we build. Each time we stay with a hard paragraph,{' '}
+              <mark className="rh-mark has-note">we train the patience that understanding needs</mark>.
+            </p>
+            <div className="mt-4 rounded-lg border border-rule bg-paper px-3 py-2 text-xs text-ink">
+              <span className="font-semibold">Note:</span> compare with the chapter on deep work
+            </div>
+            <p className="mt-4 text-xs text-ink-faint">Section 2 / 6 · 42%</p>
+          </div>
+        </div>
+      </figure>
     </div>
   )
 }

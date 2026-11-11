@@ -67,7 +67,7 @@ export const EVENTS: EventDef[] = [
     source: 'client',
     surface: 'web',
     trigger: 'A landing section is at least 40% on screen (once per section per page view)',
-    props: { section: e(['intro', 'save', 'library', 'coming_next']) },
+    props: { section: e(['intro', 'save', 'read', 'library', 'coming_next']) },
     feeds: 'Scroll reach (learning only)',
     origin: 'prd',
   },
@@ -709,7 +709,7 @@ export const LANDING_METRICS = [
   },
   {
     metric: 'Scroll reach',
-    rule: 'Per section (intro, save, library, coming_next): visitors with landing_section_reached for it ÷ visitors with landing_viewed',
+    rule: 'Per section (intro, save, read, library, coming_next): visitors with landing_section_reached for it ÷ visitors with landing_viewed',
     target: 'Learning only',
   },
 ] as const

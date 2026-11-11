@@ -29,7 +29,7 @@ const GROUPS: { title: string; brief: string; screens: Screen[] }[] = [
       { name: 'Landing page, new visitor (signs out; Get started → sign-in → empty Library with the Add to Chrome prompt)', to: `${go('new', '/')}&fresh=1&signout=1`, state: 'new' },
       { name: 'Landing page, preview while signed in (/landing; dev only)', to: '/landing' },
       { name: 'Non-Chrome browser or phone: "Available for Chrome on desktop."', to: '/landing?browser=other' },
-      { name: 'Jump to a section: Save · Library', to: '/landing#save', note: 'Or use the nav bar.' },
+      { name: 'Jump to a section: Save · Read · Library', to: '/landing#read', note: 'Or use the nav bar.' },
       { name: 'Privacy Policy (placeholder)', to: '/privacy' },
     ],
   },

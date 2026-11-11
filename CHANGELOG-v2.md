@@ -20,11 +20,12 @@ the empty Library after a first sign-up shows the Add to Chrome prompt.
 
 | PRD item | What's built |
 |---|---|
-| Page order | One scroll: Intro (`#top`) · Save and track progress (`#save`) · Library (`#library`) · Coming next · closing call to action · footer. Each section opens with the reader's problem in one line and how Quiescent solves it in one line, then one visual. |
-| Navigation bar | Sticky on scroll. Save and Library jump to their sections; Sign in and Add to Chrome on the right; the logo goes back to the top. |
+| Page order | One scroll: Intro (`#top`) · Save (`#save`) · Read (`#read`) · Library (`#library`) · Coming next · closing call to action · footer. Each section opens with the reader's problem in one line and how Quiescent solves it in one line, then one visual. |
+| Navigation bar | Sticky on scroll. Save, Read and Library jump to their sections; Sign in and Add to Chrome on the right; the logo goes back to the top. |
 | Page 1 | Logo and wordmark, "Read deeply in a noisy world.", "For intentional readers." / "For people who read to learn, not to scroll.", **Get started** (primary, opens sign-in) and **Add to Chrome** (secondary). All above the fold at 1280 × 720. |
 | Not desktop Chrome | On another browser or a phone, every Add to Chrome (page and nav) is replaced by "Available for Chrome on desktop." Preview with `/landing?browser=other`. |
-| Page 2 | "Found something worth reading, but can't read it now?" / "Click the Q in Chrome and it's saved to your library." with a browser and popup visual; "Track your reading progress!" with progress as a %; instruction video placeholder. |
+| Page 2 | "Found something worth reading, but can't read it now?" / "Click the Q in Chrome and it's saved to your library." with a browser and popup visual; instruction video placeholder. |
+| Read (reader view, added Nov 11) | Its own section between Save and Library, and a **Read** link in the nav. "Hard to focus when the article is buried in ads and pop-ups?" / "Reader view shows just the text, so you can read, highlight and take notes in one calm place." with a before/after visual (cluttered page vs. reader view with a highlight and a note). "Track your reading progress!" moved here from Save, since progress happens while reading. Scroll reach gains section = read. |
 | Page 3 | "Lost track of what you're reading, and what's next?" / "Your Library keeps it in order: Reading, Read Later, and Finished, plus folders for your own topics." with a status and folder visual. |
 | Coming next | Two lines, no buttons, links, dates or visuals, not in the nav: Upload PDFs and EPUBs; Ask Q!. |
 | Footer | Privacy Policy (placeholder page at `/privacy`) and quiescent.support@gmail.com. |
@@ -39,8 +40,8 @@ Open questions:
 - **Upload in the Library** is unchanged (Upload PRD). Say if it should be hidden until the next phase too.
 - Placeholders: Chrome Web Store URL, instruction video, Privacy Policy.
 
-Events (on `/events`, area "Landing page"): `landing_viewed`, `landing_section_reached` (intro, save, library,
-coming_next), `landing_cta_clicked` (cta = get_started, add_to_chrome, sign_in; placement = nav, hero, closing).
+Events (on `/events`, area "Landing page"): `landing_viewed`, `landing_section_reached` (intro, save, read,
+library, coming_next), `landing_cta_clicked` (cta = get_started, add_to_chrome, sign_in; placement = nav, hero, closing).
 `extension_install_clicked` gained from = landing. Sign-ups from the page are `sign_in_completed` with account = new
 after `landing_viewed` (same anonymous_id).
 
