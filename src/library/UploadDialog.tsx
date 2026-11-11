@@ -39,7 +39,7 @@ export function UploadDialog({ onClose, initial }: { onClose: () => void; initia
   async function handle(file: File | undefined) {
     if (!file) return
     const type = fileType(file)
-    track('upload_started', { file_type: type, bytes: file.size, from: 'library' })
+    track('upload_started', { file_type: type, bytes: file.size })
     const problem = checkUpload(file)
     if (problem) return fail(problem, file, type)
 
@@ -51,7 +51,7 @@ export function UploadDialog({ onClose, initial }: { onClose: () => void; initia
       if (alive.current) setState((s) => (s.kind === 'uploading' ? { ...s, pct } : s))
     }, 90)
     try {
-      const item = await savePdfUpload(file, 'library')
+      const item = await savePdfUpload(file)
       if (alive.current) setState({ kind: 'success', item })
     } catch {
       fail('read_error', file, 'pdf')
@@ -61,7 +61,7 @@ export function UploadDialog({ onClose, initial }: { onClose: () => void; initia
   }
 
   function fail(reason: 'wrong_type' | 'too_large' | 'read_error', file: File, type: ReturnType<typeof fileType>) {
-    track('upload_failed', { file_type: type, error_type: reason, from: 'library' })
+    track('upload_failed', { file_type: type, error_type: reason })
     if (alive.current) setState({ kind: 'error', reason, name: file.name, bytes: file.size })
   }
 

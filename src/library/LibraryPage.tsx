@@ -8,7 +8,6 @@
 //   ?sort=newest|oldest|title · ?type=article|pdf · ?site=<source>
 // Query params for /screens:
 //   ?upload=picker|uploading|success|wrong-type|too-large   open Upload in that state
-//   ?welcome=upload                                         landing upload trial: congrats, then the Add to Chrome tip
 //   ?new=<folderId>                                         highlight a just-created folder
 //   ?create=1 · ?addto=<itemId> · ?remove=<itemId>           open Create folder / Add to folder / Remove confirm
 //   (folder detail) ?rename=1 · ?add=1 · ?delete=1           open Rename / Add items / Delete confirm
@@ -20,13 +19,13 @@ import { ConfirmDialog } from '../components/Modal'
 import { SteleIcon } from '../icons/SteleIcon'
 import { DevNote } from '../dev/DevNote'
 import { TESTER_BUILD } from '../proto/build'
+import { openChromeStore } from '../landing/chromeStore'
 import { STATUSES, STATUS_LABEL, patchMeta, protoStore, useProto, type Folder, type Status } from '../proto/store'
 import { deleteFolder, removeFromFolder, removeItem, undoRemove } from '../proto/actions'
 import { track } from '../events/track'
 import { ItemCard, type CardActions } from './ItemCard'
 import { AddToFolderDialog, CreateFolderDialog, FolderItemsDialog, RenameFolderDialog } from './FolderDialogs'
 import { DEMO_UPLOAD_STATES, UploadDialog, type UploadState } from './UploadDialog'
-import { FirstUploadWelcome } from '../landing/FirstUploadWelcome'
 import {
   SORTS,
   SORT_LABEL,
@@ -188,7 +187,6 @@ export function LibraryPage() {
         />
       )}
       {undo && <UndoRemove key={undo.item.id} entry={undo} onDone={() => setUndo(null)} />}
-      <FirstUploadWelcome />
     </div>
   )
 }
@@ -603,19 +601,31 @@ function EmptyLibrary({ onUpload }: { onUpload: () => void }) {
       <SteleIcon size={96} state="empty" className="mx-auto" />
       <h2 className="mt-4 font-serif font-semibold text-2xl">Your library is empty</h2>
       <p className="mt-2 text-ink-soft">Save your first reading. Everything you add lands here, in Read later.</p>
-      <div className={`mt-8 grid gap-4 text-left ${TESTER_BUILD ? 'mx-auto max-w-sm' : 'sm:grid-cols-2'}`}>
-        {!TESTER_BUILD && <div className="rounded-xl border border-rule bg-card p-5">
+      <div className="mt-8 grid gap-4 text-left sm:grid-cols-2">
+        <div className="rounded-xl border border-rule bg-card p-5">
           <Puzzle size={22} className="text-accent" />
           <h3 className="mt-3 font-medium">Save articles from Chrome</h3>
-          <p className="mt-1 text-sm text-ink-soft">Add Quiescent to Chrome to save articles in one click, paywalled ones included.</p>
-          <Link
-            to="/demo-browser"
-            className="btn-primary mt-4"
-            onClick={() => track('extension_install_clicked', { from: 'empty_library' })}
-          >
-            Add to Chrome
-          </Link>
-        </div>}
+          <p className="mt-1 text-sm text-ink-soft">Add Quiescent to Chrome to save your first article.</p>
+          {TESTER_BUILD ? (
+            <button
+              className="btn-primary mt-4"
+              onClick={() => {
+                track('extension_install_clicked', { from: 'empty_library' })
+                openChromeStore()
+              }}
+            >
+              Add to Chrome
+            </button>
+          ) : (
+            <Link
+              to="/demo-browser"
+              className="btn-primary mt-4"
+              onClick={() => track('extension_install_clicked', { from: 'empty_library' })}
+            >
+              Add to Chrome
+            </Link>
+          )}
+        </div>
         <div className="rounded-xl border border-rule bg-card p-5">
           <Upload size={22} className="text-accent" />
           <h3 className="mt-3 font-medium">Upload a PDF or add a link</h3>
@@ -626,8 +636,9 @@ function EmptyLibrary({ onUpload }: { onUpload: () => void }) {
         </div>
       </div>
       <DevNote className="mt-6 text-left">
-        PRD (Library edge cases): first sign-in, empty library → two actions: install the extension, or upload. In this prototype
-        "Add to Chrome" opens the simulated extension at /demo-browser.
+        PRD (Library edge cases): first sign-in, empty library → two actions: install the extension, or upload. Landing PRD
+        (user story A): after a first sign-up the empty Library shows "Add Quiescent to Chrome to save your first article." In this
+        prototype "Add to Chrome" opens the simulated extension at /demo-browser (the tester build opens the Chrome Web Store).
       </DevNote>
     </div>
   )

@@ -1,4 +1,4 @@
-// Upload rules shared by the Library's Upload dialog and the landing page trial:
+// Upload rules for the Library's Upload dialog:
 // type and size are checked before anything uploads, and a good PDF lands in Read later.
 
 import { addItem, newId } from '../storage/db'
@@ -39,7 +39,7 @@ export function errorBody(s: UploadError) {
   return `“${s.name}” may be damaged or password-protected. Nothing was added.`
 }
 
-/** Type and size are checked before anything uploads (same rules on the landing page trial). */
+/** Type and size are checked before anything uploads. */
 export function checkUpload(file: File): 'wrong_type' | 'too_large' | null {
   if (fileType(file) !== 'pdf') return 'wrong_type'
   if (file.size > MAX_BYTES) return 'too_large'
@@ -48,9 +48,9 @@ export function checkUpload(file: File): 'wrong_type' | 'too_large' | null {
 
 /**
  * Reads a checked PDF, adds it to the library (Read later) and fires upload_completed.
- * Throws if the PDF can't be read. `from` tells the Library dialog and the landing trial apart.
+ * Throws if the PDF can't be read.
  */
-export async function savePdfUpload(file: File, from: 'library' | 'landing_trial') {
+export async function savePdfUpload(file: File) {
   const started = performance.now()
   const [pdf] = await Promise.all([readPdf(file, file.name), new Promise((r) => setTimeout(r, 900))])
   const item: Item = {
@@ -73,7 +73,6 @@ export async function savePdfUpload(file: File, from: 'library' | 'landing_trial
     text_extractable: true,
     chapters_detected: pdf.chapters.length,
     processing_ms: performance.now() - started,
-    from,
   })
   return item
 }
