@@ -11,37 +11,41 @@ extension), and the **Dev** button (bottom-right of every page).
 
 ## Landing page (landing PRD)
 
-New and signed-out visitors now land on a one-scroll landing page at `/`. A signed-in visitor who opens `/` still goes
-straight to the Library. Code: `src/landing/LandingPage.tsx`, `src/landing/FirstUploadWelcome.tsx`.
+New and signed-out visitors land on a one-scroll landing page at `/`. A signed-in visitor who opens `/` goes straight
+to the Library. Code: `src/landing/LandingPage.tsx`.
+
+**Nov 10, 2026 PRD update (10th PDT meeting):** Manual Upload and Ask Q! moved to the next phase. The upload trial is
+gone; visitors sign up directly with **Get started**. Upload and Ask Q! now sit in a small **Coming next** block, and
+the empty Library after a first sign-up shows the Add to Chrome prompt.
 
 | PRD item | What's built |
 |---|---|
-| Page order | One scroll: Intro (`#top`) · Save + progress tracking (`#save`) · Library (`#library`) · Q (`#ask-q`) · closing call to action · footer. |
-| Navigation bar | Sticky on scroll. Save, Library, Ask Q! jump to their sections; Sign in and Add to Chrome on the right; the logo goes back to the top. On phones the logo shows as the mark only and Add to Chrome moves out of the bar (it stays in the page). |
-| Page 1 | Logo and wordmark, "Read deeply in a noisy world", "For intentional readers", one line on what Quiescent is and who it's for, **Add to Chrome** (primary) and **Upload a PDF or EPUB**. All above the fold at 1280 × 720. |
-| Page 2 | The two saving cases (extension, manual upload), each with its button; "Track your reading progress!" (why it helps, how: % from the latest scroll position); an instruction video placeholder. |
-| Page 3 | Statuses (In progress, Read later, Finished) and folders (steles), including saving to a folder from the extension. |
-| Page 4 | Q: highlight and ask Q! to explain an idea or define a word without leaving the page; highlights and notes stay with the reading; Q can be switched off. Nothing the MVP doesn't do. |
+| Page order | One scroll: Intro (`#top`) · Save and track progress (`#save`) · Library (`#library`) · Coming next · closing call to action · footer. Each section opens with the reader's problem in one line and how Quiescent solves it in one line, then one visual. |
+| Navigation bar | Sticky on scroll. Save and Library jump to their sections; Sign in and Add to Chrome on the right; the logo goes back to the top. |
+| Page 1 | Logo and wordmark, "Read deeply in a noisy world.", "For intentional readers." / "For people who read to learn, not to scroll.", **Get started** (primary, opens sign-in) and **Add to Chrome** (secondary). All above the fold at 1280 × 720. |
+| Not desktop Chrome | On another browser or a phone, every Add to Chrome (page and nav) is replaced by "Available for Chrome on desktop." Preview with `/landing?browser=other`. |
+| Page 2 | "Found something worth reading, but can't read it now?" / "Click the Q in Chrome and it's saved to your library." with a browser and popup visual; "Track your reading progress!" with progress as a %; instruction video placeholder. |
+| Page 3 | "Lost track of what you're reading, and what's next?" / "Your Library keeps it in order: Reading, Read Later, and Finished, plus folders for your own topics." with a status and folder visual. |
+| Coming next | Two lines, no buttons, links, dates or visuals, not in the nav: Upload PDFs and EPUBs; Ask Q!. |
 | Footer | Privacy Policy (placeholder page at `/privacy`) and quiescent.support@gmail.com. |
+| Get started / Sign in | Open the website sign-in screen (`/signin`, "New here? Signing in creates your account."). The sign-in page logo links back to `/`. |
 | Add to Chrome | Opens the Chrome Web Store in a new tab. **Placeholder URL** (a store search for "Quiescent") until the listing exists: `src/landing/chromeStore.ts`. |
-| Sign in | Opens the website sign-in screen (`/signin`). The sign-in page logo now links back to `/`. |
-| Upload trial (story A) | Type and size are checked first; a wrong type or a file over 25 MB shows the error on the page and sign-in never appears. A good file opens **"Sign in to save this file"** (Google or email link). After sign-in the same file is added (no second pick), then the Library shows **"First successful upload! Congrats!"** (or "Added to Read later" if the library already had readings) and then, once per browser, the tip **"Add Quiescent to Chrome to save articles in one click."** with **Add to Chrome** / **Not now** (skipped when the extension is connected). |
+| Empty Library (story A) | After a first sign-up, the empty Library says "Add Quiescent to Chrome to save your first article." with Add to Chrome. It now shows in the tester build too (opens the Chrome Web Store there; the simulated extension at `/demo-browser` in the dev build). The existing Upload card stays next to it. |
 
-Decisions and open questions:
-- **PDF or EPUB.** The PRD button says "Upload a PDF or EPUB", but uploads are PDF only (DEFAULT, conflict with the upload PRD's PDF + EPUB). The button keeps the PRD copy; an EPUB gets "EPUB is coming soon. Choose a PDF for now." Needs a decision: support EPUB, or change the button to "Upload a PDF".
-- **Q origin line** is draft copy (the PRD text stops at "Q comes from Viet Nam…").
-- **Instruction video** and **Privacy Policy** are placeholders.
-- **Chrome Web Store URL** is a placeholder.
+Open questions:
+- **Ask Q! in the nav.** The nav row still lists Ask Q!, but Ask Q! moved to Coming next, which is "not in the navigation bar". The nav shows Save and Library only.
+- **Progress copy.** How the saved point is chosen is left out until Tech confirms it (PRD).
+- **Metrics.** The PRD table still lists "Upload trial completion" and an Upload CTA; with the trial gone they are not tracked. `/events` lists sign-up rate, CTA click rate (Get started, Add to Chrome, Sign in) and scroll reach.
+- **Upload in the Library** is unchanged (Upload PRD). Say if it should be hidden until the next phase too.
+- Placeholders: Chrome Web Store URL, instruction video, Privacy Policy.
 
-Events (all on `/events`, area "Landing page"): `landing_viewed`, `landing_section_reached` (intro, save, library, q),
-`landing_cta_clicked` (cta = add_to_chrome, upload, sign_in; placement = nav, hero, save_section, footer),
-`first_upload_celebrated`, `install_tip_answered`. Existing events gained values: `sign_in_prompt_shown` trigger
-`landing_upload`; `upload_started` / `upload_completed` / `upload_failed` `from` = library or landing_trial;
-`extension_install_clicked` from = landing or first_upload_tip. `/events` lists the four landing metrics (sign-up rate,
-upload trial completion, CTA click rate, scroll reach) and how each is computed. Targets are TBD in the PRD.
+Events (on `/events`, area "Landing page"): `landing_viewed`, `landing_section_reached` (intro, save, library,
+coming_next), `landing_cta_clicked` (cta = get_started, add_to_chrome, sign_in; placement = nav, hero, closing).
+`extension_install_clicked` gained from = landing. Sign-ups from the page are `sign_in_completed` with account = new
+after `landing_viewed` (same anonymous_id).
 
-`/screens` has a "Landing page" group: the page as a new signed-out visitor, a signed-in preview at `/landing` (dev only),
-and the congrats + tip state.
+`/screens` has a "Landing page" group: the page as a new signed-out visitor, a signed-in preview at `/landing` (dev
+only), and the non-Chrome version.
 
 ---
 

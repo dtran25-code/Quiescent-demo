@@ -26,10 +26,10 @@ const GROUPS: { title: string; brief: string; screens: Screen[] }[] = [
     title: 'Landing page',
     brief: 'landing PRD · signed-out visitors',
     screens: [
-      { name: 'Landing page, new visitor (signs out; empty library, so the upload trial ends in "First successful upload!")', to: `${go('new', '/')}&fresh=1&signout=1`, state: 'new' },
+      { name: 'Landing page, new visitor (signs out; Get started → sign-in → empty Library with the Add to Chrome prompt)', to: `${go('new', '/')}&fresh=1&signout=1`, state: 'new' },
       { name: 'Landing page, preview while signed in (/landing; dev only)', to: '/landing' },
-      { name: 'Jump to a section: Save · Library · Ask Q!', to: '/landing#save', note: 'Or use the nav bar.' },
-      { name: 'After the upload trial: "First successful upload! Congrats!" then the Add to Chrome tip', to: go('existing', '/library?welcome=upload'), state: 'existing', note: 'The tip shows once per browser; clear localStorage key quiescent.v2.installTipSeen to see it again.' },
+      { name: 'Non-Chrome browser or phone: "Available for Chrome on desktop."', to: '/landing?browser=other' },
+      { name: 'Jump to a section: Save · Library', to: '/landing#save', note: 'Or use the nav bar.' },
       { name: 'Privacy Policy (placeholder)', to: '/privacy' },
     ],
   },

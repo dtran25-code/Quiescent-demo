@@ -65,13 +65,8 @@ export default function App() {
 /** Signed in → Library. Signed out (new or returning visitor) → the landing page. */
 function Home() {
   const session = useSession()
-  // Once the landing page is showing, keep it while the upload trial signs the visitor in:
-  // the trial saves the file first, then goes to the Library itself.
-  const [landing, setLanding] = useState(false)
   if (session === undefined) return null
-  if (session && !landing) return <Navigate to="/library" replace />
-  if (!landing) setLanding(true)
-  return <LandingPage />
+  return session ? <Navigate to="/library" replace /> : <LandingPage />
 }
 
 function SignedInOnly() {

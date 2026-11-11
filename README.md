@@ -26,7 +26,7 @@ and you go to the Library.
 
 | Page | What |
 |---|---|
-| `/` (signed out) | Landing page: intro, saving and progress, Library, Q, and the upload trial |
+| `/` (signed out) | Landing page: intro, saving and progress, Library, Coming next |
 | `/screens` | Links to every screen and state, plus the stele and turtle icon specimen |
 | `/events` | Event dictionary (event, trigger, surface, properties, metric) and the funnel |
 | `/demo-browser` | Fake Chrome window with the Quiescent extension popup; saves land in the Library |
@@ -37,7 +37,7 @@ and you go to the Library.
 | Path | What |
 |---|---|
 | `src/styles/tokens.css` | The only place colors, fonts, spacing and radii are defined |
-| `src/landing/` | Landing page, upload trial, first-upload congrats and tip, web sign-in |
+| `src/landing/` | Landing page and web sign-in |
 | `src/shell/` | Sidebar app shell |
 | `src/library/` | Library views, cards, folder dialogs, upload |
 | `src/reader/` | Focused reader, highlights panel (unchanged from v1 apart from events and Mark as finished) |
