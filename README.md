@@ -4,7 +4,7 @@ A clickable prototype of Quiescent for developers: save articles and PDFs (simul
 read them in a focused reader with highlights, notes and Q (the AI assistant), and track them in a library by status
 and by folder. It shows the screens, states and edge cases the MVP needs. **Mock data only, no backend.**
 
-Link to MVP: https://readhub-demo.netlify.app/
+Link to the app: https://quiescentdemo.netlify.app/
 
 **MVP:** Nov 15, 2026 (internal testers first, then 30 to 50 external users).
 

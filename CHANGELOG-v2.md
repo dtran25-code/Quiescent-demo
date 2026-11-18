@@ -30,7 +30,7 @@ Event: `consent_given` (proposed; the spec names no event): `policy_version`, `p
 
 Open questions:
 - **Policy text** is a draft for PM and legal review: service providers, the 30-day deletion window, the security line, "no marketing email".
-- **Support address.** The policy and landing footer use quiescent.support@gmail.com; the Account page says support@quiescent.app.
+- **Support address** is quiescent.support@gmail.com everywhere (Account page fixed; it said support@quiescent.app).
 - **Website events before consent.** The spec says closing without signing in collects and sends nothing, and the table covers the website too. Landing page events and the website's `sign_in_prompt_shown` still fire for signed-out visitors. Gate them as well, or is the rule extension only (Chrome Web Store)?
 - **Sign-in completion rate.** Its denominator is `sign_in_prompt_shown`, which the extension can no longer send before consent. Count from the website only, or use `consent_given` instead?
 - **Re-consent.** When the policy version changes, should signed-in users see the checkbox again? Not built.
