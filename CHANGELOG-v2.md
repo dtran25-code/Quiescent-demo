@@ -19,7 +19,7 @@ Code: `src/auth/consent.ts` (copy and policy version), `src/auth/SignInParts.tsx
 | Spec item | What's built |
 |---|---|
 | Sign-in screen | Same body on `/signin` ("Sign in to Quiescent") and the popup ("Sign in to save this article"): subtitle, "Quiescent collects:" with the four items, "The extension only reads a page when you click the Q. We never sell your data.", the checkbox, then Continue with Google · or · email + Send link. Copy word for word from the spec. |
-| Checkbox | "I've read and agree to the Privacy Policy", unticked by default. Both sign-in buttons are disabled until it's ticked. "Privacy Policy" opens `/privacy` (quiescent.app/privacy) in a new tab without ticking the box. |
+| Checkbox | "I've read and agree to the Privacy Policy", unticked by default. Both sign-in buttons are disabled until it's ticked. "Privacy Policy" is a plain link to the full page `/privacy` (quiescent.app/privacy), opened in a new browser tab without ticking the box. No in-popup or modal view of the policy (decided Nov 18: not in Tech capacity this week). |
 | Buttons | Continue with Google is now the primary button; Send link is secondary (was the other way round). |
 | Agreement saved | Clicking either button logs `consent_given` and starts sign-in. The session stores `consent: { policyVersion, agreedAt, surface }`. |
 | Other surface doesn't ask again | One sign-in per computer (unchanged). New: a signed-in visitor who opens `/signin` goes to the Library. |
