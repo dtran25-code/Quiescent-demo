@@ -1,5 +1,5 @@
 // Web sign-in (A6). Mirrors the extension popup's sign-in states, with the PRD's exact copy.
-//   /signin                      Continue with Google · email + Send link
+//   /signin                      Consent (what we collect + Privacy Policy box) · Continue with Google · email + Send link
 //   /signin?state=check-email    Check your email (Resend after 60 s, Use a different email)
 //   /signin?state=signing-in     Signing you in…
 //   /signin?state=expired        Link expired → Send a new link
@@ -8,12 +8,13 @@
 // MOCKUP ONLY: every path "signs in" instantly. No account or identity provider exists.
 
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router'
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router'
 import { Logo } from '../components/Logo'
 import { CheckEmail, LinkExpired, SignInOptions, SigningIn, TooManyRequests } from '../auth/SignInParts'
 import { completeSignIn } from '../auth/auth'
 import { DevNote } from '../dev/DevNote'
 import { devStore } from '../proto/store'
+import { useSession } from '../storage/db'
 import { track } from '../events/track'
 
 type State = 'start' | 'check-email' | 'signing-in' | 'expired' | 'rate-limited' | 'signed-out'
@@ -28,11 +29,15 @@ export function LoginPage() {
   const [sentAt, setSentAt] = useState(() => Date.now())
   const [busy, setBusy] = useState<'google' | 'email' | null>(null)
 
+  const session = useSession()
+
   const go = (next: State) => setParams(next === 'start' ? {} : { state: next }, { replace: false })
 
+  // Only once we know the visitor is signed out (a signed-in visitor is sent to the Library).
+  const signedOut = session === null
   useEffect(() => {
-    if (state === 'start' || state === 'signed-out') track('sign_in_prompt_shown', { trigger: 'website' }, 'web')
-  }, [state])
+    if (signedOut && (state === 'start' || state === 'signed-out')) track('sign_in_prompt_shown', { trigger: 'website' }, 'web')
+  }, [state, signedOut])
 
   async function finish(provider: 'google' | 'email', withEmail?: string) {
     setBusy(provider)
@@ -53,6 +58,10 @@ export function LoginPage() {
     go('check-email')
   }
 
+  // Signed in already (on the website or in the extension): don't ask again.
+  if (session && state === 'start' && !busy) return <Navigate to="/library" replace />
+  if (session === undefined) return null
+
   return (
     <div className="flex min-h-full flex-col items-center justify-center bg-paper px-8 py-16">
       <Link to="/" aria-label="Quiescent home" className="rounded-lg">
@@ -66,8 +75,9 @@ export function LoginPage() {
         )}
         {(state === 'start' || state === 'signed-out') && (
           <>
-            <h1 className="mb-5 font-serif font-semibold text-2xl">Sign in to Quiescent</h1>
+            <h1 className="mb-2 font-serif font-semibold text-2xl">Sign in to Quiescent</h1>
             <SignInOptions
+              surface="web"
               busy={busy}
               defaultEmail=""
               onGoogle={() => {

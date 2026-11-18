@@ -91,14 +91,16 @@ function Body({ state, title, source, h }: { state: PopupState; title: string; s
     case 'signed_out':
       return (
         <>
-          <h2 className="mb-4 font-serif font-semibold text-xl">Sign in to save this article</h2>
-          <SignInOptions compact onGoogle={h.onGoogle} onSendLink={h.onSendLink} defaultEmail={state.email ?? ''} />
+          <h2 className="mb-1.5 font-serif font-semibold text-xl">Sign in to save this article</h2>
+          <SignInOptions compact surface="extension" onGoogle={h.onGoogle} onSendLink={h.onSendLink} defaultEmail={state.email ?? ''} />
           <Note>
             {state.reason === 'pending_expired'
               ? 'Pending save expired: sign-in took longer than 10 minutes, so the held article was discarded. Same screen, email kept.'
               : state.reason === 'session_expired'
                 ? 'Session expired (30 days unused): same as first time; the article is held as a pending save.'
                 : 'First save while signed out. The article is held for 10 min and saves itself after sign-in.'}{' '}
+            The held article stays on this computer until sign-in; before consent the extension sends nothing, so its events
+            show as "withheld" in the Event log.
             <Badge kind="proposed" /> "or" divider and the "Email" label.
           </Note>
         </>

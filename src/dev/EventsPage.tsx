@@ -11,7 +11,9 @@ import { useEventLog } from '../events/track'
 const AREAS: Area[] = ['landing', 'extension', 'account', 'library', 'upload', 'reader', 'q']
 
 export default function EventsPage() {
-  const log = useEventLog()
+  // Withheld events (extension, before consent) are never sent, so they never count.
+  const all = useEventLog()
+  const log = useMemo(() => all.filter((e) => !e.withheld), [all])
   const prd = EVENTS.filter((e) => e.origin === 'prd').length
 
   // Live funnel from this browser's event log (items that reached each step).

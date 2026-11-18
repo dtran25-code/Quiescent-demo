@@ -6,9 +6,14 @@
 //   that isn't an id, a domain or a declared enum value can never be logged.
 // - Logging never blocks the reader: every failure here is swallowed.
 // - Rows go to an in-browser log (localStorage, last 300) shown in the Dev menu.
+// - Consent gate (Sign-in and Consent spec, Chrome Web Store policy): the
+//   extension sends nothing until the user has agreed to the Privacy Policy.
+//   Before that, extension events are WITHHELD: kept in the Dev log, flagged,
+//   and never counted (in the real build they are never sent or stored).
 
 import { persistedStore, useStore } from '../proto/persist'
 import { EVENT_BY_NAME, type EventDef, type PropSpec, type Surface } from './dictionary'
+import { isSignedInNow } from '../storage/db'
 
 export type PropValue = string | number | boolean
 export type Props = Record<string, PropValue | undefined>
@@ -23,6 +28,8 @@ export interface LoggedEvent {
   props: Record<string, PropValue>
   /** Properties removed by validation (name: reason). */
   dropped?: Record<string, string>
+  /** Extension event before Privacy Policy consent: not sent, not counted. */
+  withheld?: true
   /** Envelope every event carries (PRD: anonymous id, user id, session, app version). */
   anonymous_id: string
   user_id: string | null
@@ -47,6 +54,18 @@ export const eventLog = persistedStore<LogState>('quiescent.v2.events', () => ({
 }))
 
 export const useEventLog = () => useStore(eventLog, (s) => s.events)
+
+// Ticking the box and clicking a sign-in button saves the agreement. The account
+// keeps it after sign-in; this covers the moments between (e.g. waiting for the
+// email link). Cleared at sign-out: a signed-out extension sends nothing.
+let agreedThisVisit = false
+export function grantConsent() {
+  agreedThisVisit = true
+}
+export function clearConsentThisVisit() {
+  agreedThisVisit = false
+}
+const mayCollect = (surface: Surface) => surface !== 'extension' || agreedThisVisit || isSignedInNow()
 
 let userId: string | null = null
 /** Identity stitching: called at sign-in (and with null at sign-out). */
@@ -89,6 +108,7 @@ export function track(name: string, props: Props = {}, surface?: Surface) {
         origin: def?.origin ?? 'unknown',
         props: clean,
         dropped: Object.keys(dropped).length ? dropped : undefined,
+        withheld: mayCollect(resolvedSurface) ? undefined : true,
         anonymous_id: s.anonymousId,
         user_id: userId,
         session_id: SESSION_ID,

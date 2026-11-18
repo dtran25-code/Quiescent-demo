@@ -7,6 +7,7 @@
 
 import { articleFromText } from '../ingest/article'
 import { readPdf } from '../ingest/pdf'
+import { PRIVACY_POLICY_VERSION } from '../auth/consent'
 import { addItem, clearAllData, getItem, isSeeded, markSeeded, newId, signIn, updateHighlights } from '../storage/db'
 import { protoStore, type Folder, type ItemMeta, type Status, type UserState } from '../proto/store'
 import { canonicalUrl } from '../proto/canonical'
@@ -90,7 +91,12 @@ export function resetDemo(state: UserState): Promise<void> {
     await clearAllData()
     await buildLibrary(state)
     const isNew = state === 'new'
-    await signIn('google', isNew ? 'new.reader@gmail.com' : 'tam@usf.edu')
+    // Demo users agreed to the Privacy Policy when they first signed in.
+    await signIn('google', isNew ? 'new.reader@gmail.com' : 'tam@usf.edu', {
+      policyVersion: PRIVACY_POLICY_VERSION,
+      agreedAt: Date.now(),
+      surface: 'web',
+    })
   })
   const entry = { state, run }
   resetting = entry

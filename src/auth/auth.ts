@@ -4,13 +4,20 @@
 // MOCKUP ONLY: there is no identity provider, password or account behind this.
 
 import { signIn, signOut, getItems } from '../storage/db'
-import { identify, track } from '../events/track'
+import { clearConsentThisVisit, identify, track } from '../events/track'
+import { PRIVACY_POLICY_VERSION } from './consent'
 import { protoStore } from '../proto/store'
 import type { Surface } from '../events/dictionary'
 
+/**
+ * Sign-in is only reachable with the Privacy Policy box ticked (both buttons are
+ * disabled until then), so completing it saves the agreement with the account.
+ * One sign-in per computer: whichever surface the user signs in on first, the
+ * other doesn't ask again.
+ */
 export async function completeSignIn(provider: 'google' | 'email', email: string | undefined, surface: Surface) {
   const isNew = protoStore.get().userState === 'new' && protoStore.get().profile.name === ''
-  await signIn(provider, email)
+  await signIn(provider, email, { policyVersion: PRIVACY_POLICY_VERSION, agreedAt: Date.now(), surface })
   identify(`user_${(email ?? 'google').replace(/[^A-Za-z0-9]/g, '').slice(0, 24) || 'demo'}`)
   if (email) protoStore.set((s) => ({ ...s, profile: { ...s.profile, email, method: provider } }))
   else protoStore.set((s) => ({ ...s, profile: { ...s.profile, method: provider } }))
@@ -31,5 +38,6 @@ function firstSignInOnThisComputer() {
 export async function signOutHere(surface: Surface) {
   track('signed_out', {}, surface)
   identify(null)
+  clearConsentThisVisit()
   await signOut()
 }
