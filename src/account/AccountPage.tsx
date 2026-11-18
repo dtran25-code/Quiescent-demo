@@ -2,6 +2,7 @@
 // sidebar shell. Changes from the reference: no top nav (sidebar replaces it), no
 // Date of birth, and the annotation badges only show with Dev → "Show dev notes".
 
+import { SUPPORT_EMAIL } from '../landing/LandingPage'
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
 import { AlertCircle, Check, Loader2 } from 'lucide-react'
@@ -88,8 +89,8 @@ export function AccountPage() {
       <Section title="Delete account" badge="proposed">
         <p className="text-[15px] leading-relaxed">
           To delete your account and everything in it, email{' '}
-          <a className="text-accent-dark underline underline-offset-2" href="mailto:support@quiescent.app">
-            support@quiescent.app
+          <a className="text-accent-dark underline underline-offset-2" href={`mailto:${SUPPORT_EMAIL}`}>
+            {SUPPORT_EMAIL}
           </a>
           .
         </p>

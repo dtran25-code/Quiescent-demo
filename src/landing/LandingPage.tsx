@@ -666,7 +666,7 @@ export function PrivacyPage() {
           Sign-in and Consent spec: this URL (quiescent.app/privacy) is also the Privacy Policy URL in the Chrome Web Store
           dashboard and the Google sign-in (OAuth consent screen) settings. Policy text is a <Badge kind="proposed" /> draft
           for PM and legal review: confirm the service providers, the 30-day deletion window (Account page has it as [30]),
-          the support address (Account page says support@quiescent.app) and the security wording. Version{' '}
+          and the security wording. Version{' '}
           {PRIVACY_POLICY_VERSION} is what consent_given records; bump it when users must agree again.
         </DevNote>
       </article>
