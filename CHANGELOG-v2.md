@@ -9,6 +9,34 @@ extension), and the **Dev** button (bottom-right of every page).
 
 ---
 
+## Sign-in and Consent (Nov 18, 2026 spec)
+
+The user agrees to the Privacy Policy before Quiescent collects any data (Chrome Web Store policy). Consent is part of
+every sign-in screen, so it appears wherever the user signs in first: the website sign-in page (website first) or the
+popup sign-in screen after clicking the Q (store first). Signed in on one, the other doesn't ask again.
+Code: `src/auth/consent.ts` (copy and policy version), `src/auth/SignInParts.tsx` (shared screen), `src/landing/LandingPage.tsx` (`/privacy`).
+
+| Spec item | What's built |
+|---|---|
+| Sign-in screen | Same body on `/signin` ("Sign in to Quiescent") and the popup ("Sign in to save this article"): subtitle, "Quiescent collects:" with the four items, "The extension only reads a page when you click the Q. We never sell your data.", the checkbox, then Continue with Google · or · email + Send link. Copy word for word from the spec. |
+| Checkbox | "I've read and agree to the Privacy Policy", unticked by default. Both sign-in buttons are disabled until it's ticked. "Privacy Policy" opens `/privacy` (quiescent.app/privacy) in a new tab without ticking the box. |
+| Buttons | Continue with Google is now the primary button; Send link is secondary (was the other way round). |
+| Agreement saved | Clicking either button logs `consent_given` and starts sign-in. The session stores `consent: { policyVersion, agreedAt, surface }`. |
+| Other surface doesn't ask again | One sign-in per computer (unchanged). New: a signed-in visitor who opens `/signin` goes to the Library. |
+| Close without signing in | The extension sends nothing before consent. Its events (`extension_installed`, `sign_in_prompt_shown`) show as **withheld: no consent** in the Dev Event log and are left out of `/events` counts. The held article stays on the computer until sign-in. |
+| Privacy policy page | `/privacy` now has full draft policy text, dated with the policy version. Bottom button: **Sign in** when signed out, **Back to library** when signed in. |
+
+Event: `consent_given` (proposed; the spec names no event): `policy_version`, `provider`. Fires before `sign_in_started`.
+
+Open questions:
+- **Policy text** is a draft for PM and legal review: service providers, the 30-day deletion window, the security line, "no marketing email".
+- **Support address.** The policy and landing footer use quiescent.support@gmail.com; the Account page says support@quiescent.app.
+- **Website events before consent.** The spec says closing without signing in collects and sends nothing, and the table covers the website too. Landing page events and the website's `sign_in_prompt_shown` still fire for signed-out visitors. Gate them as well, or is the rule extension only (Chrome Web Store)?
+- **Sign-in completion rate.** Its denominator is `sign_in_prompt_shown`, which the extension can no longer send before consent. Count from the website only, or use `consent_given` instead?
+- **Re-consent.** When the policy version changes, should signed-in users see the checkbox again? Not built.
+
+---
+
 ## Landing page (landing PRD)
 
 New and signed-out visitors land on a one-scroll landing page at `/`. A signed-in visitor who opens `/` goes straight

@@ -23,6 +23,8 @@ import { SteleIcon } from '../icons/SteleIcon'
 import { Badge, DevNote } from '../dev/DevNote'
 import { track } from '../events/track'
 import { openChromeStore } from './chromeStore'
+import { useSession } from '../storage/db'
+import { CONSENT_COPY, PRIVACY_POLICY_VERSION } from '../auth/consent'
 
 export const SUPPORT_EMAIL = 'quiescent.support@gmail.com'
 
@@ -548,22 +550,135 @@ function Footer() {
 }
 
 /** Placeholder until the policy is written. */
+/**
+ * /privacy (quiescent.app/privacy). The full policy, linked from the sign-in
+ * checkbox, the landing footer, the Chrome Web Store listing and Google sign-in
+ * settings. Bottom button: Sign in (signed out) or Back to library (signed in).
+ */
 export function PrivacyPage() {
+  const session = useSession()
+  const effective = new Date(`${PRIVACY_POLICY_VERSION}T12:00:00`).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
   return (
-    <div className="flex min-h-full flex-col items-center bg-paper px-6 py-16">
+    <div className="flex min-h-full flex-col items-center bg-paper px-4 py-12 sm:px-6 sm:py-16">
       <Link to="/" aria-label="Quiescent home">
         <Logo />
       </Link>
-      <div className="mt-10 w-full max-w-xl rounded-2xl border border-rule bg-card p-8">
+      <article className="mt-10 w-full max-w-2xl rounded-2xl border border-rule bg-card p-6 text-[15px] leading-relaxed sm:p-8">
         <h1 className="font-serif text-3xl font-semibold">Privacy Policy</h1>
-        <p className="mt-3 text-ink-soft">
-          The full policy is on its way. Questions in the meantime:{' '}
-          <a href={`mailto:${SUPPORT_EMAIL}`} className="btn-link">
-            {SUPPORT_EMAIL}
-          </a>
+        <p className="mt-1 text-sm text-ink-faint">Effective {effective}</p>
+
+        <p className="mt-5">
+          Quiescent is a reading app: a website (quiescent.app) and a Chrome extension that save articles to your library so
+          you can read them later. This policy explains what we collect, why, and the choices you have.
         </p>
-        <DevNote className="mt-5">Placeholder page: the Privacy Policy text isn't written yet. <Badge kind="not built" /></DevNote>
-      </div>
+
+        <PolicySection title="What we collect">
+          <p>{CONSENT_COPY.collectsIntro}</p>
+          <ul className="mt-2 list-disc space-y-1.5 pl-5">
+            <li>
+              <strong>Your name, email and profile photo</strong>, from Google when you continue with Google, or your email
+              address when you sign in with an email link. We use them to create and identify your account.
+            </li>
+            <li>
+              <strong>The text, title and link of articles you save</strong>, and PDFs you upload, so you can read them in
+              Quiescent on any computer you sign in on. Highlights and notes you make are stored with them.
+            </li>
+            <li>
+              <strong>Where you stopped reading</strong>, so each item opens where you left off.
+            </li>
+            <li>
+              <strong>How you use Quiescent, to improve it</strong>: events such as "article saved" or "item opened", with IDs,
+              counts, durations and the website's domain. These events never contain the text of what you read, highlight or
+              write.
+            </li>
+          </ul>
+        </PolicySection>
+
+        <PolicySection title="What the extension reads">
+          <p>
+            {CONSENT_COPY.reassurance.split('. ')[0]}. It does not watch your browsing, read other tabs or keep a history of
+            the sites you visit. When you click the Q on a page, it reads that page's article text, title and link to save
+            it. Before you sign in and agree to this policy, the extension collects and sends nothing.
+          </p>
+        </PolicySection>
+
+        <PolicySection title="How we use it">
+          <ul className="list-disc space-y-1.5 pl-5">
+            <li>To run your account and keep your library in sync across your computers.</li>
+            <li>To show your saved articles, reading progress, highlights and notes back to you.</li>
+            <li>To find and fix problems and to decide what to improve, using the usage events above.</li>
+            <li>To send sign-in links and messages about your account. We don't send marketing email.</li>
+          </ul>
+        </PolicySection>
+
+        <PolicySection title="Who we share it with">
+          <p>
+            <strong>We never sell your data</strong>, and we don't use it for advertising. We share it only with service
+            providers that help us run Quiescent (hosting, sign-in and email delivery), under contracts that let them use it
+            only for that, or when the law requires it.
+          </p>
+        </PolicySection>
+
+        <PolicySection title="Keeping it and deleting it">
+          <p>
+            We keep your data while you have an account. Signing out removes your session from that computer; your library
+            is kept. To delete your account and everything in it, email{' '}
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="text-accent-dark underline underline-offset-2">
+              {SUPPORT_EMAIL}
+            </a>
+            . We delete it, or remove anything that identifies you, within 30 days.
+          </p>
+        </PolicySection>
+
+        <PolicySection title="Security">
+          <p>Your data is encrypted in transit. Access inside Quiescent is limited to the people who need it to run the service.</p>
+        </PolicySection>
+
+        <PolicySection title="Changes to this policy">
+          <p>
+            If we change what we collect or how we use it, we'll update this page and its date, and ask you to agree again
+            before the change applies to you.
+          </p>
+        </PolicySection>
+
+        <PolicySection title="Contact">
+          <p>
+            Questions about your data:{' '}
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="text-accent-dark underline underline-offset-2">
+              {SUPPORT_EMAIL}
+            </a>
+          </p>
+        </PolicySection>
+
+        <div className="mt-8 border-t border-rule pt-6">
+          {session === undefined ? null : session ? (
+            <Link to="/library" className="btn-primary w-full sm:w-auto">
+              Back to library
+            </Link>
+          ) : (
+            <Link to="/signin" className="btn-primary w-full sm:w-auto">
+              Sign in
+            </Link>
+          )}
+        </div>
+
+        <DevNote className="mt-6">
+          Sign-in and Consent spec: this URL (quiescent.app/privacy) is also the Privacy Policy URL in the Chrome Web Store
+          dashboard and the Google sign-in (OAuth consent screen) settings. Policy text is a <Badge kind="proposed" /> draft
+          for PM and legal review: confirm the service providers, the 30-day deletion window (Account page has it as [30]),
+          the support address (Account page says support@quiescent.app) and the security wording. Version{' '}
+          {PRIVACY_POLICY_VERSION} is what consent_given records; bump it when users must agree again.
+        </DevNote>
+      </article>
     </div>
+  )
+}
+
+function PolicySection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="mt-7">
+      <h2 className="font-serif text-xl font-semibold">{title}</h2>
+      <div className="mt-2 text-ink-soft [&_strong]:text-ink">{children}</div>
+    </section>
   )
 }

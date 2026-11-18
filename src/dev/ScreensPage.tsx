@@ -30,14 +30,14 @@ const GROUPS: { title: string; brief: string; screens: Screen[] }[] = [
       { name: 'Landing page, preview while signed in (/landing; dev only)', to: '/landing' },
       { name: 'Non-Chrome browser or phone: "Available for Chrome on desktop."', to: '/landing?browser=other' },
       { name: 'Jump to a section: Save · Read · Library', to: '/landing#read', note: 'Or use the nav bar.' },
-      { name: 'Privacy Policy (placeholder)', to: '/privacy' },
+      { name: 'Privacy Policy (draft text; Sign in or Back to library at the bottom)', to: '/privacy' },
     ],
   },
   {
     title: 'Web sign-in',
     brief: 'A6 · mirrors the extension',
     screens: [
-      { name: 'Sign in — Continue with Google · email + Send link', to: '/signin' },
+      { name: 'Sign in — what we collect, Privacy Policy box (buttons off until ticked), Continue with Google · email + Send link', to: '/signin' },
       { name: 'Check your email (Resend after 60 s, Use a different email)', to: '/signin?state=check-email' },
       { name: 'Signing you in…', to: '/signin?state=signing-in' },
       { name: 'Link expired → Send a new link', to: '/signin?state=expired' },

@@ -229,7 +229,7 @@ function EventRow({ e, compact }: { e: LoggedEvent; compact: boolean }) {
   const time = new Date(e.at).toLocaleTimeString(undefined, { hour12: false })
   const props = Object.entries(e.props)
   return (
-    <li className="px-3 py-2" title={`anonymous_id=${e.anonymous_id} user_id=${e.user_id ?? '—'} session_id=${e.session_id} app_version=${e.app_version} source=${e.source}`}>
+    <li className={`px-3 py-2 ${e.withheld ? 'opacity-60' : ''}`} title={`anonymous_id=${e.anonymous_id} user_id=${e.user_id ?? '—'} session_id=${e.session_id} app_version=${e.app_version} source=${e.source}`}>
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
         <span className="tabular-nums text-ink-faint">{time}</span>
         <span className="font-semibold text-ink">{e.name}</span>
@@ -238,6 +238,11 @@ function EventRow({ e, compact }: { e: LoggedEvent; compact: boolean }) {
         </span>
         {e.origin === 'proposed' && <span className="rounded bg-devnote-badge px-1.5 py-px font-sans text-[10px] font-semibold text-devnote-ink">proposed — not in PRD</span>}
         {e.origin === 'unknown' && <span className="rounded bg-danger-soft px-1.5 py-px font-sans text-[10px] font-semibold text-danger">not in dictionary</span>}
+        {e.withheld && (
+          <span className="rounded bg-paper-deep px-1.5 py-px font-sans text-[10px] font-semibold text-ink-soft" title="Extension event before Privacy Policy consent. Not sent, not counted.">
+            withheld: no consent
+          </span>
+        )}
       </div>
       {props.length > 0 && (
         <div className={`mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-ink-soft ${compact ? '' : 'pl-[4.5rem]'}`}>

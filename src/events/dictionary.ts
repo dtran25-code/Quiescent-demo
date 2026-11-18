@@ -12,6 +12,8 @@
 // enums only. Never article text, highlight/note text, Q prompts or answers.
 // Free text is impossible by construction: there is no "string" prop type.
 
+import { PRIVACY_POLICY_VERSION } from '../auth/consent'
+
 export type PropSpec =
   | { type: 'enum'; values: readonly string[] }
   | { type: 'id' }
@@ -206,6 +208,17 @@ export const EVENTS: EventDef[] = [
     props: { provider: e(['google', 'email']) },
     feeds: 'Sign-in drop-off by step',
     origin: 'prd',
+  },
+  {
+    name: 'consent_given',
+    area: 'account',
+    source: 'server',
+    surface: 'both',
+    trigger: 'Privacy Policy box ticked and "Continue with Google" or "Send link" clicked (the agreement is saved as sign-in starts)',
+    props: { policy_version: e([PRIVACY_POLICY_VERSION]), provider: e(['google', 'email']) },
+    feeds: 'Consent record (Chrome Web Store policy); consent-to-sign-in drop-off',
+    origin: 'proposed',
+    note: 'Sign-in and Consent spec: devs own event logging; the spec names no event. Fires before sign_in_started.',
   },
   {
     name: 'sign_in_link_resent',

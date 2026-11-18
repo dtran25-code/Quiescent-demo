@@ -6,7 +6,7 @@
 //   file:<itemId>      -> Blob              (PDF bytes)
 //   highlights:<id>    -> Highlight[]
 //   seeded-v2          -> 2 once the v2 sample library has been created
-//   session            -> the mock sign-in
+//   session            -> the mock sign-in, with the Privacy Policy agreement
 //   chat:<id>          -> Q conversation for one item
 
 import { clear, del, get, set } from 'idb-keyval'
@@ -21,7 +21,10 @@ const listeners = new Set<Listener>()
 const channel = (() => {
   try {
     const c = new BroadcastChannel('quiescent-db')
-    c.onmessage = () => listeners.forEach((l) => l())
+    c.onmessage = () => {
+      void loadSessionMirror()
+      listeners.forEach((l) => l())
+    }
     return c
   } catch {
     return null
@@ -40,6 +43,7 @@ function notify() {
 export const clearAllData = () =>
   serial(async () => {
     await clear()
+    signedInMirror = false
     notify()
   })
 function useStored<T>(load: () => Promise<T>, deps: unknown[]): T | undefined {
@@ -166,19 +170,45 @@ export async function markSeeded() {
 
 export type SignInMethod = 'google' | 'email'
 
+/** The Privacy Policy agreement saved with the account (Sign-in and Consent spec). */
+export interface Consent {
+  /** Version of quiescent.app/privacy the user agreed to. */
+  policyVersion: string
+  agreedAt: number
+  /** Where the checkbox was ticked. The other surface doesn't ask again. */
+  surface: 'extension' | 'web'
+}
+
 export interface Session {
   method: SignInMethod
   email?: string
   signedInAt: number
+  consent: Consent
 }
 
-export async function signIn(method: SignInMethod, email?: string) {
-  await set('session', { method, email, signedInAt: Date.now() } satisfies Session)
+// Synchronous mirror of "signed in on this computer", so track() can tell
+// without waiting on IndexedDB whether the extension may send events.
+let signedInMirror = false
+export const isSignedInNow = () => signedInMirror
+
+/** Call once at startup to fill the mirror from the stored session. */
+export async function loadSessionMirror() {
+  signedInMirror = !!(await get<Session>('session'))
+}
+
+export async function signIn(method: SignInMethod, email: string | undefined, consent: Consent) {
+  await set('session', { method, email, signedInAt: Date.now(), consent } satisfies Session)
+  signedInMirror = true
   notify()
+}
+
+export async function getSession() {
+  return (await get<Session>('session')) ?? null
 }
 
 export async function signOut() {
   await del('session')
+  signedInMirror = false
   notify()
 }
 

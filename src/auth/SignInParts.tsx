@@ -4,6 +4,9 @@
 import { useEffect, useId, useState } from 'react'
 import { Clock, Loader2, Mail, AlertCircle } from 'lucide-react'
 import { DevNote } from '../dev/DevNote'
+import { grantConsent, track } from '../events/track'
+import type { Surface } from '../events/dictionary'
+import { CONSENT_COPY, PRIVACY_POLICY_PATH, PRIVACY_POLICY_URL, PRIVACY_POLICY_VERSION } from './consent'
 
 export function GoogleIcon({ size = 18 }: { size?: number }) {
   return (
@@ -16,32 +19,72 @@ export function GoogleIcon({ size = 18 }: { size?: number }) {
   )
 }
 
-/** "Continue with Google" + "or" + Email field with "Send link" + "New here?…" */
+/**
+ * The sign-in screen body shared by the website and the extension popup
+ * (Sign-in and Consent spec): subtitle, what Quiescent collects, the Privacy
+ * Policy checkbox (unticked), then Continue with Google · or · email + Send link.
+ * Both sign-in buttons stay disabled until the box is ticked. Clicking one saves
+ * the agreement (consent_given) and starts sign-in. Closing the screen without
+ * signing in collects and sends nothing.
+ */
 export function SignInOptions({
   onGoogle,
   onSendLink,
+  surface,
   defaultEmail = '',
   busy,
   compact = false,
 }: {
   onGoogle: () => void
   onSendLink: (email: string) => void
+  surface: Surface
   defaultEmail?: string
   busy?: 'google' | 'email' | null
   compact?: boolean
 }) {
   const [email, setEmail] = useState(defaultEmail)
   const [error, setError] = useState<string | null>(null)
+  const [agreed, setAgreed] = useState(false)
   const id = useId()
+  const off = !agreed || !!busy
+
+  function agree(provider: 'google' | 'email') {
+    grantConsent()
+    track('consent_given', { policy_version: PRIVACY_POLICY_VERSION, provider }, surface)
+  }
+
   return (
     <div className={compact ? 'space-y-3' : 'space-y-4'}>
+      <p className="text-sm text-ink-soft">{CONSENT_COPY.subtitle}</p>
+      <ConsentBody compact={compact} />
+      <label className="flex cursor-pointer items-start gap-2.5 text-sm">
+        <input
+          type="checkbox"
+          checked={agreed}
+          onChange={(e) => setAgreed(e.target.checked)}
+          className="mt-0.5 h-4 w-4 shrink-0 accent-accent"
+          aria-label={`${CONSENT_COPY.checkboxBefore}${CONSENT_COPY.checkboxLink}`}
+          data-autofocus
+        />
+        <span>
+          {CONSENT_COPY.checkboxBefore}
+          <a href={PRIVACY_POLICY_PATH} target="_blank" rel="noopener" className="font-medium text-accent-dark underline underline-offset-2">
+            {CONSENT_COPY.checkboxLink}
+          </a>
+        </span>
+      </label>
       <button
         type="button"
-        onClick={onGoogle}
-        disabled={!!busy}
-        className="flex w-full items-center justify-center gap-3 rounded-lg border border-ink-soft/40 bg-card px-4 py-2.5 text-sm font-medium text-ink transition-colors hover:border-ink-soft disabled:opacity-60"
+        onClick={() => {
+          agree('google')
+          onGoogle()
+        }}
+        disabled={off}
+        className="btn-primary w-full py-2.5"
       >
-        {busy === 'google' ? <Loader2 size={18} className="animate-spin text-ink-soft" /> : <GoogleIcon />}
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white">
+          {busy === 'google' ? <Loader2 size={14} className="animate-spin text-ink-soft" /> : <GoogleIcon size={15} />}
+        </span>
         Continue with Google
       </button>
       <div className="flex items-center gap-3 text-xs text-ink-faint">
@@ -51,8 +94,10 @@ export function SignInOptions({
         noValidate
         onSubmit={(e) => {
           e.preventDefault()
+          if (off) return
           if (!/^\S+@\S+\.\S+$/.test(email.trim())) return setError('Enter an email address like you@example.com.')
           setError(null)
+          agree('email')
           onSendLink(email.trim())
         }}
         className="space-y-2.5"
@@ -76,12 +121,31 @@ export function SignInOptions({
             {error}
           </p>
         )}
-        <button className="btn-primary w-full py-2.5" disabled={!!busy}>
+        <button className="btn-secondary w-full py-2.5" disabled={off}>
           {busy === 'email' ? <Loader2 size={16} className="animate-spin" /> : null}
           Send link
         </button>
       </form>
-      <p className="text-xs text-ink-soft">New here? Signing in creates your account.</p>
+      <DevNote>
+        Sign-in and Consent spec. Checkbox unticked by default; both buttons disabled until it's ticked. Privacy Policy opens{' '}
+        {PRIVACY_POLICY_URL.replace('https://', '')} in a new tab. Clicking a button logs consent_given (policy {PRIVACY_POLICY_VERSION}) and saves
+        the agreement with the account. Signed in here, the {surface === 'web' ? 'extension' : 'website'} doesn't ask again.
+      </DevNote>
+    </div>
+  )
+}
+
+/** "Quiescent collects:" list and the one-line reassurance. */
+export function ConsentBody({ compact = false }: { compact?: boolean }) {
+  return (
+    <div className={`rounded-lg bg-paper-deep/60 text-sm ${compact ? 'px-3 py-2.5' : 'px-4 py-3'}`}>
+      <p className="font-medium">{CONSENT_COPY.collectsIntro}</p>
+      <ul className="mt-1.5 list-disc space-y-0.5 pl-5 text-ink-soft">
+        {CONSENT_COPY.collects.map((line) => (
+          <li key={line}>{line}</li>
+        ))}
+      </ul>
+      <p className="mt-2 text-ink-soft">{CONSENT_COPY.reassurance}</p>
     </div>
   )
 }

@@ -8,7 +8,7 @@ import { AccountPage } from './account/AccountPage'
 import { AppShell } from './shell/AppShell'
 import { DevMenu } from './dev/DevMenu'
 import { resetDemo, seedSamples } from './samples/seed'
-import { signOut, useSession } from './storage/db'
+import { loadSessionMirror, signOut, useSession } from './storage/db'
 import { protoStore, type UserState } from './proto/store'
 import { TESTER_BUILD } from './proto/build'
 
@@ -22,6 +22,7 @@ export default function App() {
   useEffect(() => {
     seedSamples()
       .catch((err) => console.error('Could not load sample items', err))
+      .then(loadSessionMirror)
       .finally(() => setReady(true))
   }, [])
 
