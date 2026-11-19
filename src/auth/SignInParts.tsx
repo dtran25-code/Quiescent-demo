@@ -6,7 +6,8 @@ import { Clock, Loader2, Mail, AlertCircle } from 'lucide-react'
 import { DevNote } from '../dev/DevNote'
 import { grantConsent, track } from '../events/track'
 import type { Surface } from '../events/dictionary'
-import { CONSENT_COPY, PRIVACY_POLICY_PATH, PRIVACY_POLICY_URL, PRIVACY_POLICY_VERSION } from './consent'
+import { CONSENT_COPY, PRIVACY_POLICY_URL, PRIVACY_POLICY_VERSION } from './consent'
+import { PrivacyPolicyLink } from '../legal/PrivacyPolicy'
 
 export function GoogleIcon({ size = 18 }: { size?: number }) {
   return (
@@ -68,9 +69,9 @@ export function SignInOptions({
         />
         <span>
           {CONSENT_COPY.checkboxBefore}
-          <a href={PRIVACY_POLICY_PATH} target="_blank" rel="noopener" className="font-medium text-accent-dark underline underline-offset-2">
+          <PrivacyPolicyLink where={compact ? 'popup' : 'web'} className="font-medium text-accent-dark underline underline-offset-2">
             {CONSENT_COPY.checkboxLink}
-          </a>
+          </PrivacyPolicyLink>
         </span>
       </label>
       <button
@@ -127,8 +128,8 @@ export function SignInOptions({
         </button>
       </form>
       <DevNote>
-        Sign-in and Consent spec. Checkbox unticked by default; both buttons disabled until it's ticked. Privacy Policy opens{' '}
-        {PRIVACY_POLICY_URL.replace('https://', '')} in a new tab. Clicking a button logs consent_given (policy {PRIVACY_POLICY_VERSION}) and saves
+        Sign-in and Consent spec. Checkbox unticked by default; both buttons disabled until it's ticked. Privacy Policy opens the full policy on top of this screen
+        (no new page or tab); the same text is at {PRIVACY_POLICY_URL.replace('https://', '')}. Clicking a button logs consent_given (policy {PRIVACY_POLICY_VERSION}) and saves
         the agreement with the account. Signed in here, the {surface === 'web' ? 'extension' : 'website'} doesn't ask again.
       </DevNote>
     </div>
