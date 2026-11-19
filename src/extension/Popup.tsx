@@ -64,13 +64,14 @@ export function Popup({ state, title, source, h }: { state: PopupState; title: s
       ref={box}
       role="dialog"
       aria-label="Quiescent extension"
+      data-popup-frame
       onKeyDown={(e) => {
         if (e.key === 'Escape') {
           e.stopPropagation()
           h.onClose()
         }
       }}
-      className="w-popup rounded-xl bg-card font-sans text-ink shadow-2xl ring-1 ring-rule"
+      className="relative w-popup rounded-xl bg-card font-sans text-ink shadow-2xl ring-1 ring-rule"
     >
       <div className="flex items-center gap-2 border-b border-rule px-4 py-2.5">
         <LogoMark size={22} />

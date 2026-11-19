@@ -22,3 +22,5 @@ export const CONSENT_COPY = {
   checkboxBefore: 'I’ve read and agree to the ',
   checkboxLink: 'Privacy Policy',
 } as const
+
+export const SUPPORT_EMAIL = 'quiescent.support@gmail.com'
